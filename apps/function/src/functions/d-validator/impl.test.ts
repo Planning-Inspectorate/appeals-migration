@@ -1,9 +1,9 @@
 // @ts-nocheck
 import { describe, test, mock } from 'node:test';
-import { buildExampleFunction } from './impl.ts';
+import { buildValidator } from './impl.ts';
 import assert from 'node:assert';
 
-describe('example-function-impl', () => {
+describe('d-validator-impl', () => {
 	const newService = () => {
 		return {
 			dbClient: {
@@ -19,7 +19,7 @@ describe('example-function-impl', () => {
 		service.dbClient.$queryRaw.mock.mockImplementationOnce(() => {
 			return '1';
 		});
-		const handler = buildExampleFunction(service);
+		const handler = buildValidator(service);
 		await handler({}, context);
 		assert.strictEqual(service.dbClient.$queryRaw.mock.callCount(), 1);
 		assert.strictEqual(context.log.mock.callCount(), 2);
@@ -34,7 +34,7 @@ describe('example-function-impl', () => {
 		service.dbClient.$queryRaw.mock.mockImplementationOnce(() => {
 			throw new Error('database error');
 		});
-		const handler = buildExampleFunction(service);
+		const handler = buildValidator(service);
 		await assert.rejects(() => handler({}, context));
 		assert.strictEqual(service.dbClient.$queryRaw.mock.callCount(), 1);
 		assert.strictEqual(context.log.mock.callCount(), 2);

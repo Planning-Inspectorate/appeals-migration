@@ -17,7 +17,19 @@ export class FunctionService {
 		this.dbClient = newDatabaseClient(config.database);
 	}
 
-	get exampleSchedule() {
-		return this.#config.example.schedule;
+	get aListBuilderSchedule() {
+		return this.#config.aListBuilder.schedule;
+	}
+
+	get bTransformerSchedule() {
+		return this.#config.bTransformer.schedule;
+	}
+
+	get cDocumentHandlerSchedule() {
+		return this.#config.cDocumentHandler.schedule;
+	}
+
+	get dValidatorSchedule() {
+		return this.#config.dValidator.schedule;
 	}
 }
