@@ -1,0 +1,64 @@
+{
+  "name": "appeals-migration",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22.21.0"
+  },
+  "scripts": {
+    "check-types": "npx tsc",
+    "commitlint": "commitlint --from=$(git cherry origin/main | head -n 1 | cut -c 3-)",
+    "db-migrate-dev": "npm run migrate-dev --workspace @pins/appeals-migration-database",
+    "db-migrate-prod": "npm run migrate-prod --workspace @pins/appeals-migration-database",
+    "db-generate": "npm run generate --workspace @pins/appeals-migration-database",
+    "db-seed": "npm run seed --workspace @pins/appeals-migration-database",
+    "db-seed-prod": "npm run seed:prod --workspace @pins/appeals-migration-database",
+    "format": "prettier --write .",
+    "format-check": "prettier --check .",
+    "lint": "npx eslint .",
+    "prepare": "node .husky/install.mjs",
+    "test": "node --test",
+    "test-coverage": "node --test --experimental-test-coverage"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.9.0",
+    "@azure/identity": "^4.13.0",
+    "@prisma/adapter-mssql": "^6.19.0",
+    "@prisma/client": "^6.19.0",
+    "body-parser": "^2.2.0",
+    "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
+    "pino": "^10.1.0",
+    "pino-pretty": "^13.1.2"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
+    "@microsoft/microsoft-graph-types": "^2.43.1",
+    "@types/node": "^24.10.0",
+    "eslint": "^9.37.0",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6",
+    "prettier": "^3.5.3",
+    "prettier-plugin-prisma": "^5.0.0",
+    "prisma": "^6.19.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.4"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "eslint --fix"
+    ],
+    "*.{js,ts,json,md,prisma,yml,yaml,scss}": [
+      "prettier --write"
+    ]
+  }
+}
