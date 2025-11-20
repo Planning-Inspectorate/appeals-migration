@@ -1,0 +1,35 @@
+{
+	"Envelope": {
+		"Body": {
+			"GetCaseResponse": {
+				"GetCaseResult": {
+					"Metadata": {
+						"Attributes": {
+							"Case Involvement:Case Involvement": [
+								{
+									"Case Involvement:Case Involvement:ContactID": "P_1176",
+									"Case Involvement:Case Involvement:Contact Details": "Mock Name",
+									"Case Involvement:Case Involvement:Type Of Involvement": "Appellant",
+									"Case Involvement:Case Involvement:Communication Preference": "e-mail",
+									"Case Involvement:Case Involvement:Involvement Start Date": "2014-11-13T00:00:00+00:00"
+								},
+								{
+									"Case Involvement:Case Involvement:ContactID": "P_1177",
+									"Case Involvement:Case Involvement:Contact Details": "Mock Agent (Mock Organization)",
+									"Case Involvement:Case Involvement:Type Of Involvement": "Agent",
+									"Case Involvement:Case Involvement:Communication Preference": "e-mail",
+									"Case Involvement:Case Involvement:Involvement Start Date": "2014-11-13T00:00:00+00:00"
+								},
+								{
+									"Case Involvement:Case Involvement:ContactID": "O_185",
+									"Case Involvement:Case Involvement:Contact Details": "Mock Organization",
+									"Case Involvement:Case Involvement:Type Of Involvement": "LPA"
+								}
+							]
+						}
+					}
+				}
+			}
+		}
+	}
+}

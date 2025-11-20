@@ -1,6 +1,9 @@
-import { prefixAllKeys } from './util.ts';
+import { cleanHorizonResponse, prefixAllKeys } from './util.ts';
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
+import fs from 'fs/promises';
+import path from 'path';
+import type { AssertSnapshotOptions } from 'node:test';
 
 describe('util', () => {
 	describe('prefixAllKeys', () => {
@@ -35,4 +38,39 @@ describe('util', () => {
 			assert.notStrictEqual(result, input); // Should not be the same reference
 		});
 	});
+	describe('cleanHorizonResponse', () => {
+		it('should clean value objects', async (ctx) => {
+			const got = cleanHorizonResponse(await readTestFile('./testing/horizon-response-example-1.json'));
+			ctx.assert.fileSnapshot(got, snapshotPath('clean-horizon-response-1.json'), snapshotOptions);
+		});
+		it('should clean Attributes and handle nested Values', async (ctx) => {
+			const got = cleanHorizonResponse(await readTestFile('./testing/horizon-response-example-2.json'));
+			ctx.assert.fileSnapshot(got, snapshotPath('clean-horizon-response-2.json'), snapshotOptions);
+		});
+		it('should handle duplicate Case Involvement metadata entries', async (ctx) => {
+			const got = cleanHorizonResponse(await readTestFile('./testing/horizon-response-example-3.json'));
+			ctx.assert.fileSnapshot(got, snapshotPath('clean-horizon-response-3.json'), snapshotOptions);
+		});
+		it('should clean a full GetCase response', async (ctx) => {
+			const got = cleanHorizonResponse(await readTestFile('./testing/horizon-response-example-4.json'));
+			ctx.assert.fileSnapshot(got, snapshotPath('clean-horizon-response-4.json'), snapshotOptions);
+		});
+	});
 });
+
+export function testDir() {
+	return path.dirname(new URL(import.meta.url).pathname);
+}
+
+export function snapshotPath(file: string) {
+	return path.join(testDir(), 'testing', 'snapshots', file);
+}
+
+export async function readTestFile(filepath: string): Promise<string> {
+	const file = await fs.readFile(path.join(testDir(), filepath));
+	return file.toString('utf-8');
+}
+
+export const snapshotOptions: AssertSnapshotOptions = {
+	serializers: [(v) => v] // don't transform values for snapshots
+};

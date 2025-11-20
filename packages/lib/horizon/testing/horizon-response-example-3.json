@@ -1,0 +1,139 @@
+{
+	"Envelope": {
+		"Body": {
+			"GetCaseResponse": {
+				"GetCaseResult": {
+					"Metadata": {
+						"Attributes": {
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Involvement:Case Involvement"
+								},
+								"Values": {
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:ContactID"
+										},
+										"Value": {
+											"value": "P_1176"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Contact Details"
+										},
+										"Value": {
+											"value": "Mock Name"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Type Of Involvement"
+										},
+										"Value": {
+											"value": "Appellant"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Communication Preference"
+										},
+										"Value": {
+											"value": "e-mail"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Involvement Start Date"
+										},
+										"Value": {
+											"value": "2014-11-13T00:00:00+00:00"
+										}
+									}
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Involvement:Case Involvement"
+								},
+								"Values": {
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:ContactID"
+										},
+										"Value": {
+											"value": "P_1177"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Contact Details"
+										},
+										"Value": {
+											"value": "Mock Agent (Mock Organization)"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Type Of Involvement"
+										},
+										"Value": {
+											"value": "Agent"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Communication Preference"
+										},
+										"Value": {
+											"value": "e-mail"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Involvement Start Date"
+										},
+										"Value": {
+											"value": "2014-11-13T00:00:00+00:00"
+										}
+									}
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Involvement:Case Involvement"
+								},
+								"Values": {
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:ContactID"
+										},
+										"Value": {
+											"value": "O_185"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Contact Details"
+										},
+										"Value": {
+											"value": "Mock Organization"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Type Of Involvement"
+										},
+										"Value": {
+											"value": "LPA"
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

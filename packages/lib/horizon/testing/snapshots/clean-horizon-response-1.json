@@ -1,0 +1,15 @@
+{
+	"CaseId": "8718937948",
+	"CaseReference": "A/FAKE/CASE/REFERENCE",
+	"CaseType": "Lawful Development Certificate Appeal",
+	"LPACode": "X5210",
+	"Address": {
+		"AddressLine1": "123 Mock Street",
+		"AddressLine2": null,
+		"County": null,
+		"GridReferenceEasting": null,
+		"GridReferenceNorthing": null,
+		"PostCode": "MOCK1 1AA",
+		"Town": "MOCKTOWN"
+	}
+}
