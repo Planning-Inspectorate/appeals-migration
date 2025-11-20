@@ -1,28 +1,18 @@
 import { describe, it } from 'node:test';
-import { caseSearchRequest, processCaseSearchResponse } from './case-search.ts';
+import { caseSearchRequest, cleanCaseSearchResponse } from './case-search.ts';
 import assert from 'node:assert';
+import { readTestFile, snapshotOptions, snapshotPath } from './util.test.ts';
 
 describe('case-search', () => {
-	describe('processCaseSearchResponse', () => {
-		it('should convert CaseSearchResult object to array and remove HorizonSearchResult keys', () => {
-			const input = `{"CaseSearchResult":\t{"HorizonSearchResult":{"id": 1},"HorizonSearchResult": {"id": 2}\n\t\t\t\t}\n\t\t\t\t\t}`;
-			const expected = `{"CaseSearchResult":\t[{"id": 1}, {"id": 2}\n\t\t\t\t]\n\t\t\t\t\t}`;
-			const result = processCaseSearchResponse(input);
-			assert.strictEqual(result, expected);
+	describe('cleanCaseSearchResponse', () => {
+		it('should convert CaseSearchResult object to array and remove HorizonSearchResult keys', async (ctx) => {
+			const got = cleanCaseSearchResponse(await readTestFile('./testing/case-search-example-1.json'));
+			ctx.assert.fileSnapshot(got, snapshotPath('clean-case-search-1.json'), snapshotOptions);
 		});
 
-		it('should handle empty CaseSearchResult', () => {
-			const input = `{"CaseSearchResult":\t{\n\t\t\t\t}}`;
-			const expected = `{"CaseSearchResult":\t[\n\t\t\t\t]}`;
-			const result = processCaseSearchResponse(input);
-			assert.strictEqual(result, expected);
-		});
-
-		it('should not modify unrelated content', () => {
-			const input = `{"OtherKey": 123}`;
-			const expected = `{"OtherKey": 123}`;
-			const result = processCaseSearchResponse(input);
-			assert.strictEqual(result, expected);
+		it('should handle empty CaseSearchResult', async (ctx) => {
+			const got = cleanCaseSearchResponse(await readTestFile('./testing/case-search-example-2.json'));
+			ctx.assert.fileSnapshot(got, snapshotPath('clean-case-search-2.json'), snapshotOptions);
 		});
 	});
 	describe('caseSearchRequest', () => {

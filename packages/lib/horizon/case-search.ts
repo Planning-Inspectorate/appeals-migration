@@ -1,4 +1,4 @@
-import { prefixAllKeys } from './util.ts';
+import { cleanHorizonResponse, prefixAllKeys } from './util.ts';
 
 /**
  * the JSON returned has duplicate HorizonSearchResult keys within CaseSearchResult,
@@ -12,13 +12,13 @@ import { prefixAllKeys } from './util.ts';
  *
  * @param txt
  */
-export function processCaseSearchResponse(txt: string): string {
+export function cleanCaseSearchResponse(txt: string): string {
 	return (
-		txt
-			// change the wrapper {} to []
-			.replaceAll('"CaseSearchResult":\t{', '"CaseSearchResult":\t[')
-			.replace('\n\t\t\t\t}', '\n\t\t\t\t]')
-			// remove each "HorizonSearchResult":
+		cleanHorizonResponse(txt)
+			// change the CaseSearchResult wrapper {} to []
+			.replace(/^({\s+"Envelope":\s{\s+"Body":\s{\s+"CaseSearchResponse":\s{\s+"CaseSearchResult":\s){/, '$1[')
+			.replace(/}(\s+}\s+}\s+}\s+})$/, ']$1')
+			// remove each "HorizonSearchResult": to leave a valid array
 			.replaceAll('"HorizonSearchResult":', '')
 	);
 }

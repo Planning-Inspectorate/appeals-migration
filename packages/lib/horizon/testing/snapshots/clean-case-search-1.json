@@ -1,0 +1,70 @@
+{
+	"Envelope": {
+		"Body": {
+			"CaseSearchResponse": {
+				"CaseSearchResult": [
+					{
+						"Address": {
+							"AddressLine1": "123 Mock Street",
+							"AddressLine2": null,
+							"County": null,
+							"GridReferenceEasting": null,
+							"GridReferenceNorthing": null,
+							"PostCode": "MOCK1 1AA",
+							"Town": "MOCKTOWN"
+						},
+						"AppellantName": "Mock Appellant",
+						"CaseReference": "MOCK-REF-001",
+						"CaseStatus": "Decision Issued",
+						"CaseType": "Householder (HAS) Appeal",
+						"LPACode": "MOCK-LPA",
+						"LPAReference": "MOCK-LPA-REF-001",
+						"NodeId": "MOCK-NODE-001",
+						"ProcedureType": "Written representations",
+						"StartDate": "2017-10-17T00:00:00"
+					},
+					{
+						"Address": {
+							"AddressLine1": "456 Mock Avenue",
+							"AddressLine2": null,
+							"County": "Mockshire",
+							"GridReferenceEasting": null,
+							"GridReferenceNorthing": null,
+							"PostCode": "MOCK2 2BB",
+							"Town": "MOCKVILLE"
+						},
+						"AppellantName": "Mock Appellant 2",
+						"CaseReference": "MOCK-REF-002",
+						"CaseStatus": "Decision Issued",
+						"CaseType": "Planning Appeal (W)",
+						"LPACode": "MOCK-LPA",
+						"LPAReference": "MOCK-LPA-REF-002",
+						"NodeId": "MOCK-NODE-002",
+						"ProcedureType": "Written representations",
+						"StartDate": "2015-07-15T00:00:00"
+					},
+					{
+						"Address": {
+							"AddressLine1": "789 Mock Crescent",
+							"AddressLine2": null,
+							"County": null,
+							"GridReferenceEasting": null,
+							"GridReferenceNorthing": null,
+							"PostCode": "MOCK3 3CC",
+							"Town": "MOCKHAM"
+						},
+						"AppellantName": "Mock Organization",
+						"CaseReference": "MOCK-REF-003",
+						"CaseStatus": "Decision Issued",
+						"CaseType": "Planning Appeal (W)",
+						"LPACode": "MOCK-LPA",
+						"LPAReference": "MOCK-LPA-REF-003",
+						"NodeId": "MOCK-NODE-003",
+						"ProcedureType": "Written representations",
+						"StartDate": "2015-02-23T00:00:00"
+					}
+				]
+			}
+		}
+	}
+}

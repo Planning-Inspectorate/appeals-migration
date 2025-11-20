@@ -1,0 +1,144 @@
+{
+	"Envelope": {
+		"Body": {
+			"CaseSearchResponse": {
+				"CaseSearchResult": {
+					"HorizonSearchResult": {
+						"Address": {
+							"AddressLine1": {
+								"value": "123 Mock Street"
+							},
+							"AddressLine2": {},
+							"County": {},
+							"GridReferenceEasting": {},
+							"GridReferenceNorthing": {},
+							"PostCode": {
+								"value": "MOCK1 1AA"
+							},
+							"Town": {
+								"value": "MOCKTOWN"
+							}
+						},
+						"AppellantName": {
+							"value": "Mock Appellant"
+						},
+						"CaseReference": {
+							"value": "MOCK-REF-001"
+						},
+						"CaseStatus": {
+							"value": "Decision Issued"
+						},
+						"CaseType": {
+							"value": "Householder (HAS) Appeal"
+						},
+						"LPACode": {
+							"value": "MOCK-LPA"
+						},
+						"LPAReference": {
+							"value": "MOCK-LPA-REF-001"
+						},
+						"NodeId": {
+							"value": "MOCK-NODE-001"
+						},
+						"ProcedureType": {
+							"value": "Written representations"
+						},
+						"StartDate": {
+							"value": "2017-10-17T00:00:00"
+						}
+					},
+					"HorizonSearchResult": {
+						"Address": {
+							"AddressLine1": {
+								"value": "456 Mock Avenue"
+							},
+							"AddressLine2": {},
+							"County": {
+								"value": "Mockshire"
+							},
+							"GridReferenceEasting": {},
+							"GridReferenceNorthing": {},
+							"PostCode": {
+								"value": "MOCK2 2BB"
+							},
+							"Town": {
+								"value": "MOCKVILLE"
+							}
+						},
+						"AppellantName": {
+							"value": "Mock Appellant 2"
+						},
+						"CaseReference": {
+							"value": "MOCK-REF-002"
+						},
+						"CaseStatus": {
+							"value": "Decision Issued"
+						},
+						"CaseType": {
+							"value": "Planning Appeal (W)"
+						},
+						"LPACode": {
+							"value": "MOCK-LPA"
+						},
+						"LPAReference": {
+							"value": "MOCK-LPA-REF-002"
+						},
+						"NodeId": {
+							"value": "MOCK-NODE-002"
+						},
+						"ProcedureType": {
+							"value": "Written representations"
+						},
+						"StartDate": {
+							"value": "2015-07-15T00:00:00"
+						}
+					},
+					"HorizonSearchResult": {
+						"Address": {
+							"AddressLine1": {
+								"value": "789 Mock Crescent"
+							},
+							"AddressLine2": {},
+							"County": {},
+							"GridReferenceEasting": {},
+							"GridReferenceNorthing": {},
+							"PostCode": {
+								"value": "MOCK3 3CC"
+							},
+							"Town": {
+								"value": "MOCKHAM"
+							}
+						},
+						"AppellantName": {
+							"value": "Mock Organization"
+						},
+						"CaseReference": {
+							"value": "MOCK-REF-003"
+						},
+						"CaseStatus": {
+							"value": "Decision Issued"
+						},
+						"CaseType": {
+							"value": "Planning Appeal (W)"
+						},
+						"LPACode": {
+							"value": "MOCK-LPA"
+						},
+						"LPAReference": {
+							"value": "MOCK-LPA-REF-003"
+						},
+						"NodeId": {
+							"value": "MOCK-NODE-003"
+						},
+						"ProcedureType": {
+							"value": "Written representations"
+						},
+						"StartDate": {
+							"value": "2015-02-23T00:00:00"
+						}
+					}
+				}
+			}
+		}
+	}
+}
