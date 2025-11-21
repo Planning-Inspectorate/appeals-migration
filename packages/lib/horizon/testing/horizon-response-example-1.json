@@ -15,10 +15,14 @@
 		"AddressLine1": {
 			"value": "123 Mock Street"
 		},
-		"AddressLine2": {},
-		"County": {},
-		"GridReferenceEasting": {},
-		"GridReferenceNorthing": {},
+		"AddressLine2": {
+		},
+		"County": {
+		},
+		"GridReferenceEasting": {
+		},
+		"GridReferenceNorthing": {
+		},
 		"PostCode": {
 			"value": "MOCK1 1AA"
 		},

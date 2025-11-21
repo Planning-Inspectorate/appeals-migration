@@ -2,7 +2,8 @@
 	"Envelope": {
 		"Body": {
 			"CaseSearchResponse": {
-				"CaseSearchResult": {}
+				"CaseSearchResult": {
+				}
 			}
 		}
 	}

@@ -23,7 +23,8 @@
 					"LPACode": {
 						"value": "MOCK-LPA"
 					},
-					"LinkedCases": {},
+					"LinkedCases": {
+					},
 					"Metadata": {
 						"Attributes": {
 							"AttributeValue": {
@@ -785,7 +786,8 @@
 					},
 					"PublishedDocuments": {
 						"HorizonSearchDocument": {
-							"Content": {},
+							"Content": {
+							},
 							"DateCreated": {
 								"value": "2015-08-20T14:39:02+01:00"
 							},

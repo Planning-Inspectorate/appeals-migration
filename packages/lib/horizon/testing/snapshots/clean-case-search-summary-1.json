@@ -3,7 +3,7 @@
 		"Body": {
 			"CaseSearchSummaryDetailsResponse": {
 				"CaseSearchSummaryDetailsResult": [
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -24,7 +24,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3222762 - SPT Oct 2025"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -45,7 +45,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3222736 - SPT Sept 2025"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -66,7 +66,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3222585 - SPT March 2025"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -87,7 +87,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3222567 - SPT Feb 2025"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -108,7 +108,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3222548 - SPT Jan 2025"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -129,7 +129,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3222494 - SPT Dec 2024"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -150,7 +150,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3222459 - SPT Oct 2024"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -171,7 +171,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3222436 - SPT August 2024"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -192,7 +192,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3222425 - SPT July 2024"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -213,7 +213,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3222415 - SPT June 2024"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -234,7 +234,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3222363 - SPT March 2024"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -255,7 +255,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3222323 - SPT Feb 2024"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -276,7 +276,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3222233 - SPT Nov 2023"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -297,7 +297,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3221293 - NM Test Case"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -318,7 +318,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3221259 - SPT July 2022"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -339,7 +339,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3221250 - NM Test"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -360,7 +360,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3221231 - SPT June 2022"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -381,7 +381,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3221215 - IE Edge Test"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -402,7 +402,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3221207 - SPT May 2022"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": "Planning Inspectorate",
 							"AddressLine2": null,
@@ -423,7 +423,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3221196 - HLR 70"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -444,7 +444,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3220958 - mwtest"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -465,7 +465,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3220957 - test"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -486,7 +486,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3220851 - TEST"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,
@@ -507,7 +507,7 @@
 						"StartDate": null,
 						"CaseFullName": "ROW/3220847 - mwtest"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": null,
 							"AddressLine2": null,

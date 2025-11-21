@@ -4,8 +4,8 @@
 		"Case:Case Type": "Lawful Development Certificate Appeal",
 		"Case:Procedure": "Written representations",
 		"Case:Involvement": {
-			"Case Involvement:Case Involvement:ContactID": "P_1176",
-			"Case Involvement:Case Involvement:Type Of Involvement": "Appellant"
+				"Case Involvement:Case Involvement:ContactID": "P_1176",
+				"Case Involvement:Case Involvement:Type Of Involvement": "Appellant"
 		}
 	}
 }

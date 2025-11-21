@@ -8,10 +8,14 @@
 							"AddressLine1": {
 								"value": "123 Mock Street"
 							},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
 							"PostCode": {
 								"value": "MOCK1 1AA"
 							},
@@ -52,12 +56,15 @@
 							"AddressLine1": {
 								"value": "456 Mock Avenue"
 							},
-							"AddressLine2": {},
+							"AddressLine2": {
+							},
 							"County": {
 								"value": "Mockshire"
 							},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
 							"PostCode": {
 								"value": "MOCK2 2BB"
 							},
@@ -98,10 +105,14 @@
 							"AddressLine1": {
 								"value": "789 Mock Crescent"
 							},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
 							"PostCode": {
 								"value": "MOCK3 3CC"
 							},

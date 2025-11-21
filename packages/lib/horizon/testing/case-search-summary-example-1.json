@@ -5,551 +5,798 @@
 				"CaseSearchSummaryDetailsResult": {
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3222762"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "34403248"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3222762 - SPT Oct 2025"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3222736"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "34352451"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3222736 - SPT Sept 2025"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3222585"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "34094538"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3222585 - SPT March 2025"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3222567"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "34049230"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3222567 - SPT Feb 2025"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3222548"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "34011704"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3222548 - SPT Jan 2025"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3222494"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "33947303"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3222494 - SPT Dec 2024"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3222459"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "33858828"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3222459 - SPT Oct 2024"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3222436"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "33825941"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3222436 - SPT August 2024"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3222425"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "33824024"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3222425 - SPT July 2024"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3222415"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "33821526"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3222415 - SPT June 2024"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3222363"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "33735241"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3222363 - SPT March 2024"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3222323"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "33363969"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3222323 - SPT Feb 2024"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3222233"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "33041373"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3222233 - SPT Nov 2023"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3221293"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "32354092"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3221293 - NM Test Case"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3221259"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "32316864"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3221259 - SPT July 2022"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3221250"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "32311553"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3221250 - NM Test"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3221231"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "32277099"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3221231 - SPT June 2022"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3221215"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "32244332"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3221215 - IE Edge Test"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3221207"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "32236285"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3221207 - SPT May 2022"
 						}
@@ -559,175 +806,251 @@
 							"AddressLine1": {
 								"value": "Planning Inspectorate"
 							},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
 							"PostCode": {
 								"value": "BS1 6PN"
 							},
-							"Town": {}
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3221196"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "32222254"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3221196 - HLR 70"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3220958"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "32117770"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3220958 - mwtest"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3220957"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "32117440"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3220957 - test"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3220851"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "32101450"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3220851 - TEST"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3220847"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "32099191"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3220847 - mwtest"
 						}
 					},
 					"HorizonSearchResult2": {
 						"Address": {
-							"AddressLine1": {},
-							"AddressLine2": {},
-							"County": {},
-							"GridReferenceEasting": {},
-							"GridReferenceNorthing": {},
-							"PostCode": {},
-							"Town": {}
+							"AddressLine1": {
+							},
+							"AddressLine2": {
+							},
+							"County": {
+							},
+							"GridReferenceEasting": {
+							},
+							"GridReferenceNorthing": {
+							},
+							"PostCode": {
+							},
+							"Town": {
+							}
 						},
-						"AppellantName": {},
+						"AppellantName": {
+						},
 						"CaseReference": {
 							"value": "ROW/3220836"
 						},
-						"CaseStatus": {},
+						"CaseStatus": {
+						},
 						"CaseType": {
 							"value": "Rights of Way"
 						},
-						"LPACode": {},
-						"LPAReference": {},
+						"LPACode": {
+						},
+						"LPAReference": {
+						},
 						"NodeId": {
 							"value": "32087666"
 						},
-						"ProcedureType": {},
-						"StartDate": {},
+						"ProcedureType": {
+						},
+						"StartDate": {
+						},
 						"CaseFullName": {
 							"value": "ROW/3220836 - mwtest"
 						}

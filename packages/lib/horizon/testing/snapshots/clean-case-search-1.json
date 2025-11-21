@@ -3,7 +3,7 @@
 		"Body": {
 			"CaseSearchResponse": {
 				"CaseSearchResult": [
-					{
+					 {
 						"Address": {
 							"AddressLine1": "123 Mock Street",
 							"AddressLine2": null,
@@ -23,7 +23,7 @@
 						"ProcedureType": "Written representations",
 						"StartDate": "2017-10-17T00:00:00"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": "456 Mock Avenue",
 							"AddressLine2": null,
@@ -43,7 +43,7 @@
 						"ProcedureType": "Written representations",
 						"StartDate": "2015-07-15T00:00:00"
 					},
-					{
+					 {
 						"Address": {
 							"AddressLine1": "789 Mock Crescent",
 							"AddressLine2": null,
