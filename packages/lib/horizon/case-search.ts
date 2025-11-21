@@ -1,4 +1,5 @@
-import { cleanHorizonResponse, prefixAllKeys } from './util.ts';
+import type { StringValue } from './horizon.d.ts';
+import { cleanHorizonResponse, prefixAllKeys, XMLSNS_PROPS, SOAP_OP_PREFIX, XMLSNS } from './util.ts';
 
 /**
  * the JSON returned has duplicate HorizonSearchResult keys within CaseSearchResult,
@@ -30,11 +31,10 @@ export function cleanCaseSearchResponse(txt: string): string {
 export function caseSearchRequest(searchRequest: CaseSearchRequest): string {
 	const req = {
 		CaseSearch: {
-			__soap_op: 'http://tempuri.org/IHorizon/CaseSearch',
-			__xmlns: 'http://tempuri.org/',
+			__soap_op: SOAP_OP_PREFIX + 'CaseSearch',
+			__xmlns: XMLSNS,
 			criteria: {
-				'__xmlns:hzn': 'http://schemas.datacontract.org/2004/07/Horizon.Business',
-				'__xmlns:i': 'http://www.w3.org/2001/XMLSchema-instance',
+				...XMLSNS_PROPS,
 				...prefixAllKeys(searchRequest.criteria, 'hzn:')
 			},
 			sortByAttribute: searchRequest.sortByAttribute || 'None',
@@ -89,8 +89,4 @@ export interface HorizonSearchResult {
 		GridReferenceEasting: StringValue;
 		GridReferenceNorthing: StringValue;
 	};
-}
-
-export interface StringValue {
-	value?: string;
 }
