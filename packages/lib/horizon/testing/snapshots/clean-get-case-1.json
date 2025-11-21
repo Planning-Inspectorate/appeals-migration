@@ -1,0 +1,151 @@
+{
+	"Envelope": {
+		"Body": {
+			"GetCaseResponse": {
+				"GetCaseResult": {
+					"CaseId": "737723",
+					"CaseOfficer": {
+						"Email": "mock.email@example.com",
+						"Name": "Mock Officer"
+					},
+					"CaseReference": "MOCK-REF-123",
+					"CaseType": "Lawful Development Certificate Appeal",
+					"LPACode": "MOCK-LPA",
+					"LinkedCases": null,
+					"Metadata": {
+						"Attributes": {
+							"Case:Case Type": "Lawful Development Certificate Appeal",
+							"Case:Procedure": "Written representations",
+							"Case:Validity": "Valid",
+							"Case:Processing State": "Decision Issued",
+							"Case:Linked Status": "Not Linked",
+							"Case:Case Publish Flag": "Yes",
+							"Case:LPA Code": "X5210",
+							"Case:LPA Name": "Mock Organization",
+							"Case:Jurisdiction": "Transferred",
+							"Case:Decision Branch": "PINS",
+							"Case:Appointed By": "Secretary of State for Mock Affairs",
+							"Case:Development/Allegation Description": "Proposed basement underneath the existing dwelling house.",
+							"Case:Development Type": "Minor Dwellings",
+							"Case:Source Indicator": "Portal",
+							"Case:Casework Reason": "2. The LPA's failure to give notice of their decision within the appropriate period on an application for a certificate of lawful use or development",
+							"Case:Level": "D",
+							"Case:Specialism": "General Allocation",
+							"Case:Portal URL": "https://mock.portal.gov.uk/ViewCase.aspx?CaseId=MOCK-REF-123",
+							"Case:Appellant Form Type Submitted": "Lawful Development Certificate Appeal",
+							"Case:Procedure (Appellant)": "Written representations",
+							"Case:England/Wales Indicator": "England",
+							"Case:Decision": "Allowed",
+							"Case:Important Information": "e-mail sent to mock.name 31/07/2105 asking when the decision will be issued, as the agent been calling and sending e-mails every couple of days for decision.",
+							"Case:File Location": "file to 3/01 to PA ",
+							"Case Dates:Receipt Date": "2014-11-13T00:00:00+00:00",
+							"Case Dates:Start Date": "2014-11-17T00:00:00+00:00",
+							"Case Dates:Appeal Valid Date": "2014-11-17T00:00:00+00:00",
+							"Case Dates:Validity Status Date": "2014-11-17T00:00:00+00:00",
+							"Case Dates:Procedure Determined Date": "2014-11-17T00:00:00+00:00",
+							"Case Dates:Target Date": "2015-06-29T00:00:00+01:00",
+							"Case Dates:Case Decision Date": "2015-08-20T00:00:00+01:00",
+							"Case Dates:Case Closed Date": "2015-08-25T00:00:00+01:00",
+							"Case Document Dates:Questionnaire Due Date": "2014-12-01T00:00:00+00:00",
+							"Case Document Dates:Questionnaire Received": "2014-11-28T00:00:00+00:00",
+							"Case Document Dates:Statement Due Date": "2015-01-09T00:00:00+00:00",
+							"Case Document Dates:LPA Statement Submitted": "2014-12-29T00:00:00+00:00",
+							"Case Document Dates:LPA Statement Forwarded": "2015-01-07T00:00:00+00:00",
+							"Case Document Dates:Date Notification Letter Sent": "2014-11-28T00:00:00+00:00",
+							"Case Document Dates:Interested Party Reps Due Date": "2015-01-09T00:00:00+00:00",
+							"Case Document Dates:Final Comments Due Date": "2015-01-30T00:00:00+00:00",
+							"Case Involvement:Case Involvement": [
+								{
+									"Case Involvement:Case Involvement:ContactID": "MOCK-ID-001",
+									"Case Involvement:Case Involvement:Contact Details": "Mock Name",
+									"Case Involvement:Case Involvement:Type Of Involvement": "Appellant",
+									"Case Involvement:Case Involvement:Communication Preference": "e-mail",
+									"Case Involvement:Case Involvement:Involvement Start Date": "2014-11-13T00:00:00+00:00"
+								},
+								{
+									"Case Involvement:Case Involvement:ContactID": "MOCK-ID-002",
+									"Case Involvement:Case Involvement:Contact Details": "Mock Agent (Mock Organization)",
+									"Case Involvement:Case Involvement:Type Of Involvement": "Agent",
+									"Case Involvement:Case Involvement:Communication Preference": "e-mail",
+									"Case Involvement:Case Involvement:Involvement Start Date": "2014-11-13T00:00:00+00:00"
+								},
+								{
+									"Case Involvement:Case Involvement:ContactID": "MOCK-ID-003",
+									"Case Involvement:Case Involvement:Contact Details": "Mock Organization",
+									"Case Involvement:Case Involvement:Type Of Involvement": "LPA"
+								},
+								{
+									"Case Involvement:Case Involvement:ContactID": "MOCK-ID-004",
+									"Case Involvement:Case Involvement:Contact Details": "Mock LPA Contact (Mock Organization)",
+									"Case Involvement:Case Involvement:Type Of Involvement": "LPA Contact",
+									"Case Involvement:Case Involvement:Communication Preference": "e-mail",
+									"Case Involvement:Case Involvement:Involvement External Reference Number": "2014/4172/P",
+									"Case Involvement:Case Involvement:Involvement Start Date": "2014-11-13T00:00:00+00:00"
+								},
+								{
+									"Case Involvement:Case Involvement:ContactID": "MOCK-ID-005",
+									"Case Involvement:Case Involvement:Contact Details": "Mock Inspector",
+									"Case Involvement:Case Involvement:Type Of Involvement": "Inspector"
+								},
+								{
+									"Case Involvement:Case Involvement:ContactID": "MOCK-ID-006",
+									"Case Involvement:Case Involvement:Contact Details": "Mock Third Party",
+									"Case Involvement:Case Involvement:Type Of Involvement": "Third Party",
+									"Case Involvement:Case Involvement:Communication Preference": "e-mail"
+								},
+								{
+									"Case Involvement:Case Involvement:ContactID": "MOCK-ID-007",
+									"Case Involvement:Case Involvement:Contact Details": "Mock Third Party",
+									"Case Involvement:Case Involvement:Type Of Involvement": "Third Party",
+									"Case Involvement:Case Involvement:Communication Preference": "Letter"
+								}
+							],
+							"Case Site:Site Address Line 1": "123 Mock Street",
+							"Case Site:Site Address Town": "MOCKTOWN",
+							"Case Site:Site Address Postcode": "MOCK1 1AA",
+							"Case Site:Site Viewable From Road": "Yes",
+							"Case Site:Inspector Need To Enter Site": "No",
+							"Case Site:Number Of Residences": "0",
+							"Event:Event": {
+								"Event:Event:Event Name": "alloc 1",
+								"Event:Event:Type Of Event": "Site visit (Un-accompanied)",
+								"Event:Event:Chart Status": "Confirmed",
+								"Event:Event:Date Exported To ISS": "2014-11-17T00:00:00+00:00",
+								"Event:Event:Start Date Of The Event": "2015-06-17T00:00:00+01:00",
+								"Event:Event:Start Time Of The Event": "USV",
+								"Event:Event:Event Publish Flag": "Yes"
+							},
+							"Planning Application:Date Of Application": "2014-06-25T00:00:00+01:00",
+							"Planning Application:LPA Application Reference": "MOCK-APP-456",
+							"Planning Application:Development Description": "Proposed basement underneath the existing dwelling house.",
+							"Planning Application:Application Made Under Section": "192"
+						}
+					},
+					"ProcedureType": "Written representations",
+					"PublishedDocuments": [
+						{
+							"Content": null,
+							"DateCreated": "2015-08-20T14:39:02+01:00",
+							"DateModified": "2015-08-25T14:03:36+01:00",
+							"DatePublished": "2015-08-20T00:00:00+01:00",
+							"FileSize": "639598",
+							"Filename": "Appeal Decision.pdf",
+							"Metadata": {
+								"Attributes": {
+									"Document:Incoming/Outgoing/Internal": "Incoming",
+									"Document:Document Type": "Outcome / Decision",
+									"Document:Document Group Type": "Outcome Of Appeal",
+									"Document:Published Flag": "Yes",
+									"Document:Published Date": "2015-08-20T00:00:00+01:00",
+									"Document:Received/Sent Date": "2015-08-20T00:00:00+01:00"
+								}
+							},
+							"MimeType": "application/pdf",
+							"NodeId": "12175493"
+						}
+					]
+				}
+			}
+		}
+	}
+}

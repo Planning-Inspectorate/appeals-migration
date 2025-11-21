@@ -1,3 +1,10 @@
+export const XMLSNS = 'http://tempuri.org/';
+export const SOAP_OP_PREFIX = `${XMLSNS}IHorizon/`;
+export const XMLSNS_PROPS = Object.freeze({
+	'__xmlns:hzn': 'http://schemas.datacontract.org/2004/07/Horizon.Business',
+	'__xmlns:i': 'http://www.w3.org/2001/XMLSchema-instance'
+});
+
 /**
  * Create a new object with all keys prefixed
  * Only supports depth of one

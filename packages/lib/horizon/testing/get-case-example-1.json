@@ -1,0 +1,868 @@
+{
+	"Envelope": {
+		"Body": {
+			"GetCaseResponse": {
+				"GetCaseResult": {
+					"CaseId": {
+						"value": "737723"
+					},
+					"CaseOfficer": {
+						"Email": {
+							"value": "mock.email@example.com"
+						},
+						"Name": {
+							"value": "Mock Officer"
+						}
+					},
+					"CaseReference": {
+						"value": "MOCK-REF-123"
+					},
+					"CaseType": {
+						"value": "Lawful Development Certificate Appeal"
+					},
+					"LPACode": {
+						"value": "MOCK-LPA"
+					},
+					"LinkedCases": {},
+					"Metadata": {
+						"Attributes": {
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:Case Type"
+								},
+								"Value": {
+									"value": "Lawful Development Certificate Appeal"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:Procedure"
+								},
+								"Value": {
+									"value": "Written representations"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:Validity"
+								},
+								"Value": {
+									"value": "Valid"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:Processing State"
+								},
+								"Value": {
+									"value": "Decision Issued"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:Linked Status"
+								},
+								"Value": {
+									"value": "Not Linked"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:Case Publish Flag"
+								},
+								"Value": {
+									"value": "Yes"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:LPA Code"
+								},
+								"Value": {
+									"value": "X5210"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:LPA Name"
+								},
+								"Value": {
+									"value": "Mock Organization"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:Jurisdiction"
+								},
+								"Value": {
+									"value": "Transferred"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:Decision Branch"
+								},
+								"Value": {
+									"value": "PINS"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:Appointed By"
+								},
+								"Value": {
+									"value": "Secretary of State for Mock Affairs"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:Development/Allegation Description"
+								},
+								"Value": {
+									"value": "Proposed basement underneath the existing dwelling house."
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:Development Type"
+								},
+								"Value": {
+									"value": "Minor Dwellings"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:Source Indicator"
+								},
+								"Value": {
+									"value": "Portal"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:Casework Reason"
+								},
+								"Value": {
+									"value": "2. The LPA's failure to give notice of their decision within the appropriate period on an application for a certificate of lawful use or development"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:Level"
+								},
+								"Value": {
+									"value": "D"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:Specialism"
+								},
+								"Value": {
+									"value": "General Allocation"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:Portal URL"
+								},
+								"Value": {
+									"value": "https://mock.portal.gov.uk/ViewCase.aspx?CaseId=MOCK-REF-123"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:Appellant Form Type Submitted"
+								},
+								"Value": {
+									"value": "Lawful Development Certificate Appeal"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:Procedure (Appellant)"
+								},
+								"Value": {
+									"value": "Written representations"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:England/Wales Indicator"
+								},
+								"Value": {
+									"value": "England"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:Decision"
+								},
+								"Value": {
+									"value": "Allowed"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:Important Information"
+								},
+								"Value": {
+									"value": "e-mail sent to mock.name 31/07/2105 asking when the decision will be issued, as the agent been calling and sending e-mails every couple of days for decision."
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case:File Location"
+								},
+								"Value": {
+									"value": "file to 3/01 to PA "
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Dates:Receipt Date"
+								},
+								"Value": {
+									"value": "2014-11-13T00:00:00+00:00"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Dates:Start Date"
+								},
+								"Value": {
+									"value": "2014-11-17T00:00:00+00:00"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Dates:Appeal Valid Date"
+								},
+								"Value": {
+									"value": "2014-11-17T00:00:00+00:00"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Dates:Validity Status Date"
+								},
+								"Value": {
+									"value": "2014-11-17T00:00:00+00:00"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Dates:Procedure Determined Date"
+								},
+								"Value": {
+									"value": "2014-11-17T00:00:00+00:00"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Dates:Target Date"
+								},
+								"Value": {
+									"value": "2015-06-29T00:00:00+01:00"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Dates:Case Decision Date"
+								},
+								"Value": {
+									"value": "2015-08-20T00:00:00+01:00"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Dates:Case Closed Date"
+								},
+								"Value": {
+									"value": "2015-08-25T00:00:00+01:00"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Document Dates:Questionnaire Due Date"
+								},
+								"Value": {
+									"value": "2014-12-01T00:00:00+00:00"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Document Dates:Questionnaire Received"
+								},
+								"Value": {
+									"value": "2014-11-28T00:00:00+00:00"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Document Dates:Statement Due Date"
+								},
+								"Value": {
+									"value": "2015-01-09T00:00:00+00:00"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Document Dates:LPA Statement Submitted"
+								},
+								"Value": {
+									"value": "2014-12-29T00:00:00+00:00"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Document Dates:LPA Statement Forwarded"
+								},
+								"Value": {
+									"value": "2015-01-07T00:00:00+00:00"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Document Dates:Date Notification Letter Sent"
+								},
+								"Value": {
+									"value": "2014-11-28T00:00:00+00:00"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Document Dates:Interested Party Reps Due Date"
+								},
+								"Value": {
+									"value": "2015-01-09T00:00:00+00:00"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Document Dates:Final Comments Due Date"
+								},
+								"Value": {
+									"value": "2015-01-30T00:00:00+00:00"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Involvement:Case Involvement"
+								},
+								"Values": {
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:ContactID"
+										},
+										"Value": {
+											"value": "MOCK-ID-001"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Contact Details"
+										},
+										"Value": {
+											"value": "Mock Name"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Type Of Involvement"
+										},
+										"Value": {
+											"value": "Appellant"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Communication Preference"
+										},
+										"Value": {
+											"value": "e-mail"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Involvement Start Date"
+										},
+										"Value": {
+											"value": "2014-11-13T00:00:00+00:00"
+										}
+									}
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Involvement:Case Involvement"
+								},
+								"Values": {
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:ContactID"
+										},
+										"Value": {
+											"value": "MOCK-ID-002"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Contact Details"
+										},
+										"Value": {
+											"value": "Mock Agent (Mock Organization)"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Type Of Involvement"
+										},
+										"Value": {
+											"value": "Agent"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Communication Preference"
+										},
+										"Value": {
+											"value": "e-mail"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Involvement Start Date"
+										},
+										"Value": {
+											"value": "2014-11-13T00:00:00+00:00"
+										}
+									}
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Involvement:Case Involvement"
+								},
+								"Values": {
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:ContactID"
+										},
+										"Value": {
+											"value": "MOCK-ID-003"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Contact Details"
+										},
+										"Value": {
+											"value": "Mock Organization"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Type Of Involvement"
+										},
+										"Value": {
+											"value": "LPA"
+										}
+									}
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Involvement:Case Involvement"
+								},
+								"Values": {
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:ContactID"
+										},
+										"Value": {
+											"value": "MOCK-ID-004"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Contact Details"
+										},
+										"Value": {
+											"value": "Mock LPA Contact (Mock Organization)"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Type Of Involvement"
+										},
+										"Value": {
+											"value": "LPA Contact"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Communication Preference"
+										},
+										"Value": {
+											"value": "e-mail"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Involvement External Reference Number"
+										},
+										"Value": {
+											"value": "2014/4172/P"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Involvement Start Date"
+										},
+										"Value": {
+											"value": "2014-11-13T00:00:00+00:00"
+										}
+									}
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Involvement:Case Involvement"
+								},
+								"Values": {
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:ContactID"
+										},
+										"Value": {
+											"value": "MOCK-ID-005"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Contact Details"
+										},
+										"Value": {
+											"value": "Mock Inspector"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Type Of Involvement"
+										},
+										"Value": {
+											"value": "Inspector"
+										}
+									}
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Involvement:Case Involvement"
+								},
+								"Values": {
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:ContactID"
+										},
+										"Value": {
+											"value": "MOCK-ID-006"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Contact Details"
+										},
+										"Value": {
+											"value": "Mock Third Party"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Type Of Involvement"
+										},
+										"Value": {
+											"value": "Third Party"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Communication Preference"
+										},
+										"Value": {
+											"value": "e-mail"
+										}
+									}
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Involvement:Case Involvement"
+								},
+								"Values": {
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:ContactID"
+										},
+										"Value": {
+											"value": "MOCK-ID-007"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Contact Details"
+										},
+										"Value": {
+											"value": "Mock Third Party"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Type Of Involvement"
+										},
+										"Value": {
+											"value": "Third Party"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Case Involvement:Case Involvement:Communication Preference"
+										},
+										"Value": {
+											"value": "Letter"
+										}
+									}
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Site:Site Address Line 1"
+								},
+								"Value": {
+									"value": "123 Mock Street"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Site:Site Address Town"
+								},
+								"Value": {
+									"value": "MOCKTOWN"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Site:Site Address Postcode"
+								},
+								"Value": {
+									"value": "MOCK1 1AA"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Site:Site Viewable From Road"
+								},
+								"Value": {
+									"value": "Yes"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Site:Inspector Need To Enter Site"
+								},
+								"Value": {
+									"value": "No"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Case Site:Number Of Residences"
+								},
+								"Value": {
+									"value": "0"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Event:Event"
+								},
+								"Values": {
+									"AttributeValue": {
+										"Name": {
+											"value": "Event:Event:Event Name"
+										},
+										"Value": {
+											"value": "alloc 1"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Event:Event:Type Of Event"
+										},
+										"Value": {
+											"value": "Site visit (Un-accompanied)"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Event:Event:Chart Status"
+										},
+										"Value": {
+											"value": "Confirmed"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Event:Event:Date Exported To ISS"
+										},
+										"Value": {
+											"value": "2014-11-17T00:00:00+00:00"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Event:Event:Start Date Of The Event"
+										},
+										"Value": {
+											"value": "2015-06-17T00:00:00+01:00"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Event:Event:Start Time Of The Event"
+										},
+										"Value": {
+											"value": "USV"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Event:Event:Event Publish Flag"
+										},
+										"Value": {
+											"value": "Yes"
+										}
+									}
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Planning Application:Date Of Application"
+								},
+								"Value": {
+									"value": "2014-06-25T00:00:00+01:00"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Planning Application:LPA Application Reference"
+								},
+								"Value": {
+									"value": "MOCK-APP-456"
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Planning Application:Development Description"
+								},
+								"Value": {
+									"value": "Proposed basement underneath the existing dwelling house."
+								}
+							},
+							"AttributeValue": {
+								"Name": {
+									"value": "Planning Application:Application Made Under Section"
+								},
+								"Value": {
+									"value": "192"
+								}
+							}
+						}
+					},
+					"ProcedureType": {
+						"value": "Written representations"
+					},
+					"PublishedDocuments": {
+						"HorizonSearchDocument": {
+							"Content": {},
+							"DateCreated": {
+								"value": "2015-08-20T14:39:02+01:00"
+							},
+							"DateModified": {
+								"value": "2015-08-25T14:03:36+01:00"
+							},
+							"DatePublished": {
+								"value": "2015-08-20T00:00:00+01:00"
+							},
+							"FileSize": {
+								"value": "639598"
+							},
+							"Filename": {
+								"value": "Appeal Decision.pdf"
+							},
+							"Metadata": {
+								"Attributes": {
+									"AttributeValue": {
+										"Name": {
+											"value": "Document:Incoming/Outgoing/Internal"
+										},
+										"Value": {
+											"value": "Incoming"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Document:Document Type"
+										},
+										"Value": {
+											"value": "Outcome / Decision"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Document:Document Group Type"
+										},
+										"Value": {
+											"value": "Outcome Of Appeal"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Document:Published Flag"
+										},
+										"Value": {
+											"value": "Yes"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Document:Published Date"
+										},
+										"Value": {
+											"value": "2015-08-20T00:00:00+01:00"
+										}
+									},
+									"AttributeValue": {
+										"Name": {
+											"value": "Document:Received/Sent Date"
+										},
+										"Value": {
+											"value": "2015-08-20T00:00:00+01:00"
+										}
+									}
+								}
+							},
+							"MimeType": {
+								"value": "application/pdf"
+							},
+							"NodeId": {
+								"value": "12175493"
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
