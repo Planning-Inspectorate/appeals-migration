@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test';
-import { caseSearchRequest, cleanCaseSearchResponse } from './case-search.ts';
+import { caseSearchRequest, cleanCaseSearchResponse, cleanCaseSearchSummaryResponse } from './case-search.ts';
 import assert from 'node:assert';
 import { readTestFile, snapshotOptions, snapshotPath } from './util.test.ts';
 
@@ -60,6 +60,12 @@ describe('case-search', () => {
 			assert.ok('hzn:Status' in result.CaseSearch.criteria);
 			assert.ok(!('CaseReference' in result.CaseSearch.criteria));
 			assert.ok(!('Status' in result.CaseSearch.criteria));
+		});
+	});
+	describe('cleanCaseSearchSummaryResponse', () => {
+		it('should convert CaseSearchSummaryDetailsResult object to array and remove HorizonSearchResult2 keys', async (ctx) => {
+			const got = cleanCaseSearchSummaryResponse(await readTestFile('./testing/case-search-summary-example-1.json'));
+			ctx.assert.fileSnapshot(got, snapshotPath('clean-case-search-summary-1.json'), snapshotOptions);
 		});
 	});
 });

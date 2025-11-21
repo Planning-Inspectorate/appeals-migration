@@ -1,12 +1,12 @@
-import { CaseSearchRequest, CaseSearchResponse } from './case-search.ts';
+import { CaseSearchRequest, CaseSearchResponse, CaseSearchSummaryResponse } from './case-search.ts';
 import { GetCaseResponse } from './get-case.ts';
 
 export interface IHorizonApi {
 	searchCases(req: CaseSearchRequest): Promise<CaseSearchResponse>;
+	caseSearchSummaryDetails(caseTypeName: string, searchCriteria: string): Promise<CaseSearchSummaryResponse>;
 	addDocuments(req: AddDocumentsRequest): Promise<void>;
 	getCase(caseReference: string): Promise<GetCaseResponse>;
 	getDocument(req: GetDocumentRequest): Promise<void>;
-	caseSearchSummaryDetails(): Promise<void>;
 	getContact(req: GetContactRequest): Promise<void>;
 }
 

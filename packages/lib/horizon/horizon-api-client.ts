@@ -1,6 +1,14 @@
 import type { IHorizonApi } from './horizon.d.ts';
 import { fetchWithTimeout } from '../util/fetch.ts';
-import { caseSearchRequest, CaseSearchRequest, CaseSearchResponse, cleanCaseSearchResponse } from './case-search.ts';
+import {
+	caseSearchRequest,
+	CaseSearchRequest,
+	CaseSearchResponse,
+	caseSearchSummaryRequest,
+	CaseSearchSummaryResponse,
+	cleanCaseSearchResponse,
+	cleanCaseSearchSummaryResponse
+} from './case-search.ts';
 import { getCaseRequest, cleanGetCaseResponse, GetCaseResponse } from './get-case.ts';
 
 /**
@@ -45,9 +53,18 @@ export class HorizonApiClient implements IHorizonApi {
 
 	/**
 	 * Search any case type using Horizon CaseSearchSummaryDetails API
+	 * @param caseTypeName exactly matches this case type
+	 * @param searchCriteria the case reference or first address line includes this value
 	 */
-	caseSearchSummaryDetails(): Promise<void> {
-		return Promise.resolve(undefined);
+	async caseSearchSummaryDetails(caseTypeName: string, searchCriteria: string): Promise<CaseSearchSummaryResponse> {
+		const res = await this.#post(caseSearchSummaryRequest(caseTypeName, searchCriteria));
+		const resTxt = cleanCaseSearchSummaryResponse(res);
+		const resBody = JSON.parse(resTxt);
+		const result = resBody?.Envelope?.Body?.CaseSearchSummaryDetailsResponse?.CaseSearchSummaryDetailsResult;
+		if (!result) {
+			throw new Error('failed to find CaseSearchSummaryDetailsResult in JSON response');
+		}
+		return result;
 	}
 
 	addDocuments(): Promise<void> {
