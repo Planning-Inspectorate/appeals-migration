@@ -7,6 +7,7 @@ import {
 	caseSearchSummaryRequest,
 	CaseSearchSummaryResponse,
 	cleanCaseSearchResponse,
+	deleteCaseSearchSummaryUnusedKeys,
 	cleanCaseSearchSummaryResponse
 } from './case-search.ts';
 import { getCaseRequest, cleanGetCaseResponse, GetCaseResponse } from './get-case.ts';
@@ -64,6 +65,7 @@ export class HorizonApiClient implements IHorizonApi {
 		if (!result) {
 			throw new Error('failed to find CaseSearchSummaryDetailsResult in JSON response');
 		}
+		deleteCaseSearchSummaryUnusedKeys(result);
 		return result;
 	}
 

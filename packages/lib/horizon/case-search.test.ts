@@ -1,5 +1,10 @@
 import { describe, it } from 'node:test';
-import { caseSearchRequest, cleanCaseSearchResponse, cleanCaseSearchSummaryResponse } from './case-search.ts';
+import {
+	caseSearchRequest,
+	cleanCaseSearchResponse,
+	cleanCaseSearchSummaryResponse,
+	deleteCaseSearchSummaryUnusedKeys
+} from './case-search.ts';
 import assert from 'node:assert';
 import { readTestFile, snapshotOptions, snapshotPath } from './util.test.ts';
 
@@ -66,6 +71,18 @@ describe('case-search', () => {
 		it('should convert CaseSearchSummaryDetailsResult object to array and remove HorizonSearchResult2 keys', async (ctx) => {
 			const got = cleanCaseSearchSummaryResponse(await readTestFile('./testing/case-search-summary-example-1.json'));
 			ctx.assert.fileSnapshot(got, snapshotPath('clean-case-search-summary-1.json'), snapshotOptions);
+		});
+	});
+	describe('deleteCaseSearchSummaryUnusedKeys', () => {
+		it('should remove unused keys', async (ctx) => {
+			const res = cleanCaseSearchSummaryResponse(await readTestFile('./testing/case-search-summary-example-1.json'));
+			const got = JSON.parse(res)?.Envelope?.Body?.CaseSearchSummaryDetailsResponse?.CaseSearchSummaryDetailsResult;
+			deleteCaseSearchSummaryUnusedKeys(got);
+			ctx.assert.fileSnapshot(
+				JSON.stringify(got, null, 2),
+				snapshotPath('clean-case-search-summary-keys-1.json'),
+				snapshotOptions
+			);
 		});
 	});
 });

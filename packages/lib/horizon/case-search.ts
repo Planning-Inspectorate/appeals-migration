@@ -51,6 +51,27 @@ export function cleanCaseSearchSummaryResponse(txt: string): string {
 }
 
 /**
+ * The API response includes a lot of fields which are never populated - remove them
+ */
+export function deleteCaseSearchSummaryUnusedKeys(response: CaseSearchSummaryResponse) {
+	const keys = ['Address', 'CaseFullName', 'CaseReference', 'CaseType', 'NodeId'];
+	for (const res of response) {
+		for (const key of Object.keys(res)) {
+			if (!keys.includes(key)) {
+				// @ts-expect-error - this isn't yet strictly the HorizonSearchResult2 type
+				delete res[key];
+			}
+			if (key === 'Address') {
+				res[key] = {
+					AddressLine1: res[key].AddressLine1,
+					PostCode: res[key].PostCode
+				};
+			}
+		}
+	}
+}
+
+/**
  * Create a CaseSearch request payload
  * @param searchRequest
  */
@@ -135,6 +156,13 @@ export interface HorizonSearchResult {
 }
 
 export type CaseSearchSummaryResponse = HorizonSearchResult2[];
-export interface HorizonSearchResult2 extends HorizonSearchResult {
+export interface HorizonSearchResult2 {
+	CaseReference: StringValue;
+	CaseType: StringValue;
 	CaseFullName: StringValue;
+	NodeId: StringValue;
+	Address: {
+		AddressLine1: StringValue;
+		PostCode: StringValue;
+	};
 }
