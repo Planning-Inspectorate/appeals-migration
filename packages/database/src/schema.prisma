@@ -16,10 +16,54 @@ datasource db {
 // use '//' comments for notes relevant to the schema
 // use '///' comments for notes that should be included in the types definition
 // see https://www.prisma.io/docs/concepts/components/prisma-schema#comments
-//
-// we use GUIDs for IDs (see https://learn.microsoft.com/en-us/sql/t-sql/data-types/uniqueidentifier-transact-sql?view=sql-server-ver16)
-// this is because these IDs may be used in URLs and it makes them harder to guess
-// while we don't rely on that for security, it adds an extra layer
-// not everything needs this, but easier to make them all consistent and the increase in size (vs int) is negligible
 
-// TODO: add models here!
+/// A table to hold migration parameter configuration
+/// each entry would equate to one case search, and will map to CaseSearchCriteria in case-search.ts
+model ToMigrateParameter {
+  id Int @id
+
+  caseTypeName     String?
+  dateReceivedFrom DateTime?
+  dateReceivedTo   DateTime?
+  decisionDateFrom DateTime?
+  decisionDateTo   DateTime?
+  lpa              String?
+  procedureType    String?
+  startDateFrom    DateTime?
+  startDateTo      DateTime?
+  status           String?
+}
+
+model CaseToMigrate {
+  caseReference String @id
+
+  // migration steps tracked per case
+  // InProgress fields used to lock the case for that processing step
+
+  dataStepId Int           @unique
+  DataStep   MigrationStep @relation("DataStep", fields: [dataStepId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+  documentsStepId Int           @unique
+  DocumentsStep   MigrationStep @relation("DocumentsStep", fields: [documentsStepId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+  validationStepId Int           @unique
+  ValidationStep   MigrationStep @relation("ValidationStep", fields: [validationStepId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+  // validation outcome
+  dataValidated      Boolean?
+  documentsValidated Boolean?
+}
+
+model MigrationStep {
+  id Int @id
+
+  /// whether this step is locked for processing
+  inProgress Boolean @default(false)
+  complete   Boolean @default(false)
+
+  // todo: attempts and/or failures?
+
+  DataStepCase       CaseToMigrate? @relation("DataStep")
+  DocumentsStepCase  CaseToMigrate? @relation("DocumentsStep")
+  ValidationStepCase CaseToMigrate? @relation("ValidationStep")
+}
