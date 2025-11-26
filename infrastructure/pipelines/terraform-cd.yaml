@@ -15,7 +15,7 @@ resources:
       type: github
       endpoint: Planning-Inspectorate
       name: Planning-Inspectorate/common-pipeline-templates
-      ref: refs/tags/release/3.23.0
+      ref: refs/tags/release/3.24.2
 
 extends:
   template: pipelines/terraform_plan_apply.yml@templates
@@ -31,9 +31,9 @@ extends:
       - name: Prod
         dependsOn:
           - Training
-    serviceConnectionPrefix: Azure DevOps Pipelines - <appeals-migration> - Infrastructure
-    storageAccountName: pinssttfstateuks<appeals-migration>
+    serviceConnectionPrefix: Azure DevOps Pipelines - Appeals Migration - Infrastructure
+    storageAccountName: pinssttfstateappealsmigr
     resourceGroupName: pins-rg-shared-terraform-uks
-    containerPrefix: terraform-state-<appeals-migration>-
+    containerPrefix: terraform-state-appeals-migration-
     workingDirectory: $(Build.Repository.LocalPath)/infrastructure
     environmentVarFilePath: $(Build.Repository.LocalPath)/infrastructure/environments
