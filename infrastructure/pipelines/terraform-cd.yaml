@@ -25,6 +25,8 @@ extends:
       - name: Prod
         dependsOn:
           - Test
+    automaticDeploymentEnvironments:
+      - name: Test
     serviceConnectionPrefix: Azure DevOps Pipelines - Appeals Migration - Infrastructure
     storageAccountName: pinssttfstateappealsmigr
     resourceGroupName: pins-rg-shared-terraform-uks
