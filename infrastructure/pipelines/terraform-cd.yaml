@@ -21,16 +21,10 @@ extends:
   template: pipelines/terraform_plan_apply.yml@templates
   parameters:
     environments:
-      - name: Dev
       - name: Test
-        dependsOn:
-          - Dev
-      - name: Training
-        dependsOn:
-          - Test
       - name: Prod
         dependsOn:
-          - Training
+          - Test
     serviceConnectionPrefix: Azure DevOps Pipelines - Appeals Migration - Infrastructure
     storageAccountName: pinssttfstateappealsmigr
     resourceGroupName: pins-rg-shared-terraform-uks
