@@ -39,7 +39,6 @@ variable "monitoring_config" {
   })
 }
 
-
 variable "sql_config" {
   description = "Config for SQL Server and DB"
   type = object({
@@ -57,7 +56,6 @@ variable "sql_config" {
       long_term_yearly       = string
       long_term_week_of_year = number
     })
-    public_network_access_enabled = bool
   })
 }
 
