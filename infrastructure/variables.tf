@@ -15,3 +15,12 @@ variable "tooling_config" {
     subscription_id         = string
   })
 }
+
+variable "vnet_config" {
+  description = "VNet configuration"
+  type = object({
+    address_space             = string
+    apps_subnet_address_space = string
+    main_subnet_address_space = string
+  })
+}

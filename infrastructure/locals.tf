@@ -3,7 +3,8 @@ locals {
   service_name     = "appeals-migration"
   primary_location = "uk-south"
 
-  resource_suffix = "${local.service_name}-${var.environment}"
+  resource_suffix         = "${local.service_name}-${var.environment}"
+  shorter_resource_suffix = "appeals-mgr-${var.environment}"
 
   tags = {
     CreatedBy   = "terraform"
