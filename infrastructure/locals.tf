@@ -12,4 +12,6 @@ locals {
     ServiceName = local.service_name
     location    = local.primary_location
   }
+
+  tech_emails = [for rec in azurerm_monitor_action_group.appeals_migration_tech.email_receiver : rec.email_address]
 }
