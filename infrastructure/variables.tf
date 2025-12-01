@@ -9,6 +9,7 @@ variable "monitoring_config" {
   description = "Config for monitoring"
   type = object({
     alerts_enabled = bool
+    log_daily_cap  = number
   })
 }
 
