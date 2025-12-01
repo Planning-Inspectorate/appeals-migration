@@ -1,5 +1,31 @@
 # variables should be sorted A-Z
 
+
+variable "apps_config" {
+  description = "Config for the apps"
+  type = object({
+    app_service_plan = object({
+      sku                      = string
+      per_site_scaling_enabled = bool
+      worker_count             = number
+      zone_balancing_enabled   = bool
+    })
+    functions_node_version = number
+  })
+}
+
+variable "common_config" {
+  description = "Config for the common resources, such as action groups"
+  type = object({
+    resource_group_name = string
+    action_group_names = object({
+      iap      = string
+      its      = string
+      info_sec = string
+    })
+  })
+}
+
 variable "environment" {
   description = "The name of the environment in which resources will be deployed"
   type        = string
