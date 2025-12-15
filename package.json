@@ -42,8 +42,8 @@
     "@commitlint/cli": "^20.2.0",
     "@commitlint/config-conventional": "^20.2.0",
     "@microsoft/microsoft-graph-types": "^2.43.1",
-    "@types/node": "^24.10.1",
-    "eslint": "^9.39.1",
+    "@types/node": "^25.0.2",
+    "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
@@ -51,7 +51,7 @@
     "prettier-plugin-prisma": "^5.0.0",
     "prisma": "^7.1.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.49.0"
+    "typescript-eslint": "^8.50.0"
   },
   "lint-staged": {
     "*.{js,ts}": [
