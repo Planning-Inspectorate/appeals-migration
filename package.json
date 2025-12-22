@@ -30,8 +30,8 @@
   "dependencies": {
     "@azure/functions": "^4.10.0",
     "@azure/identity": "^4.13.0",
-    "@prisma/adapter-mssql": "^7.1.0",
-    "@prisma/client": "^7.1.0",
+    "@prisma/adapter-mssql": "^7.2.0",
+    "@prisma/client": "^7.2.0",
     "body-parser": "^2.2.1",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
@@ -42,16 +42,16 @@
     "@commitlint/cli": "^20.2.0",
     "@commitlint/config-conventional": "^20.2.0",
     "@microsoft/microsoft-graph-types": "^2.43.1",
-    "@types/node": "^25.0.2",
+    "@types/node": "^25.0.3",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "prettier": "^3.7.4",
     "prettier-plugin-prisma": "^5.0.0",
-    "prisma": "^7.1.0",
+    "prisma": "^7.2.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.50.0"
+    "typescript-eslint": "^8.50.1"
   },
   "lint-staged": {
     "*.{js,ts}": [
