@@ -10,8 +10,24 @@ services:
       - 'ACCEPT_EULA=1'
       - 'MSSQL_SA_PASSWORD=DockerDatabaseP@22word!'
     ports:
-      - 1463:1433
+      - '1463:1433'
     hostname: mssql
     volumes:
       - ./packages/database/src/configuration/mssql.conf:/var/opt/mssql/mssql.conf
       - ./tmp/mssql-data:/var/opt/mssql/data
+  manage-appeals-mssql:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    container_name: appeals-migration-manage-appeals-mssql
+    platform: linux/amd64 # force platform, so ARM machines to use emulation
+    cap_add: ['SYS_PTRACE']
+    user: root
+    init: true
+    environment:
+      - 'ACCEPT_EULA=1'
+      - 'MSSQL_SA_PASSWORD=ManageAppealsP@22word!'
+    ports:
+      - '1473:1433'
+    hostname: mssql
+    volumes:
+      - ./packages/database-sink/src/configuration/mssql.conf:/var/opt/mssql/mssql.conf
+      - ./tmp/manage-appeals-mssql-data:/var/opt/mssql/data
