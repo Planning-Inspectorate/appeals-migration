@@ -1,6 +1,7 @@
 import { newDatabaseClient } from '../index.ts';
 import { seedStaticData } from './data-static.ts';
 import { seedDev } from './data-dev.ts';
+import { seedTest } from './data-test.ts';
 import { loadConfig } from '../configuration/config.ts';
 
 async function run() {
@@ -11,6 +12,7 @@ async function run() {
 	try {
 		await seedStaticData(dbClient);
 		await seedDev(dbClient);
+		await seedTest(dbClient);
 	} catch (error) {
 		console.error(error);
 		throw error;
