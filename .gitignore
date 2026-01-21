@@ -97,6 +97,11 @@ workspace.json
 
 # generated Prisma client
 packages/database/src/client
+packages/database*/src/client
+# this is fetched from manage appeals repo directly
+packages/database-sink/src/schema.prisma
+# only for local dev
+packages/database-sink/src/migrations
 
 # Azure Function
 local.settings.json
