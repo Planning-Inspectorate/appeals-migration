@@ -13,11 +13,14 @@
   "dependencies": {
     "@azure/functions": "*",
     "@pins/appeals-migration-database": "^0.0.0",
+    "@pins/manage-appeals-database": "^0.0.0",
     "@pins/appeals-migration-lib": "^0.0.0"
   },
   "imports": {
     "#pins/appeals-migration-lib/*": "./src/packages/appeals-migration-lib/*",
     "#pins/appeals-migration-database": "./src/packages/appeals-migration-database/src/index.ts",
-    "#pins/appeals-migration-database/*": "./src/packages/appeals-migration-database/*"
-  }
+    "#pins/appeals-migration-database/*": "./src/packages/appeals-migration-database/*",
+    "#pins/manage-appeals-database": "./src/packages/manage-appeals-database/src/index.ts",
+    "#pins/manage-appeals-database/*": "./src/packages/manage-appeals-database/*"
+		}
 }
