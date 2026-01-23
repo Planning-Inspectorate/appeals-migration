@@ -1,0 +1,418 @@
+generator client {
+  provider = "prisma-client"
+  output   = "./client"
+
+  engineType = "client"
+  runtime    = "nodejs"
+}
+
+datasource db {
+  provider = "sqlserver"
+}
+
+model AppealDocument {
+  documentId           String  @id
+  caseId               Int?
+  caseReference        String? @db.NVarChar(MAX)
+  version              Int?
+  filename             String? @db.NVarChar(MAX)
+  originalFilename     String? @db.NVarChar(MAX)
+  size                 Int?
+  mime                 String? @db.NVarChar(MAX)
+  documentURI          String? @db.NVarChar(MAX)
+  publishedDocumentURI String? @db.NVarChar(MAX)
+  virusCheckStatus     String? @db.NVarChar(MAX)
+  fileMD5              String? @db.NVarChar(MAX)
+  dateCreated          String? @db.NVarChar(MAX)
+  dateReceived         String? @db.NVarChar(MAX)
+  datePublished        String? @db.NVarChar(MAX)
+  lastModified         String? @db.NVarChar(MAX)
+  caseType             String? @db.NVarChar(MAX)
+  redactedStatus       String? @db.NVarChar(MAX)
+  documentType         String? @db.NVarChar(MAX)
+  sourceSystem         String? @db.NVarChar(MAX)
+  origin               String? @db.NVarChar(MAX)
+  owner                String? @db.NVarChar(MAX)
+  author               String? @db.NVarChar(MAX)
+  description          String? @db.NVarChar(MAX)
+  caseStage            String? @db.NVarChar(MAX)
+  horizonFolderId      String? @db.NVarChar(MAX)
+
+  @@map("appeal_document")
+}
+
+model AppealEvent {
+  eventId                 String   @id
+  caseReference           String?  @db.NVarChar(MAX)
+  eventType               String?  @db.NVarChar(MAX)
+  eventName               String?  @db.NVarChar(MAX)
+  eventStatus             String?  @db.NVarChar(MAX)
+  isUrgent                Boolean?
+  eventPublished          Boolean?
+  eventStartDateTime      String?  @db.NVarChar(MAX)
+  eventEndDateTime        String?  @db.NVarChar(MAX)
+  notificationOfSiteVisit String?  @db.NVarChar(MAX)
+  addressLine1            String?  @db.NVarChar(MAX)
+  addressLine2            String?  @db.NVarChar(MAX)
+  addressTown             String?  @db.NVarChar(MAX)
+  addressCounty           String?  @db.NVarChar(MAX)
+  addressPostcode         String?  @db.NVarChar(MAX)
+
+  @@map("appeal_event")
+}
+
+model AppealEventEstimate {
+  id              Int      @id
+  caseReference   String?  @db.NVarChar(MAX)
+  preparationTime Decimal?
+  sittingTime     Decimal?
+  reportingTime   Decimal?
+
+  @@map("appeal_event_estimate")
+}
+
+model AppealFolder {
+  id                 Int     @id
+  caseReference      String? @db.NVarChar(MAX)
+  displayNameEnglish String? @db.NVarChar(MAX)
+  displayNameWelsh   String? @db.NVarChar(MAX)
+  parentFolderId     Int?
+  caseStage          String? @db.NVarChar(MAX)
+
+  @@map("appeal_folder")
+}
+
+model AppealHas {
+  caseId                                     Int      @id
+  caseReference                              String?  @db.NVarChar(MAX)
+  submissionId                               String?  @db.NVarChar(MAX)
+  caseStatus                                 String?  @db.NVarChar(MAX)
+  caseType                                   String?  @db.NVarChar(MAX)
+  caseProcedure                              String?  @db.NVarChar(MAX)
+  lpaCode                                    String?  @db.NVarChar(MAX)
+  caseOfficerId                              String?  @db.NVarChar(MAX)
+  inspectorId                                String?  @db.NVarChar(MAX)
+  allocationLevel                            String?  @db.NVarChar(MAX)
+  allocationBand                             Decimal?
+  caseSpecialisms                            String?  @db.NVarChar(MAX)
+  caseSubmittedDate                          String?  @db.NVarChar(MAX)
+  caseCreatedDate                            String?  @db.NVarChar(MAX)
+  caseUpdatedDate                            String?  @db.NVarChar(MAX)
+  caseValidDate                              String?  @db.NVarChar(MAX)
+  caseValidationDate                         String?  @db.NVarChar(MAX)
+  caseValidationOutcome                      String?  @db.NVarChar(MAX)
+  caseValidationInvalidDetails               String?  @db.NVarChar(MAX)
+  caseValidationIncompleteDetails            String?  @db.NVarChar(MAX)
+  caseExtensionDate                          String?  @db.NVarChar(MAX)
+  caseStartedDate                            String?  @db.NVarChar(MAX)
+  casePublishedDate                          String?  @db.NVarChar(MAX)
+  linkedCaseStatus                           String?  @db.NVarChar(MAX)
+  leadCaseReference                          String?  @db.NVarChar(MAX)
+  lpaQuestionnaireDueDate                    String?  @db.NVarChar(MAX)
+  lpaQuestionnaireSubmittedDate              String?  @db.NVarChar(MAX)
+  lpaQuestionnaireCreatedDate                String?  @db.NVarChar(MAX)
+  lpaQuestionnairePublishedDate              String?  @db.NVarChar(MAX)
+  lpaQuestionnaireValidationOutcome          String?  @db.NVarChar(MAX)
+  lpaQuestionnaireValidationOutcomeDate      String?  @db.NVarChar(MAX)
+  lpaQuestionnaireValidationDetails          String?  @db.NVarChar(MAX)
+  lpaStatement                               String?  @db.NVarChar(MAX)
+  caseWithdrawnDate                          String?  @db.NVarChar(MAX)
+  caseTransferredDate                        String?  @db.NVarChar(MAX)
+  transferredCaseClosedDate                  String?  @db.NVarChar(MAX)
+  caseDecisionOutcomeDate                    String?  @db.NVarChar(MAX)
+  caseDecisionPublishedDate                  String?  @db.NVarChar(MAX)
+  caseDecisionOutcome                        String?  @db.NVarChar(MAX)
+  caseCompletedDate                          String?  @db.NVarChar(MAX)
+  enforcementNotice                          Boolean?
+  applicationReference                       String?  @db.NVarChar(MAX)
+  applicationDate                            String?  @db.NVarChar(MAX)
+  applicationDecision                        String?  @db.NVarChar(MAX)
+  applicationDecisionDate                    String?  @db.NVarChar(MAX)
+  caseSubmissionDueDate                      String?  @db.NVarChar(MAX)
+  siteAddressLine1                           String?  @db.NVarChar(MAX)
+  siteAddressLine2                           String?  @db.NVarChar(MAX)
+  siteAddressTown                            String?  @db.NVarChar(MAX)
+  siteAddressCounty                          String?  @db.NVarChar(MAX)
+  siteAddressPostcode                        String?  @db.NVarChar(MAX)
+  siteAccessDetails                          String?  @db.NVarChar(MAX)
+  siteSafetyDetails                          String?  @db.NVarChar(MAX)
+  siteAreaSquareMetres                       Decimal?
+  floorSpaceSquareMetres                     Decimal?
+  isCorrectAppealType                        Boolean?
+  isGreenBelt                                Boolean?
+  inConservationArea                         Boolean?
+  ownsAllLand                                Boolean?
+  ownsSomeLand                               Boolean?
+  knowsOtherOwners                           String?  @db.NVarChar(MAX)
+  knowsAllOwners                             String?  @db.NVarChar(MAX)
+  advertisedAppeal                           Boolean?
+  notificationMethod                         String?  @db.NVarChar(MAX)
+  ownersInformed                             Boolean?
+  originalDevelopmentDescription             String?  @db.NVarChar(MAX)
+  changedDevelopmentDescription              Boolean?
+  newConditionDetails                        String?  @db.NVarChar(MAX)
+  nearbyCaseReferences                       String?  @db.NVarChar(MAX)
+  neighbouringSiteAddresses                  String?  @db.NVarChar(MAX)
+  reasonForNeighbourVisits                   String?  @db.NVarChar(MAX)
+  affectedListedBuildingNumbers              String?  @db.NVarChar(MAX)
+  appellantCostsAppliedFor                   Boolean?
+  lpaCostsAppliedFor                         Boolean?
+  typeOfPlanningApplication                  String?  @db.NVarChar(MAX)
+  affectsScheduledMonument                   Boolean?
+  hasProtectedSpecies                        Boolean?
+  isAonbNationalLandscape                    Boolean?
+  hasInfrastructureLevy                      Boolean?
+  isInfrastructureLevyFormallyAdopted        Boolean?
+  infrastructureLevyAdoptedDate              String?  @db.NVarChar(MAX)
+  infrastructureLevyExpectedDate             String?  @db.NVarChar(MAX)
+  caseworkReason                             String?  @db.NVarChar(MAX)
+  importantInformation                       String?  @db.NVarChar(MAX)
+  jurisdiction                               String?  @db.NVarChar(MAX)
+  redeterminedIndicator                      Boolean?
+  dateCostsReportDespatched                  String?  @db.NVarChar(MAX)
+  dateNotRecoveredOrDerecovered              String?  @db.NVarChar(MAX)
+  dateRecovered                              String?  @db.NVarChar(MAX)
+  originalCaseDecisionDate                   String?  @db.NVarChar(MAX)
+  targetDate                                 String?  @db.NVarChar(MAX)
+  siteGridReferenceEasting                   String?  @db.NVarChar(MAX)
+  siteGridReferenceNorthing                  String?  @db.NVarChar(MAX)
+  hasLandownersPermission                    Boolean?
+  isSiteInAreaOfSpecialControlAdverts        Boolean?
+  wasApplicationRefusedDueToHighwayOrTraffic Boolean?
+  didAppellantSubmitCompletePhotosAndPlans   Boolean?
+  advertDetails                              String?  @db.NVarChar(MAX)
+  lpaProcedurePreferenceDetails              String?  @db.NVarChar(MAX)
+  designatedSitesNames                       String?  @db.NVarChar(MAX)
+  lpaProcedurePreference                     String?  @db.NVarChar(MAX)
+  lpaProcedurePreferenceDuration             Decimal?
+  padsSapId                                  String?  @db.NVarChar(MAX)
+
+  @@map("appeal_has")
+}
+
+model AppealRepresentation {
+  representationId                String   @id
+  caseId                          Int?
+  caseReference                   String?  @db.NVarChar(MAX)
+  representationStatus            String?  @db.NVarChar(MAX)
+  originalRepresentation          String?  @db.NVarChar(MAX)
+  redacted                        Boolean?
+  redactedRepresentation          String?  @db.NVarChar(MAX)
+  redactedBy                      String?  @db.NVarChar(MAX)
+  invalidOrIncompleteDetails      String?  @db.NVarChar(MAX)
+  otherInvalidOrIncompleteDetails String?  @db.NVarChar(MAX)
+  source                          String?  @db.NVarChar(MAX)
+  serviceUserId                   String?  @db.NVarChar(MAX)
+  representationType              String?  @db.NVarChar(MAX)
+  dateReceived                    String?  @db.NVarChar(MAX)
+  documentIds                     String?  @db.NVarChar(MAX)
+
+  @@map("appeal_representation")
+}
+
+model AppealS78 {
+  caseReference                                 String?  @db.NVarChar(MAX)
+  caseId                                        Int      @id
+  submissionId                                  String?  @db.NVarChar(MAX)
+  caseStatus                                    String?  @db.NVarChar(MAX)
+  caseType                                      String?  @db.NVarChar(MAX)
+  caseProcedure                                 String?  @db.NVarChar(MAX)
+  lpaCode                                       String?  @db.NVarChar(MAX)
+  caseOfficerId                                 String?  @db.NVarChar(MAX)
+  inspectorId                                   String?  @db.NVarChar(MAX)
+  allocationLevel                               String?  @db.NVarChar(MAX)
+  allocationBand                                Decimal?
+  caseSpecialisms                               String?  @db.NVarChar(MAX)
+  caseSubmittedDate                             String?  @db.NVarChar(MAX)
+  caseCreatedDate                               String?  @db.NVarChar(MAX)
+  caseUpdatedDate                               String?  @db.NVarChar(MAX)
+  caseValidDate                                 String?  @db.NVarChar(MAX)
+  caseValidationDate                            String?  @db.NVarChar(MAX)
+  caseValidationOutcome                         String?  @db.NVarChar(MAX)
+  caseValidationInvalidDetails                  String?  @db.NVarChar(MAX)
+  caseValidationIncompleteDetails               String?  @db.NVarChar(MAX)
+  caseExtensionDate                             String?  @db.NVarChar(MAX)
+  caseStartedDate                               String?  @db.NVarChar(MAX)
+  casePublishedDate                             String?  @db.NVarChar(MAX)
+  linkedCaseStatus                              String?  @db.NVarChar(MAX)
+  leadCaseReference                             String?  @db.NVarChar(MAX)
+  lpaQuestionnaireDueDate                       String?  @db.NVarChar(MAX)
+  lpaQuestionnaireSubmittedDate                 String?  @db.NVarChar(MAX)
+  lpaQuestionnaireCreatedDate                   String?  @db.NVarChar(MAX)
+  lpaQuestionnairePublishedDate                 String?  @db.NVarChar(MAX)
+  lpaQuestionnaireValidationOutcome             String?  @db.NVarChar(MAX)
+  lpaQuestionnaireValidationOutcomeDate         String?  @db.NVarChar(MAX)
+  lpaQuestionnaireValidationDetails             String?  @db.NVarChar(MAX)
+  lpaStatement                                  String?  @db.NVarChar(MAX)
+  caseWithdrawnDate                             String?  @db.NVarChar(MAX)
+  caseTransferredDate                           String?  @db.NVarChar(MAX)
+  transferredCaseClosedDate                     String?  @db.NVarChar(MAX)
+  caseDecisionOutcomeDate                       String?  @db.NVarChar(MAX)
+  caseDecisionPublishedDate                     String?  @db.NVarChar(MAX)
+  caseDecisionOutcome                           String?  @db.NVarChar(MAX)
+  caseCompletedDate                             String?  @db.NVarChar(MAX)
+  enforcementNotice                             Boolean?
+  applicationReference                          String?  @db.NVarChar(MAX)
+  applicationDate                               String?  @db.NVarChar(MAX)
+  applicationDecision                           String?  @db.NVarChar(MAX)
+  applicationDecisionDate                       String?  @db.NVarChar(MAX)
+  caseSubmissionDueDate                         String?  @db.NVarChar(MAX)
+  siteAddressLine1                              String?  @db.NVarChar(MAX)
+  siteAddressLine2                              String?  @db.NVarChar(MAX)
+  siteAddressTown                               String?  @db.NVarChar(MAX)
+  siteAddressCounty                             String?  @db.NVarChar(MAX)
+  siteAddressPostcode                           String?  @db.NVarChar(MAX)
+  siteAccessDetails                             String?  @db.NVarChar(MAX)
+  siteSafetyDetails                             String?  @db.NVarChar(MAX)
+  siteAreaSquareMetres                          Decimal?
+  floorSpaceSquareMetres                        Decimal?
+  isCorrectAppealType                           Boolean?
+  isGreenBelt                                   Boolean?
+  inConservationArea                            Boolean?
+  ownsAllLand                                   Boolean?
+  ownsSomeLand                                  Boolean?
+  knowsOtherOwners                              String?  @db.NVarChar(MAX)
+  knowsAllOwners                                String?  @db.NVarChar(MAX)
+  advertisedAppeal                              Boolean?
+  notificationMethod                            String?  @db.NVarChar(MAX)
+  ownersInformed                                Boolean?
+  originalDevelopmentDescription                String?  @db.NVarChar(MAX)
+  changedDevelopmentDescription                 Boolean?
+  newConditionDetails                           String?  @db.NVarChar(MAX)
+  nearbyCaseReferences                          String?  @db.NVarChar(MAX)
+  neighbouringSiteAddresses                     String?  @db.NVarChar(MAX)
+  affectedListedBuildingNumbers                 String?  @db.NVarChar(MAX)
+  changedListedBuildingNumbers                  String?  @db.NVarChar(MAX)
+  appellantCostsAppliedFor                      Boolean?
+  lpaCostsAppliedFor                            Boolean?
+  agriculturalHolding                           Boolean?
+  tenantAgriculturalHolding                     Boolean?
+  otherTenantsAgriculturalHolding               Boolean?
+  informedTenantsAgriculturalHolding            Boolean?
+  appellantProcedurePreference                  String?  @db.NVarChar(MAX)
+  appellantProcedurePreferenceDetails           String?  @db.NVarChar(MAX)
+  appellantProcedurePreferenceDuration          Decimal?
+  appellantProcedurePreferenceWitnessCount      Decimal?
+  statusPlanningObligation                      String?  @db.NVarChar(MAX)
+  affectsScheduledMonument                      Boolean?
+  hasProtectedSpecies                           Boolean?
+  isAonbNationalLandscape                       Boolean?
+  designatedSitesNames                          String?  @db.NVarChar(MAX)
+  isGypsyOrTravellerSite                        Boolean?
+  isPublicRightOfWay                            Boolean?
+  eiaEnvironmentalImpactSchedule                String?  @db.NVarChar(MAX)
+  eiaDevelopmentDescription                     String?  @db.NVarChar(MAX)
+  eiaSensitiveAreaDetails                       String?  @db.NVarChar(MAX)
+  eiaColumnTwoThreshold                         Boolean?
+  eiaScreeningOpinion                           Boolean?
+  eiaRequiresEnvironmentalStatement             Boolean?
+  eiaCompletedEnvironmentalStatement            Boolean?
+  hasStatutoryConsultees                        Boolean?
+  consultedBodiesDetails                        String?  @db.NVarChar(MAX)
+  hasInfrastructureLevy                         Boolean?
+  isInfrastructureLevyFormallyAdopted           Boolean?
+  infrastructureLevyAdoptedDate                 String?  @db.NVarChar(MAX)
+  infrastructureLevyExpectedDate                String?  @db.NVarChar(MAX)
+  lpaProcedurePreference                        String?  @db.NVarChar(MAX)
+  lpaProcedurePreferenceDetails                 String?  @db.NVarChar(MAX)
+  lpaProcedurePreferenceDuration                Decimal?
+  caseworkReason                                String?  @db.NVarChar(MAX)
+  developmentType                               String?  @db.NVarChar(MAX)
+  importantInformation                          String?  @db.NVarChar(MAX)
+  jurisdiction                                  String?  @db.NVarChar(MAX)
+  redeterminedIndicator                         String?  @db.NVarChar(MAX)
+  dateCostsReportDespatched                     String?  @db.NVarChar(MAX)
+  dateNotRecoveredOrDerecovered                 String?  @db.NVarChar(MAX)
+  dateRecovered                                 String?  @db.NVarChar(MAX)
+  originalCaseDecisionDate                      String?  @db.NVarChar(MAX)
+  targetDate                                    String?  @db.NVarChar(MAX)
+  appellantCommentsSubmittedDate                String?  @db.NVarChar(MAX)
+  appellantStatementSubmittedDate               String?  @db.NVarChar(MAX)
+  appellantProofsSubmittedDate                  String?  @db.NVarChar(MAX)
+  finalCommentsDueDate                          String?  @db.NVarChar(MAX)
+  interestedPartyRepsDueDate                    String?  @db.NVarChar(MAX)
+  lpaCommentsSubmittedDate                      String?  @db.NVarChar(MAX)
+  lpaProofsSubmittedDate                        String?  @db.NVarChar(MAX)
+  lpaStatementSubmittedDate                     String?  @db.NVarChar(MAX)
+  proofsOfEvidenceDueDate                       String?  @db.NVarChar(MAX)
+  siteNoticesSentDate                           String?  @db.NVarChar(MAX)
+  statementDueDate                              String?  @db.NVarChar(MAX)
+  reasonForNeighbourVisits                      String?  @db.NVarChar(MAX)
+  numberOfResidencesNetChange                   Decimal?
+  siteGridReferenceEasting                      String?  @db.NVarChar(MAX)
+  siteGridReferenceNorthing                     String?  @db.NVarChar(MAX)
+  siteViewableFromRoad                          Boolean?
+  siteWithinSSSI                                Boolean?
+  typeOfPlanningApplication                     String?  @db.NVarChar(MAX)
+  preserveGrantLoan                             Boolean?
+  consultHistoricEngland                        Boolean?
+  planningObligationDueDate                     String?  @db.NVarChar(MAX)
+  hasLandownersPermission                       Boolean?
+  wasApplicationRefusedDueToHighwayOrTraffic    Boolean?
+  didAppellantSubmitCompletePhotosAndPlans      Boolean?
+  isSiteInAreaOfSpecialControlAdverts           Boolean?
+  advertDetails                                 String?  @db.NVarChar(MAX)
+  padsSapId                                     String?  @db.NVarChar(MAX)
+  statementOfCommonGroundDueDate                String?  @db.NVarChar(MAX)
+  issueDateOfEnforcementNotice                  String?  @db.NVarChar(MAX)
+  effectiveDateOfEnforcementNotice              String?  @db.NVarChar(MAX)
+  enforcementAppealGroundsDetails               String?  @db.NVarChar(MAX)
+  ownerOccupancyStatus                          String?  @db.NVarChar(MAX)
+  occupancyConditionsMet                        Boolean?
+  applicationMadeAndFeePaid                     Boolean?
+  noticeRelatesToBuildingEngineeringMiningOther Boolean?
+  changeOfUseRefuseOrWaste                      Boolean?
+  changeOfUseMineralExtraction                  Boolean?
+  changeOfUseMineralStorage                     Boolean?
+  relatesToErectionOfBuildingOrBuildings        Boolean?
+  relatesToBuildingWithAgriculturalPurpose      Boolean?
+  relatesToBuildingSingleDwellingHouse          Boolean?
+  previousPlanningPermissionGranted             Boolean?
+  didAppellantAppealLpaDecision                 Boolean?
+  dateLpaDecisionDue                            String?  @db.NVarChar(MAX)
+  dateLpaDecisionReceived                       String?  @db.NVarChar(MAX)
+  areaOfAllegedBreachInSquareMetres             Decimal?
+  doesAllegedBreachCreateFloorSpace             Boolean?
+  floorSpaceCreatedByBreachInSquareMetres       Decimal?
+  applicationPartOrWholeDevelopment             String?  @db.NVarChar(MAX)
+  hasPcnBeenServed                              Boolean?
+  isSiteWithin67MOfTrunkRd                      Boolean?
+  affectedTrunkRoadName                         String?  @db.NVarChar(MAX)
+  isSiteOnCrownLand                             Boolean?
+  stopNoticeExists                              Boolean?
+  isSiteWithin400MOfMineralInterest             Boolean?
+  isSiteWithin250MOfLandfill                    Boolean?
+  hasDevelopmentInvolvedWasteImportation        Boolean?
+  isSiteSubjectToArticle4Direction              Boolean?
+  article4AffectedDevelopmentRights             String?  @db.NVarChar(MAX)
+  pcnRestrictedDevelopmentRights                Boolean?
+
+  @@map("appeal_s78")
+}
+
+model AppealServiceUser {
+  id               String  @id
+  salutation       String? @db.NVarChar(MAX)
+  firstName        String? @db.NVarChar(MAX)
+  lastName         String? @db.NVarChar(MAX)
+  addressLine1     String? @db.NVarChar(MAX)
+  addressLine2     String? @db.NVarChar(MAX)
+  addressTown      String? @db.NVarChar(MAX)
+  addressCounty    String? @db.NVarChar(MAX)
+  postcode         String? @db.NVarChar(MAX)
+  addressCountry   String? @db.NVarChar(MAX)
+  organisation     String? @db.NVarChar(MAX)
+  organisationType String? @db.NVarChar(MAX)
+  role             String? @db.NVarChar(MAX)
+  telephoneNumber  String? @db.NVarChar(MAX)
+  otherPhoneNumber String? @db.NVarChar(MAX)
+  faxNumber        String? @db.NVarChar(MAX)
+  emailAddress     String? @db.NVarChar(MAX)
+  webAddress       String? @db.NVarChar(MAX)
+  serviceUserType  String? @db.NVarChar(MAX)
+  caseReference    String? @db.NVarChar(MAX)
+  sourceSuid       String? @db.NVarChar(MAX)
+  sourceSystem     String? @db.NVarChar(MAX)
+
+  @@map("appeal_service_user")
+}
