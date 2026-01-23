@@ -1,0 +1,23 @@
+{
+  "name": "@pins/odw-curated-database",
+  "version": "0.0.0",
+  "description": "ODW curated layer sql database access",
+  "private": true,
+  "main": "./src/index.ts",
+  "type": "module",
+  "scripts": {
+    "dev-setup": "npm run generate && npm run migrate-dev && npm run seed",
+    "generate-schema": "node src/generate-schema.ts",
+    "generate": "npx prisma generate",
+    "migrate-dev": "npx prisma migrate dev",
+    "seed": "npx prisma db seed"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@prisma/adapter-mssql": "*",
+    "@prisma/client": "*"
+  },
+  "devDependencies": {
+    "prisma": "*"
+  }
+}

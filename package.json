@@ -21,6 +21,7 @@
     "db-seed": "npm run seed --workspace @pins/appeals-migration-database",
     "db-seed-prod": "npm run seed:prod --workspace @pins/appeals-migration-database",
     "db-manage-appeals-setup": "npm run dev-setup --workspace @pins/manage-appeals-database",
+    "db-odw-curated-setup": "npm run dev-setup --workspace @pins/odw-curated-database",
     "format": "prettier --write .",
     "format-check": "prettier --check .",
     "lint": "npx eslint .",
