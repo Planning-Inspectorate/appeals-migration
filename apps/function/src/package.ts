@@ -28,7 +28,8 @@ async function replaceLocalPackages() {
 		await replaceInFile(srcFile, [
 			{ replace: '@pins/appeals-migration-lib', with: '#pins/appeals-migration-lib' },
 			{ replace: '@pins/appeals-migration-database', with: '#pins/appeals-migration-database' },
-			{ replace: '@pins/manage-appeals-database', with: '#pins/manage-appeals-database' }
+			{ replace: '@pins/manage-appeals-database', with: '#pins/manage-appeals-database' },
+			{ replace: '@pins/odw-curated-database', with: '#pins/odw-curated-database' }
 		]);
 	}
 }
