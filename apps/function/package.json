@@ -14,6 +14,7 @@
     "@azure/functions": "*",
     "@pins/appeals-migration-database": "^0.0.0",
     "@pins/manage-appeals-database": "^0.0.0",
+    "@pins/odw-curated-database": "^0.0.0",
     "@pins/appeals-migration-lib": "^0.0.0"
   },
   "imports": {
@@ -21,6 +22,8 @@
     "#pins/appeals-migration-database": "./src/packages/appeals-migration-database/src/index.ts",
     "#pins/appeals-migration-database/*": "./src/packages/appeals-migration-database/*",
     "#pins/manage-appeals-database": "./src/packages/manage-appeals-database/src/index.ts",
-    "#pins/manage-appeals-database/*": "./src/packages/manage-appeals-database/*"
+    "#pins/manage-appeals-database/*": "./src/packages/manage-appeals-database/*",
+    "#pins/odw-curated-database": "./src/packages/odw-curated-database/src/index.ts",
+    "#pins/odw-curated-database/*": "./src/packages/odw-curated-database/*"
 		}
 }
