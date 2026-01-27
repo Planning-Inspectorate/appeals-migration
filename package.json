@@ -37,6 +37,7 @@
     "body-parser": "^2.2.2",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
+    "httpntlm": "^1.8.13",
     "pino": "^10.3.0",
     "pino-pretty": "^13.1.3"
   },
