@@ -2,6 +2,8 @@ import { loadEnvFile } from 'node:process';
 
 export interface Config {
 	database: string;
+	sourceDatabase: string;
+	sinkDatabase: string;
 	functions: {
 		aListBuilder: {
 			schedule: string;
@@ -45,7 +47,9 @@ export function loadConfig(): Config {
 		MANAGE_APPEALS_API_ENDPOINT,
 		MANAGE_APPEALS_DOCUMENTS_ACCOUNT_NAME,
 		MANAGE_APPEALS_DOCUMENTS_CONTAINER_NAME,
-		SQL_CONNECTION_STRING
+		SQL_CONNECTION_STRING,
+		ODW_CURATED_SQL_CONNECTION_STRING,
+		MANAGE_APPEALS_SQL_CONNECTION_STRING
 	} = process.env;
 
 	if (!HORIZON_API_ENDPOINT) {
@@ -63,9 +67,17 @@ export function loadConfig(): Config {
 	if (!SQL_CONNECTION_STRING) {
 		throw new Error('SQL_CONNECTION_STRING is required');
 	}
+	if (!ODW_CURATED_SQL_CONNECTION_STRING) {
+		throw new Error('ODW_CURATED_SQL_CONNECTION_STRING is required');
+	}
+	if (!MANAGE_APPEALS_SQL_CONNECTION_STRING) {
+		throw new Error('MANAGE_APPEALS_SQL_CONNECTION_STRING is required');
+	}
 
 	return {
 		database: SQL_CONNECTION_STRING,
+		sourceDatabase: ODW_CURATED_SQL_CONNECTION_STRING,
+		sinkDatabase: MANAGE_APPEALS_SQL_CONNECTION_STRING,
 		functions: {
 			aListBuilder: {
 				schedule: FUNC_LIST_BUILDER_SCHEDULE || '0 0 0 * * *' // default to daily at midnight

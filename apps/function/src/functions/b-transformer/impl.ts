@@ -10,7 +10,7 @@ export function buildTransformer(service: FunctionService): TimerHandler {
 			context.log('running example function on timer', timer);
 
 			// check the DB connection is working
-			await service.dbClient.$queryRaw`SELECT 1`;
+			await service.databaseClient.$queryRaw`SELECT 1`;
 
 			context.log('database OK');
 		} catch (error: unknown) {

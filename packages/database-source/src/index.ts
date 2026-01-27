@@ -3,6 +3,8 @@ import { PrismaMssql } from '@prisma/adapter-mssql';
 import type { Prisma } from '@pins/odw-curated-database/src/client/client.d.ts';
 import type { Logger } from 'pino';
 
+export type { PrismaClient };
+
 export function initOdwDatabaseClient(config: { database: string; NODE_ENV: string }, logger: Logger): PrismaClient {
 	let prismaLogger: Logger | undefined;
 
