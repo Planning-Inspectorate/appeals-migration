@@ -6,7 +6,7 @@ import assert from 'node:assert';
 describe('a-list-builder-impl', () => {
 	const newService = () => {
 		return {
-			dbClient: {
+			databaseClient: {
 				$queryRaw: mock.fn()
 			}
 		};
@@ -16,12 +16,12 @@ describe('a-list-builder-impl', () => {
 		const context = {
 			log: mock.fn()
 		};
-		service.dbClient.$queryRaw.mock.mockImplementationOnce(() => {
+		service.databaseClient.$queryRaw.mock.mockImplementationOnce(() => {
 			return '1';
 		});
 		const handler = buildListBuilder(service);
 		await handler({}, context);
-		assert.strictEqual(service.dbClient.$queryRaw.mock.callCount(), 1);
+		assert.strictEqual(service.databaseClient.$queryRaw.mock.callCount(), 1);
 		assert.strictEqual(context.log.mock.callCount(), 2);
 		assert.strictEqual(context.log.mock.calls[1].arguments[0], 'database OK');
 	});
@@ -31,12 +31,12 @@ describe('a-list-builder-impl', () => {
 		const context = {
 			log: mock.fn()
 		};
-		service.dbClient.$queryRaw.mock.mockImplementationOnce(() => {
+		service.databaseClient.$queryRaw.mock.mockImplementationOnce(() => {
 			throw new Error('database error');
 		});
 		const handler = buildListBuilder(service);
 		await assert.rejects(() => handler({}, context));
-		assert.strictEqual(service.dbClient.$queryRaw.mock.callCount(), 1);
+		assert.strictEqual(service.databaseClient.$queryRaw.mock.callCount(), 1);
 		assert.strictEqual(context.log.mock.callCount(), 2);
 		assert.strictEqual(context.log.mock.calls[1].arguments[0], 'Error during example function run:');
 		const err = context.log.mock.calls[1].arguments[1];
