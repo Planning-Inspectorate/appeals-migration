@@ -9,6 +9,7 @@
   },
   "license": "MIT",
   "dependencies": {
+		"httpntlm": "*",
     "@pins/appeals-migration-database": "*",
     "pino": "*",
     "pino-pretty": "*"
