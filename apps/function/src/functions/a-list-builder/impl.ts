@@ -1,25 +1,41 @@
+import { readToMigrateParameters } from './migration/to-migrate-parameter.ts';
+import {
+	mapToMigrateParameterToAppealHasWhere,
+	mapToMigrateParameterToAppealS78Where
+} from './mappers/map-to-migrate-parameter-to-where.ts';
+import { fetchCaseReferences } from './source/case-reference.ts';
+import { upsertCaseReferences } from './migration/case-to-migrate.ts';
+
 import type { FunctionService } from '../../service.ts';
 import type { TimerHandler } from '@azure/functions';
 
-/**
- * An example scheduled function implementation
- */
 export function buildListBuilder(service: FunctionService): TimerHandler {
-	return async (timer, context) => {
+	return async (_timer, context) => {
 		try {
-			context.log('running example function on timer', timer);
+			const migrationDatabase = service.databaseClient;
+			const sourceDatabase = service.sourceDatabaseClient;
 
-			// check the DB connection is working
-			await service.databaseClient.$queryRaw`SELECT 1`;
+			const params = await readToMigrateParameters(migrationDatabase);
 
-			context.log('database OK');
-		} catch (error: unknown) {
-			let message;
-			if (error instanceof Error) {
-				context.log('Error during example function run:', error);
-				message = error.message;
+			const allRefs = new Set<string>();
+
+			for (const param of params) {
+				const hasWhere = mapToMigrateParameterToAppealHasWhere(param);
+				const s78Where = mapToMigrateParameterToAppealS78Where(param);
+
+				const refs = await fetchCaseReferences(sourceDatabase, hasWhere, s78Where);
+
+				refs.forEach((r) => allRefs.add(r));
 			}
-			throw new Error('Error during example function run:' + message);
+
+			await upsertCaseReferences(migrationDatabase, Array.from(allRefs));
+		} catch (error) {
+			context.log('Error during list builder run', error);
+			// add error logging with context
+			throw error;
 		}
 	};
 }
+
+// Test error handling in catch block
+// Test the full flow
