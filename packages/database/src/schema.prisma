@@ -54,7 +54,7 @@ model CaseToMigrate {
 }
 
 model MigrationStep {
-  id Int @id
+  id Int @id @default(autoincrement())
 
   /// whether this step is locked for processing
   inProgress Boolean @default(false)
