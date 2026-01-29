@@ -1,41 +1,70 @@
-import { readToMigrateParameters } from './migration/to-migrate-parameter.ts';
-import {
-	mapToMigrateParameterToAppealHasWhere,
-	mapToMigrateParameterToAppealS78Where
-} from './mappers/map-to-migrate-parameter-to-where.ts';
+import { mapToMigrateParameterToWhere } from './mappers/map-to-migrate-parameter.ts';
 import { fetchCaseReferences } from './source/case-reference.ts';
 import { upsertCaseReferences } from './migration/case-to-migrate.ts';
 
 import type { FunctionService } from '../../service.ts';
 import type { TimerHandler } from '@azure/functions';
+import type {
+	PrismaClient as MigrationPrismaClient,
+	ToMigrateParameter
+} from '@pins/appeals-migration-database/src/client/client.ts';
 
-export function buildListBuilder(service: FunctionService): TimerHandler {
+function readToMigrateParameters(migrationDatabase: MigrationPrismaClient): Promise<ToMigrateParameter[]> {
+	return migrationDatabase.toMigrateParameter.findMany();
+}
+
+type Migration = {
+	readToMigrateParameters: typeof readToMigrateParameters;
+	upsertCaseReferences: typeof upsertCaseReferences;
+};
+
+type Mappers = {
+	mapToMigrateParameterToWhere: typeof mapToMigrateParameterToWhere;
+};
+
+type Source = {
+	fetchCaseReferences: typeof fetchCaseReferences;
+};
+
+const defaultMigration: Migration = {
+	readToMigrateParameters,
+	upsertCaseReferences
+};
+
+const defaultMappers: Mappers = {
+	mapToMigrateParameterToWhere
+};
+
+const defaultSource: Source = {
+	fetchCaseReferences
+};
+
+export function buildListBuilder(
+	service: FunctionService,
+	migration: Migration = defaultMigration,
+	mappers: Mappers = defaultMappers,
+	source: Source = defaultSource
+): TimerHandler {
 	return async (_timer, context) => {
 		try {
 			const migrationDatabase = service.databaseClient;
 			const sourceDatabase = service.sourceDatabaseClient;
 
-			const params = await readToMigrateParameters(migrationDatabase);
+			const params = await migration.readToMigrateParameters(migrationDatabase);
 
 			const allRefs = new Set<string>();
 
 			for (const param of params) {
-				const hasWhere = mapToMigrateParameterToAppealHasWhere(param);
-				const s78Where = mapToMigrateParameterToAppealS78Where(param);
+				const whereClause = mappers.mapToMigrateParameterToWhere(param);
 
-				const refs = await fetchCaseReferences(sourceDatabase, hasWhere, s78Where);
-
+				const refs = await source.fetchCaseReferences(sourceDatabase, whereClause, whereClause);
 				refs.forEach((r) => allRefs.add(r));
 			}
 
-			await upsertCaseReferences(migrationDatabase, Array.from(allRefs));
+			await migration.upsertCaseReferences(migrationDatabase, Array.from(allRefs));
 		} catch (error) {
-			context.log('Error during list builder run', error);
-			// add error logging with context
+			context.error('Error during list builder run', error);
 			throw error;
 		}
 	};
 }
-
-// Test error handling in catch block
-// Test the full flow
