@@ -9,8 +9,6 @@ export async function fetchCaseReferences(
 	hasWhere: Prisma.AppealHasWhereInput,
 	s78Where: Prisma.AppealS78WhereInput
 ): Promise<string[]> {
-	// add try catch error handling in both queries
-
 	const hasRows = await sourceDatabase.appealHas.findMany({
 		where: hasWhere,
 		select: { caseReference: true }

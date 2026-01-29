@@ -34,9 +34,3 @@ export async function upsertCaseReferences(
 		});
 	}
 }
-
-// Tests:
-// Test new case reference upsert
-// Test existing case reference upsert
-// Test empty array
-// Test nested migration steps
