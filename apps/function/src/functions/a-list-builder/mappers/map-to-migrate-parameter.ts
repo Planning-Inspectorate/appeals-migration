@@ -4,6 +4,15 @@ import type { ToMigrateParameter } from '@pins/appeals-migration-database/src/cl
 export function mapToMigrateParameterToWhere(
 	param: ToMigrateParameter
 ): Prisma.AppealHasWhereInput & Prisma.AppealS78WhereInput {
-	if (param.status == null || param.status === '') return {};
-	return { caseStatus: param.status };
+	const where: Prisma.AppealHasWhereInput & Prisma.AppealS78WhereInput = {};
+
+	if (param.status != null && param.status !== '') {
+		where.caseStatus = param.status;
+	}
+
+	if (param.procedureType != null && param.procedureType !== '') {
+		where.caseProcedure = param.procedureType;
+	}
+
+	return where;
 }

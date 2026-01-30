@@ -9,12 +9,8 @@ import type {
 	ToMigrateParameter
 } from '@pins/appeals-migration-database/src/client/client.ts';
 
-function readToMigrateParameters(migrationDatabase: MigrationPrismaClient): Promise<ToMigrateParameter[]> {
-	return migrationDatabase.toMigrateParameter.findMany();
-}
-
 type Migration = {
-	readToMigrateParameters: typeof readToMigrateParameters;
+	readToMigrateParameters: (migrationDatabase: MigrationPrismaClient) => Promise<ToMigrateParameter[]>;
 	upsertCaseReferences: typeof upsertCaseReferences;
 };
 
@@ -27,7 +23,7 @@ type Source = {
 };
 
 const defaultMigration: Migration = {
-	readToMigrateParameters,
+	readToMigrateParameters: (migrationDatabase) => migrationDatabase.toMigrateParameter.findMany(),
 	upsertCaseReferences
 };
 
