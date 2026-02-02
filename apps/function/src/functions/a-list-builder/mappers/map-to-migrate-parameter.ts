@@ -20,5 +20,15 @@ export function mapToMigrateParameterToWhere(
 		}
 	}
 
+	if (param.decisionDateFrom != null || param.decisionDateTo != null) {
+		where.caseDecisionOutcomeDate = {};
+		if (param.decisionDateFrom != null) {
+			where.caseDecisionOutcomeDate.gte = param.decisionDateFrom.toISOString();
+		}
+		if (param.decisionDateTo != null) {
+			where.caseDecisionOutcomeDate.lte = param.decisionDateTo.toISOString();
+		}
+	}
+
 	return where;
 }
