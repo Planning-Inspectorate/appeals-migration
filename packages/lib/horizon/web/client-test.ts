@@ -33,9 +33,24 @@ async function run() {
 
 	await sleep(20);
 
-	const fileWriteStream = fs.createWriteStream('./doc1.pdf');
-	await client.pipeDocument(objId, fileWriteStream);
-	console.log('file written');
+	await downloadFile(client, '25569629', { version: 2 });
+
+	await sleep(100);
+
+	await downloadFile(client, '28174373', { version: 1, rendition: true });
+}
+
+async function downloadFile(
+	client: HorizonWebClient,
+	objId: string,
+	{ version, rendition }: { version: number; rendition?: boolean } = { version: 1 }
+): Promise<void> {
+	const filename = await client.pipeDocument(objId, {
+		version,
+		rendition,
+		createWriteStream: (filename) => fs.createWriteStream(`./${filename}`)
+	});
+	console.log('file written to', filename);
 }
 
 function sleep(ms: number) {

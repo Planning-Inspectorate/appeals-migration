@@ -6,6 +6,12 @@ const ntlm = httpntlm.ntlm;
 
 type httpsGetImpl = typeof https.get;
 
+export interface DownloadDocumentOptions {
+	version?: number;
+	rendition?: boolean;
+	createWriteStream: (filename: string) => WriteStream;
+}
+
 /**
  * A client for interacting with Horizon web services
  * This class handles NTLM auth (with the 'httpntlm' module) and the OpenText/Horizon specific redirect/login behavior
@@ -55,18 +61,44 @@ export class HorizonWebClient {
 	 * Pipe a file to a write stream
 	 *
 	 * @param objId - the object ID of a document
-	 * @param writeStream - a stream to write to
+	 * @param version - the document version to download
+	 * @param rendition - whether to download the document rendition (PDF)
+	 * @param createWriteStream - a function taking a filename and returning a WriteStream
+	 * @returns the filename
 	 */
-	async pipeDocument(objId: string, writeStream: WriteStream): Promise<void> {
-		const file = await this.get(`/otcs/llisapi.dll?func=ll&objId=${objId}&objAction=download`);
-		if (file.statusCode !== 200) {
+	async pipeDocument(
+		objId: string,
+		{ version, rendition, createWriteStream }: DownloadDocumentOptions
+	): Promise<string> {
+		const params = new URLSearchParams({
+			func: 'll',
+			objId,
+			objAction: 'download'
+		});
+		if (version) {
+			params.set('vernum', version.toString());
+		}
+		if (rendition) {
+			params.set('objAction', 'DownloadRenditionAction');
+			params.set('vertype', 'PDF');
+		}
+		const file = await this.get(`/otcs/llisapi.dll?${params.toString()}`);
+		const filenameOrError = HorizonWebClient.filenameFromHeaders(file);
+		if (filenameOrError instanceof Error) {
 			// empty the stream
 			await new Promise<void>((resolve) => {
 				file.resume().on('end', () => resolve());
 			});
-			throw new Error('GET error ' + file.statusCode);
+			throw filenameOrError;
 		}
+		const writeStream = createWriteStream(filenameOrError);
 		file.pipe(writeStream);
+		// wait for the stream to finish
+		await new Promise((resolve, reject) => {
+			file.on('end', resolve);
+			file.on('error', reject);
+		});
+		return filenameOrError;
 	}
 
 	/**
@@ -127,7 +159,7 @@ export class HorizonWebClient {
 		// make a request to the login endpoint
 		const loginRes = await this.#get(type3Res.headers['location'], { headers: { Connection: 'keep-alive' } }, true);
 		if (loginRes.statusCode !== 302 || !loginRes.headers['location']) {
-			throw new Error('redirect expected after login message, got HTTP code ' + type3Res.statusCode);
+			throw new Error('redirect expected after login message, got HTTP code ' + loginRes.statusCode);
 		}
 		if (!loginRes.headers['set-cookie']) {
 			throw new Error('cookies expected after login request');
@@ -245,7 +277,6 @@ export class HorizonWebClient {
 		if (!url.startsWith('http')) {
 			url = this.#baseUrl + url;
 		}
-		console.log('GET', url);
 		return new Promise((resolve, reject) => {
 			const req = this.#httpsGet(url, { agent: this.#agent, ...options }, (res) => {
 				if (readStream) {
@@ -287,5 +318,25 @@ export class HorizonWebClient {
 			const [k, v] = c.split('=');
 			this.#cookieJar[k] = v;
 		}
+	}
+
+	/**
+	 * Check a given file download response is valid, and if its valid then return the filename
+	 * If it is not valid, an Error is returned (not thrown)
+	 * @param response
+	 */
+	static filenameFromHeaders(response: http.IncomingMessage): Error | string {
+		if (response.statusCode !== 200) {
+			return new Error('download error ' + response.statusCode);
+		}
+		const contentDisposition = response.headers['content-disposition'];
+		if (!contentDisposition) {
+			return new Error('download error, file not found (no content-disposition header)');
+		}
+		const name = contentDisposition.match(/attachment; filename="(.*)"$/);
+		if (!name || name.length <= 1) {
+			return new Error(`download error, no filename in content-disposition header: '${contentDisposition}'`);
+		}
+		return decodeURIComponent(name[1]);
 	}
 }
