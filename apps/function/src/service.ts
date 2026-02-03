@@ -5,7 +5,7 @@ import type { PrismaClient as MigrationPrismaClient } from '@pins/appeals-migrat
 import type { PrismaClient as SourcePrismaClient } from '@pins/odw-curated-database/src/client/client.ts';
 import type { PrismaClient as SinkPrismaClient } from '@pins/manage-appeals-database/src/client/client.ts';
 import type { Config } from './config.ts';
-import { HorizonApiClient } from '@pins/appeals-migration-lib/horizon/horizon-api-client.ts';
+import { HorizonApiClient } from '@pins/appeals-migration-lib/horizon/api/horizon-api-client.ts';
 
 /**
  * This class encapsulates all the services and clients for the application

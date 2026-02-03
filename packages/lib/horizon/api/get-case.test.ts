@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import { cleanGetCaseResponse } from './get-case.ts';
-import { readTestFile, snapshotOptions, snapshotPath } from './util.test.ts';
+import { readTestFile, snapshotOptions, snapshotPath } from './util-testing.ts';
 
 describe('get-case', () => {
 	describe('cleanCaseSearchResponse', () => {

@@ -6,7 +6,7 @@ import {
 	deleteCaseSearchSummaryUnusedKeys
 } from './case-search.ts';
 import assert from 'node:assert';
-import { readTestFile, snapshotOptions, snapshotPath } from './util.test.ts';
+import { readTestFile, snapshotOptions, snapshotPath } from './util-testing.ts';
 
 describe('case-search', () => {
 	describe('cleanCaseSearchResponse', () => {
