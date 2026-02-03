@@ -10,6 +10,10 @@ export function mapToMigrateParameterToWhere(
 		where.caseStatus = param.status;
 	}
 
+	if (param.procedureType != null && param.procedureType !== '') {
+		where.caseProcedure = param.procedureType;
+	}
+
 	if (param.dateReceivedFrom != null || param.dateReceivedTo != null) {
 		where.caseSubmittedDate = {};
 		if (param.dateReceivedFrom != null) {
