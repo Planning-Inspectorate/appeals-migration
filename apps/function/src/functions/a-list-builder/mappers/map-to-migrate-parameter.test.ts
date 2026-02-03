@@ -17,13 +17,21 @@ describe('mapToMigrateParameterToWhere', () => {
 		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, status: null, procedureType: 'written' }), {
 			caseProcedure: 'written'
 		});
+
+		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, status: null, procedureType: null, lpa: 'ABC' }), {
+			lpaCode: 'ABC'
+		});
 	});
 
-	test('maps both status and procedureType when both are provided', () => {
-		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, status: 'open', procedureType: 'written' }), {
-			caseStatus: 'open',
-			caseProcedure: 'written'
-		});
+	test('maps status, procedureType and lpa when all are provided', () => {
+		assert.deepStrictEqual(
+			mapToMigrateParameterToWhere({ id: 1, status: 'open', procedureType: 'written', lpa: 'ABC' }),
+			{
+				caseStatus: 'open',
+				caseProcedure: 'written',
+				lpaCode: 'ABC'
+			}
+		);
 	});
 
 	test('maps dateReceivedFrom to caseSubmittedDate gte', () => {
