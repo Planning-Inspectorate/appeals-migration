@@ -14,6 +14,10 @@ export function mapToMigrateParameterToWhere(
 		where.caseProcedure = param.procedureType;
 	}
 
+	if (param.lpa != null && param.lpa !== '') {
+		where.lpaCode = param.lpa;
+	}
+
 	if (param.dateReceivedFrom != null || param.dateReceivedTo != null) {
 		where.caseSubmittedDate = {};
 		if (param.dateReceivedFrom != null) {
