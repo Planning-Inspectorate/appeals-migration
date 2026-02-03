@@ -1,5 +1,5 @@
 import type { IHorizonApi } from './horizon.d.ts';
-import { fetchWithTimeout } from '../util/fetch.ts';
+import { fetchWithTimeout } from '../../util/fetch.ts';
 import {
 	caseSearchRequest,
 	CaseSearchRequest,

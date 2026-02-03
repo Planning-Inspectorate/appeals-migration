@@ -1,9 +1,7 @@
 import { cleanHorizonResponse, prefixAllKeys } from './util.ts';
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import fs from 'fs/promises';
-import path from 'path';
-import type { AssertSnapshotOptions } from 'node:test';
+import { readTestFile, snapshotOptions, snapshotPath } from './util-testing.ts';
 
 describe('util', () => {
 	describe('prefixAllKeys', () => {
@@ -57,20 +55,3 @@ describe('util', () => {
 		});
 	});
 });
-
-export function testDir() {
-	return path.dirname(new URL(import.meta.url).pathname);
-}
-
-export function snapshotPath(file: string) {
-	return path.join(testDir(), 'testing', 'snapshots', file);
-}
-
-export async function readTestFile(filepath: string): Promise<string> {
-	const file = await fs.readFile(path.join(testDir(), filepath));
-	return file.toString('utf-8');
-}
-
-export const snapshotOptions: AssertSnapshotOptions = {
-	serializers: [(v) => v] // don't transform values for snapshots
-};

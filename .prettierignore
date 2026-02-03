@@ -4,5 +4,5 @@ package-lock.json
 README.md
 *.njk
 .env*
-packages/lib/horizon/testing/*.json
-packages/lib/horizon/testing/snapshots/*.json
+packages/lib/horizon/api/testing/*.json
+packages/lib/horizon/api/testing/snapshots/*.json
