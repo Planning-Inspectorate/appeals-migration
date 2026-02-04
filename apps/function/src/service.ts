@@ -42,11 +42,15 @@ export class FunctionService {
 		return this.#config.functions.bTransformer.schedule;
 	}
 
-	get cDocumentHandlerSchedule() {
-		return this.#config.functions.cDocumentHandler.schedule;
+	get cDocumentListBuilderSchedule() {
+		return this.#config.functions.cDocumentListBuilder.schedule;
 	}
 
-	get dValidatorSchedule() {
-		return this.#config.functions.dValidator.schedule;
+	get dDocumentHandlerSchedule() {
+		return this.#config.functions.dDocumentHandler.schedule;
+	}
+
+	get eValidatorSchedule() {
+		return this.#config.functions.eValidator.schedule;
 	}
 }
