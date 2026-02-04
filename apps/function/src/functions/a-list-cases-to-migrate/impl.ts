@@ -35,7 +35,7 @@ const defaultSource: Source = {
 	fetchCaseReferences
 };
 
-export function buildListBuilder(
+export function buildListCasesToMigrate(
 	service: FunctionService,
 	migration: Migration = defaultMigration,
 	mappers: Mappers = defaultMappers,

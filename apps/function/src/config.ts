@@ -5,7 +5,7 @@ export interface Config {
 	sourceDatabase: string;
 	sinkDatabase: string;
 	functions: {
-		aListBuilder: {
+		aListCasesToMigrate: {
 			schedule: string;
 		};
 		bTransformer: {
@@ -41,7 +41,7 @@ export function loadConfig(): Config {
 
 	// get values from the environment
 	const {
-		FUNC_LIST_BUILDER_SCHEDULE,
+		FUNC_LIST_CASE_TO_MIGRATE_SCHEDULE,
 		FUNC_TRANSFORMER_SCHEDULE,
 		FUNC_DOCUMENT_LIST_BUILDER_SCHEDULE,
 		FUNC_DOCUMENT_HANDLER_SCHEDULE,
@@ -83,8 +83,8 @@ export function loadConfig(): Config {
 		sourceDatabase: ODW_CURATED_SQL_CONNECTION_STRING,
 		sinkDatabase: MANAGE_APPEALS_SQL_CONNECTION_STRING,
 		functions: {
-			aListBuilder: {
-				schedule: FUNC_LIST_BUILDER_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
+			aListCasesToMigrate: {
+				schedule: FUNC_LIST_CASE_TO_MIGRATE_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
 			},
 			bTransformer: {
 				schedule: FUNC_TRANSFORMER_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
