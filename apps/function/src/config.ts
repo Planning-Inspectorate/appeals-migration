@@ -14,7 +14,7 @@ export interface Config {
 		cListDocumentsToMigrate: {
 			schedule: string;
 		};
-		dDocumentHandler: {
+		dMigrateDocuments: {
 			schedule: string;
 		};
 		eValidator: {
@@ -33,14 +33,14 @@ export interface Config {
 export function loadConfig(): Config {
 	// load configuration from .env file into process.env
 	// prettier-ignore
-	try {loadEnvFile()} catch {/* ignore errors*/}
+	try { loadEnvFile() } catch {/* ignore errors*/ }
 
 	// get values from the environment
 	const {
 		FUNC_LIST_CASE_TO_MIGRATE_SCHEDULE,
 		FUNC_TRANSFORMER_SCHEDULE,
 		FUNC_LIST_DOCUMENTS_TO_MIGRATE_SCHEDULE,
-		FUNC_DOCUMENT_HANDLER_SCHEDULE,
+		FUNC_MIGRATE_DOCUMENTS_SCHEDULE,
 		FUNC_VALIDATOR_SCHEDULE,
 		MANAGE_APPEALS_API_ENDPOINT,
 		MANAGE_APPEALS_DOCUMENTS_ACCOUNT_NAME,
@@ -83,8 +83,8 @@ export function loadConfig(): Config {
 			cListDocumentsToMigrate: {
 				schedule: FUNC_LIST_DOCUMENTS_TO_MIGRATE_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
 			},
-			dDocumentHandler: {
-				schedule: FUNC_DOCUMENT_HANDLER_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
+			dMigrateDocuments: {
+				schedule: FUNC_MIGRATE_DOCUMENTS_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
 			},
 			eValidator: {
 				schedule: FUNC_VALIDATOR_SCHEDULE || '0 0 0 * * *' // default to daily at midnight

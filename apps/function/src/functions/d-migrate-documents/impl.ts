@@ -4,7 +4,7 @@ import type { TimerHandler } from '@azure/functions';
 /**
  * An example scheduled function implementation
  */
-export function buildDocumentHandler(service: FunctionService): TimerHandler {
+export function buildMigrateDocuments(service: FunctionService): TimerHandler {
 	return async (timer, context) => {
 		try {
 			context.log('running example function on timer', timer);

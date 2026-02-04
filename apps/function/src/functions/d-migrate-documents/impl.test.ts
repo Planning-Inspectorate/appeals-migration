@@ -1,9 +1,9 @@
 // @ts-nocheck
 import { describe, test, mock } from 'node:test';
-import { buildDocumentHandler } from './impl.ts';
+import { buildMigrateDocuments } from './impl.ts';
 import assert from 'node:assert';
 
-describe('d-document-handler-impl', () => {
+describe('d-migrate-documents-impl', () => {
 	const newService = () => {
 		return {
 			databaseClient: {
@@ -19,7 +19,7 @@ describe('d-document-handler-impl', () => {
 		service.databaseClient.$queryRaw.mock.mockImplementationOnce(() => {
 			return '1';
 		});
-		const handler = buildDocumentHandler(service);
+		const handler = buildMigrateDocuments(service);
 		await handler({}, context);
 		assert.strictEqual(service.databaseClient.$queryRaw.mock.callCount(), 1);
 		assert.strictEqual(context.log.mock.callCount(), 2);
@@ -34,7 +34,7 @@ describe('d-document-handler-impl', () => {
 		service.databaseClient.$queryRaw.mock.mockImplementationOnce(() => {
 			throw new Error('database error');
 		});
-		const handler = buildDocumentHandler(service);
+		const handler = buildMigrateDocuments(service);
 		await assert.rejects(() => handler({}, context));
 		assert.strictEqual(service.databaseClient.$queryRaw.mock.callCount(), 1);
 		assert.strictEqual(context.log.mock.callCount(), 2);

@@ -43,8 +43,8 @@ export class FunctionService {
 		return this.#config.functions.cListDocumentsToMigrate.schedule;
 	}
 
-	get dDocumentHandlerSchedule() {
-		return this.#config.functions.dDocumentHandler.schedule;
+	get dMigrateDocumentsSchedule() {
+		return this.#config.functions.dMigrateDocuments.schedule;
 	}
 
 	get eValidatorSchedule() {
