@@ -34,8 +34,8 @@ export class FunctionService {
 		this.horizonApiClient = new HorizonApiClient(config.horizon.apiEndpoint, config.horizon.apiTimeoutMs);
 	}
 
-	get aListBuilderSchedule() {
-		return this.#config.functions.aListBuilder.schedule;
+	get aListCasesToMigrateSchedule() {
+		return this.#config.functions.aListCasesToMigrate.schedule;
 	}
 
 	get bTransformerSchedule() {

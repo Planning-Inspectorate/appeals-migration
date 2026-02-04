@@ -1,9 +1,9 @@
 // @ts-nocheck
 import { describe, test, mock } from 'node:test';
 import assert from 'node:assert';
-import { buildListBuilder } from './impl.ts';
+import { buildListCasesToMigrate } from './impl.ts';
 
-describe('buildListBuilder', () => {
+describe('buildListCasesToMigrate', () => {
 	const newService = () => ({
 		databaseClient: { db: 'migration' },
 		sourceDatabaseClient: { db: 'source' }
@@ -44,7 +44,7 @@ describe('buildListBuilder', () => {
 
 		migration.upsertCaseReferences.mock.mockImplementation(() => {});
 
-		const handler = buildListBuilder(service, migration, mappers, source);
+		const handler = buildListCasesToMigrate(service, migration, mappers, source);
 		await handler({}, context);
 
 		assert.strictEqual(migration.readToMigrateParameters.mock.callCount(), 1);
@@ -71,7 +71,7 @@ describe('buildListBuilder', () => {
 			throw error;
 		});
 
-		const handler = buildListBuilder(service, migration, mappers, source);
+		const handler = buildListCasesToMigrate(service, migration, mappers, source);
 
 		await assert.rejects(() => handler({}, context), error);
 		assert.strictEqual(context.error.mock.callCount(), 1);
