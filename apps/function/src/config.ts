@@ -11,7 +11,7 @@ export interface Config {
 		bTransformer: {
 			schedule: string;
 		};
-		cDocumentListBuilder: {
+		cListDocumentsToMigrate: {
 			schedule: string;
 		};
 		dDocumentHandler: {
@@ -43,7 +43,7 @@ export function loadConfig(): Config {
 	const {
 		FUNC_LIST_CASE_TO_MIGRATE_SCHEDULE,
 		FUNC_TRANSFORMER_SCHEDULE,
-		FUNC_DOCUMENT_LIST_BUILDER_SCHEDULE,
+		FUNC_LIST_DOCUMENTS_TO_MIGRATE_SCHEDULE,
 		FUNC_DOCUMENT_HANDLER_SCHEDULE,
 		FUNC_VALIDATOR_SCHEDULE,
 		HORIZON_API_ENDPOINT,
@@ -89,8 +89,8 @@ export function loadConfig(): Config {
 			bTransformer: {
 				schedule: FUNC_TRANSFORMER_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
 			},
-			cDocumentListBuilder: {
-				schedule: FUNC_DOCUMENT_LIST_BUILDER_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
+			cListDocumentsToMigrate: {
+				schedule: FUNC_LIST_DOCUMENTS_TO_MIGRATE_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
 			},
 			dDocumentHandler: {
 				schedule: FUNC_DOCUMENT_HANDLER_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
