@@ -21,10 +21,6 @@ export interface Config {
 			schedule: string;
 		};
 	};
-	horizon: {
-		apiEndpoint: string;
-		apiTimeoutMs?: number;
-	};
 	manageAppeals: {
 		apiEndpoint: string;
 		documents: {
@@ -46,8 +42,6 @@ export function loadConfig(): Config {
 		FUNC_DOCUMENT_LIST_BUILDER_SCHEDULE,
 		FUNC_DOCUMENT_HANDLER_SCHEDULE,
 		FUNC_VALIDATOR_SCHEDULE,
-		HORIZON_API_ENDPOINT,
-		HORIZON_API_TIMEOUT_MS,
 		MANAGE_APPEALS_API_ENDPOINT,
 		MANAGE_APPEALS_DOCUMENTS_ACCOUNT_NAME,
 		MANAGE_APPEALS_DOCUMENTS_CONTAINER_NAME,
@@ -56,9 +50,6 @@ export function loadConfig(): Config {
 		MANAGE_APPEALS_SQL_CONNECTION_STRING
 	} = process.env;
 
-	if (!HORIZON_API_ENDPOINT) {
-		throw new Error('MANAGE_APPEALS_API_ENDPOINT is required');
-	}
 	if (!MANAGE_APPEALS_API_ENDPOINT) {
 		throw new Error('MANAGE_APPEALS_API_ENDPOINT is required');
 	}
@@ -98,10 +89,6 @@ export function loadConfig(): Config {
 			eValidator: {
 				schedule: FUNC_VALIDATOR_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
 			}
-		},
-		horizon: {
-			apiEndpoint: HORIZON_API_ENDPOINT,
-			apiTimeoutMs: HORIZON_API_TIMEOUT_MS ? parseInt(HORIZON_API_TIMEOUT_MS) : undefined
 		},
 		manageAppeals: {
 			apiEndpoint: MANAGE_APPEALS_API_ENDPOINT,
