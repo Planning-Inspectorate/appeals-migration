@@ -3,7 +3,7 @@ import { initialiseService } from '../init.ts';
 import { buildListCasesToMigrate } from './a-list-cases-to-migrate/impl.ts';
 import { buildTransformer } from './b-transformer/impl.ts';
 import { buildListDocumentsToMigrate } from './c-list-documents-to-migrate/impl.ts';
-import { buildDocumentHandler } from './d-document-handler/impl.ts';
+import { buildMigrateDocuments } from './d-migrate-documents/impl.ts';
 import { buildValidator } from './e-validator/impl.ts';
 
 const service = initialiseService();
@@ -29,11 +29,11 @@ app.timer('c-list-documents-to-migrate', {
 	handler: buildListDocumentsToMigrate(service)
 });
 
-console.log(`registering 'd-document-handler' on schedule ${service.dDocumentHandlerSchedule}`);
+console.log(`registering 'd-migrate-documents' on schedule ${service.dMigrateDocumentsSchedule}`);
 
-app.timer('d-document-handler', {
-	schedule: service.dDocumentHandlerSchedule,
-	handler: buildDocumentHandler(service)
+app.timer('d-migrate-documents', {
+	schedule: service.dMigrateDocumentsSchedule,
+	handler: buildMigrateDocuments(service)
 });
 
 console.log(`registering 'e-validator' on schedule ${service.eValidatorSchedule}`);
