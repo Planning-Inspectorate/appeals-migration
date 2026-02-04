@@ -11,10 +11,13 @@ export interface Config {
 		bTransformer: {
 			schedule: string;
 		};
-		cDocumentHandler: {
+		cDocumentListBuilder: {
 			schedule: string;
 		};
-		dValidator: {
+		dDocumentHandler: {
+			schedule: string;
+		};
+		eValidator: {
 			schedule: string;
 		};
 	};
@@ -40,6 +43,7 @@ export function loadConfig(): Config {
 	const {
 		FUNC_LIST_BUILDER_SCHEDULE,
 		FUNC_TRANSFORMER_SCHEDULE,
+		FUNC_DOCUMENT_LIST_BUILDER_SCHEDULE,
 		FUNC_DOCUMENT_HANDLER_SCHEDULE,
 		FUNC_VALIDATOR_SCHEDULE,
 		HORIZON_API_ENDPOINT,
@@ -85,10 +89,13 @@ export function loadConfig(): Config {
 			bTransformer: {
 				schedule: FUNC_TRANSFORMER_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
 			},
-			cDocumentHandler: {
+			cDocumentListBuilder: {
+				schedule: FUNC_DOCUMENT_LIST_BUILDER_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
+			},
+			dDocumentHandler: {
 				schedule: FUNC_DOCUMENT_HANDLER_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
 			},
-			dValidator: {
+			eValidator: {
 				schedule: FUNC_VALIDATOR_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
 			}
 		},

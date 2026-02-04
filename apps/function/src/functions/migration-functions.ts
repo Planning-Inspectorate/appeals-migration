@@ -2,8 +2,9 @@ import { app } from '@azure/functions';
 import { initialiseService } from '../init.ts';
 import { buildListBuilder } from './a-list-builder/impl.ts';
 import { buildTransformer } from './b-transformer/impl.ts';
-import { buildDocumentHandler } from './c-document-handler/impl.ts';
-import { buildValidator } from './d-validator/impl.ts';
+import { buildDocumentListBuilder } from './c-document-list-builder/impl.ts';
+import { buildDocumentHandler } from './d-document-handler/impl.ts';
+import { buildValidator } from './e-validator/impl.ts';
 
 const service = initialiseService();
 
@@ -21,16 +22,23 @@ app.timer('b-transformer', {
 	handler: buildTransformer(service)
 });
 
-console.log(`registering 'c-document-handler' on schedule ${service.cDocumentHandlerSchedule}`);
+console.log(`registering 'c-document-list-builder' on schedule ${service.cDocumentListBuilderSchedule}`);
 
-app.timer('c-document-handler', {
-	schedule: service.cDocumentHandlerSchedule,
+app.timer('c-document-list-builder', {
+	schedule: service.cDocumentListBuilderSchedule,
+	handler: buildDocumentListBuilder(service)
+});
+
+console.log(`registering 'd-document-handler' on schedule ${service.dDocumentHandlerSchedule}`);
+
+app.timer('d-document-handler', {
+	schedule: service.dDocumentHandlerSchedule,
 	handler: buildDocumentHandler(service)
 });
 
-console.log(`registering 'd-validator' on schedule ${service.dValidatorSchedule}`);
+console.log(`registering 'e-validator' on schedule ${service.eValidatorSchedule}`);
 
-app.timer('d-validator', {
-	schedule: service.dValidatorSchedule,
+app.timer('e-validator', {
+	schedule: service.eValidatorSchedule,
 	handler: buildValidator(service)
 });
