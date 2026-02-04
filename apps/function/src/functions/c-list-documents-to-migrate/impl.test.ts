@@ -1,9 +1,9 @@
 // @ts-nocheck
 import { describe, test, mock } from 'node:test';
-import { buildDocumentListBuilder } from './impl.ts';
+import { buildListDocumentsToMigrate } from './impl.ts';
 import assert from 'node:assert';
 
-describe('c-document-list-builder-impl', () => {
+describe('c-list-documents-to-migrate-impl', () => {
 	const newService = () => {
 		return {
 			databaseClient: {
@@ -19,7 +19,7 @@ describe('c-document-list-builder-impl', () => {
 		service.databaseClient.$queryRaw.mock.mockImplementationOnce(() => {
 			return '1';
 		});
-		const handler = buildDocumentListBuilder(service);
+		const handler = buildListDocumentsToMigrate(service);
 		await handler({}, context);
 		assert.strictEqual(service.databaseClient.$queryRaw.mock.callCount(), 1);
 		assert.strictEqual(context.log.mock.callCount(), 2);
@@ -34,7 +34,7 @@ describe('c-document-list-builder-impl', () => {
 		service.databaseClient.$queryRaw.mock.mockImplementationOnce(() => {
 			throw new Error('database error');
 		});
-		const handler = buildDocumentListBuilder(service);
+		const handler = buildListDocumentsToMigrate(service);
 		await assert.rejects(() => handler({}, context));
 		assert.strictEqual(service.databaseClient.$queryRaw.mock.callCount(), 1);
 		assert.strictEqual(context.log.mock.callCount(), 2);

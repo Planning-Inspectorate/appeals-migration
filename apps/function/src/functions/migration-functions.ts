@@ -2,7 +2,7 @@ import { app } from '@azure/functions';
 import { initialiseService } from '../init.ts';
 import { buildListCasesToMigrate } from './a-list-cases-to-migrate/impl.ts';
 import { buildTransformer } from './b-transformer/impl.ts';
-import { buildDocumentListBuilder } from './c-document-list-builder/impl.ts';
+import { buildListDocumentsToMigrate } from './c-list-documents-to-migrate/impl.ts';
 import { buildDocumentHandler } from './d-document-handler/impl.ts';
 import { buildValidator } from './e-validator/impl.ts';
 
@@ -22,11 +22,11 @@ app.timer('b-transformer', {
 	handler: buildTransformer(service)
 });
 
-console.log(`registering 'c-document-list-builder' on schedule ${service.cDocumentListBuilderSchedule}`);
+console.log(`registering 'c-list-documents-to-migrate' on schedule ${service.cListDocumentsToMigrateSchedule}`);
 
-app.timer('c-document-list-builder', {
-	schedule: service.cDocumentListBuilderSchedule,
-	handler: buildDocumentListBuilder(service)
+app.timer('c-list-documents-to-migrate', {
+	schedule: service.cListDocumentsToMigrateSchedule,
+	handler: buildListDocumentsToMigrate(service)
 });
 
 console.log(`registering 'd-document-handler' on schedule ${service.dDocumentHandlerSchedule}`);

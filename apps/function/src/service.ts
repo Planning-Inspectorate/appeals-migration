@@ -39,8 +39,8 @@ export class FunctionService {
 		return this.#config.functions.bTransformer.schedule;
 	}
 
-	get cDocumentListBuilderSchedule() {
-		return this.#config.functions.cDocumentListBuilder.schedule;
+	get cListDocumentsToMigrateSchedule() {
+		return this.#config.functions.cListDocumentsToMigrate.schedule;
 	}
 
 	get dDocumentHandlerSchedule() {
