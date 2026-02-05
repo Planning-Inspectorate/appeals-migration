@@ -30,6 +30,7 @@ describe('upsertCaseReferences', () => {
 			create: {
 				caseReference: 'CASE-001',
 				DataStep: { create: { inProgress: false, complete: false } },
+				DocumentListStep: { create: { inProgress: false, complete: false } },
 				DocumentsStep: { create: { inProgress: false, complete: false } },
 				ValidationStep: { create: { inProgress: false, complete: false } }
 			}

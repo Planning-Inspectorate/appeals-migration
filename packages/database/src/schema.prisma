@@ -42,6 +42,9 @@ model CaseToMigrate {
   dataStepId Int           @unique
   DataStep   MigrationStep @relation("DataStep", fields: [dataStepId], references: [id], onUpdate: NoAction, onDelete: NoAction)
 
+  documentListStepId Int           @unique
+  DocumentListStep   MigrationStep @relation("DocumentListStep", fields: [documentListStepId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
   documentsStepId Int           @unique
   DocumentsStep   MigrationStep @relation("DocumentsStep", fields: [documentsStepId], references: [id], onUpdate: NoAction, onDelete: NoAction)
 
@@ -62,7 +65,19 @@ model MigrationStep {
 
   // todo: attempts and/or failures?
 
-  DataStepCase       CaseToMigrate? @relation("DataStep")
-  DocumentsStepCase  CaseToMigrate? @relation("DocumentsStep")
-  ValidationStepCase CaseToMigrate? @relation("ValidationStep")
+  DataStepCase         CaseToMigrate?     @relation("DataStep")
+  DocumentListStepCase CaseToMigrate?     @relation("DocumentListStep")
+  DocumentsStepCase    CaseToMigrate?     @relation("DocumentsStep")
+  ValidationStepCase   CaseToMigrate?     @relation("ValidationStep")
+  DocumentToMigrate    DocumentToMigrate?
+}
+
+/// A table to hold documents that need to be migrated for each case
+model DocumentToMigrate {
+  documentId String @id
+
+  caseReference String
+
+  migrationStepId Int           @unique
+  MigrationStep   MigrationStep @relation(fields: [migrationStepId], references: [id], onUpdate: NoAction, onDelete: NoAction)
 }
