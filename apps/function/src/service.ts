@@ -35,8 +35,8 @@ export class FunctionService {
 		return this.#config.functions.aListCasesToMigrate.schedule;
 	}
 
-	get bTransformerSchedule() {
-		return this.#config.functions.bTransformer.schedule;
+	get bMigrateDataSchedule() {
+		return this.#config.functions.bMigrateData.schedule;
 	}
 
 	get cListDocumentsToMigrateSchedule() {

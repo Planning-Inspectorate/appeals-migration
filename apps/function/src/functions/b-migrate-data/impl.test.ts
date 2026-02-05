@@ -1,9 +1,9 @@
 // @ts-nocheck
 import { describe, test, mock } from 'node:test';
-import { buildTransformer } from './impl.ts';
+import { buildMigrateData } from './impl.ts';
 import assert from 'node:assert';
 
-describe('buildTransformer', () => {
+describe('buildMigrateData', () => {
 	const newService = () => ({
 		databaseClient: { db: 'migration' },
 		sourceDatabaseClient: { db: 'source' },
@@ -37,7 +37,7 @@ describe('buildTransformer', () => {
 
 		migration.claimNextCaseToMigrate.mock.mockImplementationOnce(() => null);
 
-		const handler = buildTransformer(service, migration, source, mappers, sink);
+		const handler = buildMigrateData(service, migration, source, mappers, sink);
 		await handler({}, context);
 
 		assert.strictEqual(migration.claimNextCaseToMigrate.mock.callCount(), 1);
@@ -64,7 +64,7 @@ describe('buildTransformer', () => {
 		sink.upsertAppeal.mock.mockImplementationOnce(() => mockResult);
 		migration.updateDataStepComplete.mock.mockImplementationOnce(() => {});
 
-		const handler = buildTransformer(service, migration, source, mappers, sink);
+		const handler = buildMigrateData(service, migration, source, mappers, sink);
 		await handler({}, context);
 
 		assert.strictEqual(migration.claimNextCaseToMigrate.mock.callCount(), 1);
@@ -99,7 +99,7 @@ describe('buildTransformer', () => {
 		sink.upsertAppeal.mock.mockImplementationOnce(() => mockResult);
 		migration.updateDataStepComplete.mock.mockImplementationOnce(() => {});
 
-		const handler = buildTransformer(service, migration, source, mappers, sink);
+		const handler = buildMigrateData(service, migration, source, mappers, sink);
 		await handler({}, context);
 
 		assert.strictEqual(context.log.mock.calls[1].arguments[0], 'Case CASE-002 already exists in sink database');
@@ -120,7 +120,7 @@ describe('buildTransformer', () => {
 		source.fetchCaseDetails.mock.mockImplementationOnce(() => null);
 		migration.updateDataStepComplete.mock.mockImplementationOnce(() => {});
 
-		const handler = buildTransformer(service, migration, source, mappers, sink);
+		const handler = buildMigrateData(service, migration, source, mappers, sink);
 		await handler({}, context);
 
 		assert.strictEqual(context.error.mock.callCount(), 1);
@@ -147,7 +147,7 @@ describe('buildTransformer', () => {
 			throw error;
 		});
 
-		const handler = buildTransformer(service, migration, source, mappers, sink);
+		const handler = buildMigrateData(service, migration, source, mappers, sink);
 
 		await assert.rejects(() => handler({}, context), error);
 		assert.strictEqual(context.error.mock.callCount(), 1);

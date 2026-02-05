@@ -8,7 +8,7 @@ export interface Config {
 		aListCasesToMigrate: {
 			schedule: string;
 		};
-		bTransformer: {
+		bMigrateData: {
 			schedule: string;
 		};
 		cListDocumentsToMigrate: {
@@ -77,7 +77,7 @@ export function loadConfig(): Config {
 			aListCasesToMigrate: {
 				schedule: FUNC_LIST_CASE_TO_MIGRATE_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
 			},
-			bTransformer: {
+			bMigrateData: {
 				schedule: FUNC_TRANSFORMER_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
 			},
 			cListDocumentsToMigrate: {

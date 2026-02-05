@@ -40,7 +40,7 @@ const defaultSink: Sink = {
 	upsertAppeal
 };
 
-export function buildTransformer(
+export function buildMigrateData(
 	service: FunctionService,
 	migration: Migration = defaultMigration,
 	source: Source = defaultSource,
