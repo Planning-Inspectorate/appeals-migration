@@ -4,7 +4,7 @@ import { buildListCasesToMigrate } from './a-list-cases-to-migrate/impl.ts';
 import { buildTransformer } from './b-transformer/impl.ts';
 import { buildListDocumentsToMigrate } from './c-list-documents-to-migrate/impl.ts';
 import { buildMigrateDocuments } from './d-migrate-documents/impl.ts';
-import { buildValidator } from './e-validator/impl.ts';
+import { buildValidateMigratedCases } from './e-validate-migrated-cases/impl.ts';
 
 const service = initialiseService();
 
@@ -36,9 +36,9 @@ app.timer('d-migrate-documents', {
 	handler: buildMigrateDocuments(service)
 });
 
-console.log(`registering 'e-validator' on schedule ${service.eValidatorSchedule}`);
+console.log(`registering 'e-validate-migrated-cases' on schedule ${service.eValidateMigratedCasesSchedule}`);
 
-app.timer('e-validator', {
-	schedule: service.eValidatorSchedule,
-	handler: buildValidator(service)
+app.timer('e-validate-migrated-cases', {
+	schedule: service.eValidateMigratedCasesSchedule,
+	handler: buildValidateMigratedCases(service)
 });
