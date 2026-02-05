@@ -18,6 +18,12 @@ export async function upsertCaseReferences(
 						complete: false
 					}
 				},
+				DocumentListStep: {
+					create: {
+						inProgress: false,
+						complete: false
+					}
+				},
 				DocumentsStep: {
 					create: {
 						inProgress: false,
