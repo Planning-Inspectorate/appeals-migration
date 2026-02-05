@@ -1,9 +1,9 @@
 // @ts-nocheck
 import { describe, test, mock } from 'node:test';
-import { buildValidator } from './impl.ts';
+import { buildValidateMigratedCases } from './impl.ts';
 import assert from 'node:assert';
 
-describe('e-validator-impl', () => {
+describe('e-validate-migrated-cases-impl', () => {
 	const newService = () => {
 		return {
 			databaseClient: {
@@ -19,7 +19,7 @@ describe('e-validator-impl', () => {
 		service.databaseClient.$queryRaw.mock.mockImplementationOnce(() => {
 			return '1';
 		});
-		const handler = buildValidator(service);
+		const handler = buildValidateMigratedCases(service);
 		await handler({}, context);
 		assert.strictEqual(service.databaseClient.$queryRaw.mock.callCount(), 1);
 		assert.strictEqual(context.log.mock.callCount(), 2);
@@ -34,7 +34,7 @@ describe('e-validator-impl', () => {
 		service.databaseClient.$queryRaw.mock.mockImplementationOnce(() => {
 			throw new Error('database error');
 		});
-		const handler = buildValidator(service);
+		const handler = buildValidateMigratedCases(service);
 		await assert.rejects(() => handler({}, context));
 		assert.strictEqual(service.databaseClient.$queryRaw.mock.callCount(), 1);
 		assert.strictEqual(context.log.mock.callCount(), 2);

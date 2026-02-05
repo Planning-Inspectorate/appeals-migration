@@ -47,7 +47,7 @@ export class FunctionService {
 		return this.#config.functions.dMigrateDocuments.schedule;
 	}
 
-	get eValidatorSchedule() {
-		return this.#config.functions.eValidator.schedule;
+	get eValidateMigratedCasesSchedule() {
+		return this.#config.functions.eValidateMigratedCases.schedule;
 	}
 }

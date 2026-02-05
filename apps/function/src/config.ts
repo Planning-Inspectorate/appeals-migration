@@ -17,7 +17,7 @@ export interface Config {
 		dMigrateDocuments: {
 			schedule: string;
 		};
-		eValidator: {
+		eValidateMigratedCases: {
 			schedule: string;
 		};
 	};
@@ -41,7 +41,7 @@ export function loadConfig(): Config {
 		FUNC_TRANSFORMER_SCHEDULE,
 		FUNC_LIST_DOCUMENTS_TO_MIGRATE_SCHEDULE,
 		FUNC_MIGRATE_DOCUMENTS_SCHEDULE,
-		FUNC_VALIDATOR_SCHEDULE,
+		FUNC_VALIDATE_MIGRATED_CASES_SCHEDULE,
 		MANAGE_APPEALS_API_ENDPOINT,
 		MANAGE_APPEALS_DOCUMENTS_ACCOUNT_NAME,
 		MANAGE_APPEALS_DOCUMENTS_CONTAINER_NAME,
@@ -86,8 +86,8 @@ export function loadConfig(): Config {
 			dMigrateDocuments: {
 				schedule: FUNC_MIGRATE_DOCUMENTS_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
 			},
-			eValidator: {
-				schedule: FUNC_VALIDATOR_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
+			eValidateMigratedCases: {
+				schedule: FUNC_VALIDATE_MIGRATED_CASES_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
 			}
 		},
 		manageAppeals: {
