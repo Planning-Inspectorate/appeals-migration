@@ -1,55 +1,58 @@
 import type { PrismaClient as MigrationPrismaClient } from '@pins/appeals-migration-database';
 
-export interface AvailableCase {
+export interface ClaimedCase {
 	caseReference: string;
 	documentListStepId: number;
 }
 
-export async function findAvailableCaseForDocumentList(
+export async function claimNextCaseForDocumentList(
 	migrationDatabase: MigrationPrismaClient
-): Promise<AvailableCase | null> {
-	const availableCase = await migrationDatabase.caseToMigrate.findFirst({
-		where: {
-			DocumentListStep: {
-				inProgress: false,
-				complete: false
+): Promise<ClaimedCase | null> {
+	return migrationDatabase.$transaction(async (tx) => {
+		const caseToProcess = await tx.caseToMigrate.findFirst({
+			where: {
+				DocumentListStep: {
+					inProgress: false,
+					complete: false
+				},
+				DataStep: {
+					complete: true
+				}
 			},
-			DataStep: {
-				complete: true
+			orderBy: { caseReference: 'asc' },
+			select: {
+				caseReference: true,
+				documentListStepId: true
 			}
-		},
-		orderBy: { caseReference: 'asc' },
-		select: {
-			caseReference: true,
-			documentListStepId: true
+		});
+
+		if (!caseToProcess) {
+			return null;
 		}
-	});
 
-	return availableCase;
+		await tx.migrationStep.update({
+			where: { id: caseToProcess.documentListStepId },
+			data: { inProgress: true }
+		});
+
+		return caseToProcess;
+	});
 }
 
-export async function processDocumentListStep(tx: MigrationPrismaClient, documentListStepId: number): Promise<boolean> {
-	const claimResult = await tx.migrationStep.updateMany({
-		where: {
-			id: documentListStepId,
-			inProgress: false,
-			complete: false
-		},
-		data: { inProgress: true }
-	});
-
-	return claimResult.count > 0;
-}
-
-export async function markDocumentListStepComplete(
-	tx: MigrationPrismaClient,
-	documentListStepId: number
+export async function updateDocumentListStepComplete(
+	migrationDatabase: MigrationPrismaClient,
+	caseReference: string,
+	complete: boolean
 ): Promise<void> {
-	await tx.migrationStep.update({
-		where: { id: documentListStepId },
+	await migrationDatabase.caseToMigrate.update({
+		where: { caseReference },
 		data: {
-			inProgress: false,
-			complete: true
+			DocumentListStep: {
+				update: {
+					inProgress: false,
+					complete
+				}
+			}
 		}
 	});
 }

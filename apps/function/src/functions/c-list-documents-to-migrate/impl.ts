@@ -1,8 +1,4 @@
-import {
-	findAvailableCaseForDocumentList,
-	processDocumentListStep,
-	markDocumentListStepComplete
-} from './migration/case-to-migrate.ts';
+import { claimNextCaseForDocumentList, updateDocumentListStepComplete } from './migration/case-to-migrate.ts';
 import { fetchDocumentsByCaseReference } from './source/document.ts';
 import { upsertDocumentsToMigrate } from './migration/document-to-migrate.ts';
 
@@ -11,9 +7,8 @@ import type { TimerHandler } from '@azure/functions';
 import type { PrismaClient as MigrationPrismaClient } from '@pins/appeals-migration-database/src/client/client.ts';
 
 type Migration = {
-	findAvailableCaseForDocumentList: typeof findAvailableCaseForDocumentList;
-	processDocumentListStep: typeof processDocumentListStep;
-	markDocumentListStepComplete: typeof markDocumentListStepComplete;
+	claimNextCaseForDocumentList: typeof claimNextCaseForDocumentList;
+	updateDocumentListStepComplete: typeof updateDocumentListStepComplete;
 	upsertDocumentsToMigrate: typeof upsertDocumentsToMigrate;
 };
 
@@ -22,9 +17,8 @@ type Source = {
 };
 
 const defaultMigration: Migration = {
-	findAvailableCaseForDocumentList,
-	processDocumentListStep,
-	markDocumentListStepComplete,
+	claimNextCaseForDocumentList,
+	updateDocumentListStepComplete,
 	upsertDocumentsToMigrate
 };
 
@@ -42,45 +36,31 @@ export function buildListDocumentsToMigrate(
 			const migrationDatabase = service.databaseClient;
 			const sourceDatabase = service.sourceDatabaseClient;
 
-			// Step 1: Find an available case (read-only, no lock)
-			const availableCase = await migration.findAvailableCaseForDocumentList(migrationDatabase);
+			// Step 1: Atomically claim a case for processing
+			const claimedCase = await migration.claimNextCaseForDocumentList(migrationDatabase);
 
-			if (!availableCase) {
+			if (!claimedCase) {
 				context.log('No cases ready for document list building');
 				return;
 			}
 
-			context.log(`Processing case: ${availableCase.caseReference}`);
-			// Step 2: Fetch documents from source database (outside transaction)
-			const documents = await source.fetchDocumentsByCaseReference(sourceDatabase, availableCase.caseReference);
+			const caseReference = claimedCase.caseReference;
+			context.log(`Processing case: ${caseReference}`);
 
-			context.log(`Found ${documents.length} documents for case ${availableCase.caseReference}`);
+			// Step 2: Fetch documents from source database
+			const documents = await source.fetchDocumentsByCaseReference(sourceDatabase, caseReference);
 
-			// Step 3: Process document list step in a single transaction
-			// If anything fails, the entire transaction rolls back
-			const processed = await migrationDatabase.$transaction(async (tx) => {
-				const processSucceeded = await migration.processDocumentListStep(
-					tx as MigrationPrismaClient,
-					availableCase.documentListStepId
-				);
+			context.log(`Found ${documents.length} documents for case ${caseReference}`);
 
-				if (!processSucceeded) {
-					return false;
-				}
-
+			// Step 3: Upsert documents to migration database
+			await migrationDatabase.$transaction(async (tx) => {
 				await migration.upsertDocumentsToMigrate(tx as MigrationPrismaClient, documents);
-
-				await migration.markDocumentListStepComplete(tx as MigrationPrismaClient, availableCase.documentListStepId);
-
-				return true;
 			});
 
-			if (!processed) {
-				context.log(`Case ${availableCase.caseReference} was processed by another instance`);
-				return;
-			}
+			// Step 4: Mark the document list step as complete
+			await migration.updateDocumentListStepComplete(migrationDatabase, caseReference, true);
 
-			context.log(`Completed document list for case ${availableCase.caseReference}`);
+			context.log(`Completed document list for case ${caseReference}`);
 		} catch (error) {
 			context.error('Error during document list builder run', error);
 			throw error;
