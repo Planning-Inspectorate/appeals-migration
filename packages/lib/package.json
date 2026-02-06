@@ -9,9 +9,17 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@azure/msal-node": "*",
+		"@pins/appeals-migration-database": "*",
+    "connect-redis": "*",
+    "express-session": "*",
 		"httpntlm": "*",
-    "@pins/appeals-migration-database": "*",
+    "notifications-node-client": "*",
     "pino": "*",
-    "pino-pretty": "*"
+    "pino-pretty": "*",
+    "redis": "*"
+  },
+  "devDependencies": {
+    "sass": "*"
   }
 }
