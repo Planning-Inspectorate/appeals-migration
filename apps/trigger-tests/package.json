@@ -1,0 +1,20 @@
+{
+  "name": "@pins/trigger-tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "func start",
+    "dispatch": "func start --functions migrationDispatcher",
+    "worker": "func start --functions migrationWorker"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.11.1",
+    "@azure/service-bus": "^7.9.5",
+    "lodash.chunk": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/lodash.chunk": "^4.2.9"
+  }
+}
