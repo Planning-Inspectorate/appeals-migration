@@ -1,8 +1,8 @@
-import { app } from '@azure/functions';
 import type { InvocationContext } from '@azure/functions';
-import { randomInt } from 'node:crypto';
+import { app } from '@azure/functions';
 import { newDatabaseClient } from '@pins/appeals-migration-database';
 import type { CaseToMigrate } from '@pins/appeals-migration-database/src/client/client.ts';
+import { randomInt } from 'node:crypto';
 
 function delayMilliseconds(milliseconds: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, milliseconds));

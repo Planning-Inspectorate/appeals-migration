@@ -1,5 +1,5 @@
-import { app } from '@azure/functions';
 import type { InvocationContext, Timer } from '@azure/functions';
+import { app } from '@azure/functions';
 import { ServiceBusAdministrationClient, ServiceBusClient } from '@azure/service-bus';
 import { newDatabaseClient } from '@pins/appeals-migration-database';
 import type { CaseToMigrate } from '@pins/appeals-migration-database/src/client/client.ts';
