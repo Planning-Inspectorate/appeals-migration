@@ -2,7 +2,7 @@ services:
   mssql:
     image: mcr.microsoft.com/azure-sql-edge:latest
     container_name: appeals-migration-mssql
-    platform: linux/amd64 # force platform, so ARM machines to use emulation
+    platform: ${PLATFORM:-linux/amd64} # force platform, so ARM machines to use emulation
     cap_add: ['SYS_PTRACE']
     user: root
     init: true
@@ -18,7 +18,7 @@ services:
   manage-appeals-mssql:
     image: mcr.microsoft.com/azure-sql-edge:latest
     container_name: appeals-migration-manage-appeals-mssql
-    platform: linux/amd64 # force platform, so ARM machines to use emulation
+    platform: ${PLATFORM:-linux/amd64} # force platform, so ARM machines to use emulation
     cap_add: ['SYS_PTRACE']
     user: root
     init: true
@@ -34,7 +34,7 @@ services:
   odw-curated-mssql:
     image: mcr.microsoft.com/azure-sql-edge:latest
     container_name: appeals-migration-odw-curated-mssql
-    platform: linux/amd64 # force platform, so ARM machines to use emulation
+    platform: ${PLATFORM:-linux/amd64} # force platform, so ARM machines to use emulation
     cap_add: ['SYS_PTRACE']
     user: root
     init: true
