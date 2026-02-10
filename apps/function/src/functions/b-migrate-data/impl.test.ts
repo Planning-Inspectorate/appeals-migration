@@ -16,7 +16,8 @@ describe('buildMigrateData', () => {
 	});
 
 	const newSource = () => ({
-		fetchCaseDetails: mock.fn()
+		fetchCaseDetails: mock.fn(),
+		fetchEventDetails: mock.fn()
 	});
 
 	const newMappers = () => ({
@@ -55,11 +56,13 @@ describe('buildMigrateData', () => {
 
 		const mockCase = { caseReference: 'CASE-001', dataStepId: 1 };
 		const mockCaseDetails = { type: 'has', data: { caseReference: 'CASE-001' } };
+		const mockEvents = [];
 		const mockMappedAppeal = { reference: 'CASE-001' };
 		const mockResult = { existed: false, appeal: { id: 1, reference: 'CASE-001' } };
 
 		migration.claimNextCaseToMigrate.mock.mockImplementationOnce(() => mockCase);
 		source.fetchCaseDetails.mock.mockImplementationOnce(() => mockCaseDetails);
+		source.fetchEventDetails.mock.mockImplementationOnce(() => mockEvents);
 		mappers.mapSourceToSinkAppeal.mock.mockImplementationOnce(() => mockMappedAppeal);
 		sink.upsertAppeal.mock.mockImplementationOnce(() => mockResult);
 		migration.updateDataStepComplete.mock.mockImplementationOnce(() => {});
@@ -69,6 +72,7 @@ describe('buildMigrateData', () => {
 
 		assert.strictEqual(migration.claimNextCaseToMigrate.mock.callCount(), 1);
 		assert.strictEqual(source.fetchCaseDetails.mock.callCount(), 1);
+		assert.strictEqual(source.fetchEventDetails.mock.callCount(), 1);
 		assert.strictEqual(mappers.mapSourceToSinkAppeal.mock.callCount(), 1);
 		assert.strictEqual(sink.upsertAppeal.mock.callCount(), 1);
 		assert.strictEqual(migration.updateDataStepComplete.mock.callCount(), 1);
@@ -90,11 +94,13 @@ describe('buildMigrateData', () => {
 
 		const mockCase = { caseReference: 'CASE-002', dataStepId: 2 };
 		const mockCaseDetails = { type: 's78', data: { caseReference: 'CASE-002' } };
+		const mockEvents = [];
 		const mockMappedAppeal = { reference: 'CASE-002' };
 		const mockResult = { existed: true, appeal: { id: 2, reference: 'CASE-002' } };
 
 		migration.claimNextCaseToMigrate.mock.mockImplementationOnce(() => mockCase);
 		source.fetchCaseDetails.mock.mockImplementationOnce(() => mockCaseDetails);
+		source.fetchEventDetails.mock.mockImplementationOnce(() => mockEvents);
 		mappers.mapSourceToSinkAppeal.mock.mockImplementationOnce(() => mockMappedAppeal);
 		sink.upsertAppeal.mock.mockImplementationOnce(() => mockResult);
 		migration.updateDataStepComplete.mock.mockImplementationOnce(() => {});
