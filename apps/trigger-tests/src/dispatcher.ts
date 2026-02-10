@@ -5,29 +5,44 @@ import { newDatabaseClient } from '@pins/appeals-migration-database';
 import type { CaseToMigrate } from '@pins/appeals-migration-database/src/client/client.ts';
 import chunk from 'lodash.chunk';
 
+type DispatchConfig = {
+	queueName: string;
+	where: object;
+	stepIdField: string;
+};
+
 async function getDispatchCount(connection: string, queueName: string, context: InvocationContext): Promise<number> {
 	const maximumParallelism = Number(process.env.MAXIMUM_PARALLELISM ?? 5);
 	const bufferPerWorker = Number(process.env.BUFFER_PER_WORKER ?? 10);
 	const properties = await new ServiceBusAdministrationClient(connection).getQueueRuntimeProperties(queueName);
 	const activeMessageCount = properties.activeMessageCount;
-	context.log(`Active message count: ${activeMessageCount}`);
+	context.log(`[${queueName}] Queued: ${activeMessageCount}`);
 	return Math.max(0, Math.floor(maximumParallelism * bufferPerWorker) - activeMessageCount);
 }
 
-async function getCasesToMigrate(databaseConnectionString: string, dispatchCount: number): Promise<CaseToMigrate[]> {
+async function getCasesToMigrate(
+	config: DispatchConfig,
+	databaseConnectionString: string,
+	dispatchCount: number
+): Promise<CaseToMigrate[]> {
 	const prisma = newDatabaseClient(databaseConnectionString);
 	try {
 		return await prisma.$transaction(async (transaction) => {
 			const selected = await transaction.caseToMigrate.findMany({
-				where: { DataStep: { inProgress: false, complete: false } },
+				where: config.where,
 				take: dispatchCount
 			});
 			const chunkSize = Number(process.env.MIGRATIONSTEP_UPDATE_CHUNK_SIZE ?? 1000);
-			const ids = selected.map((row) => row.dataStepId);
+			const ids = selected.map((row) => (row as Record<string, unknown>)[config.stepIdField] as number);
 			for (const idsChunk of chunk(ids, chunkSize)) {
 				await transaction.migrationStep.updateMany({
 					where: { id: { in: idsChunk } },
-					data: { inProgress: true }
+					data: {
+						inProgress: true
+						// TODO set status to in-progress when implemented
+						// TODO set startTimestamp when implemented
+						// TODO set workerId when implemented
+					}
 				});
 			}
 			return selected;
@@ -38,32 +53,35 @@ async function getCasesToMigrate(databaseConnectionString: string, dispatchCount
 }
 
 async function dispatch(
+	config: DispatchConfig,
 	databaseConnectionString: string,
 	busConnectionString: string,
-	queueName: string,
 	context: InvocationContext
 ): Promise<void> {
 	let dispatchCount;
 	try {
-		dispatchCount = await getDispatchCount(busConnectionString, queueName, context);
+		dispatchCount = await getDispatchCount(busConnectionString, config.queueName, context);
 	} catch (error) {
-		context.error(`Unable to get count for ${queueName}. The Service Bus connection may need Manage rights.`, error);
+		context.error(
+			`Unable to get count for ${config.queueName}. The Service Bus connection may need Manage rights.`,
+			error
+		);
 		return;
 	}
 
-	context.log(`Dispatching ${dispatchCount} jobs.`);
+	context.log(`[${config.queueName}] Needed: ${dispatchCount}`);
 	if (dispatchCount === 0) {
 		return;
 	}
 
-	const cases = await getCasesToMigrate(databaseConnectionString, dispatchCount);
+	const cases = await getCasesToMigrate(config, databaseConnectionString, dispatchCount);
 	if (cases.length === 0) {
-		context.log('No cases to migrate.');
+		context.log(`[${config.queueName}] No cases to migrate.`);
 		return;
 	}
 
 	const client = new ServiceBusClient(busConnectionString);
-	const sender = client.createSender(queueName);
+	const sender = client.createSender(config.queueName);
 
 	try {
 		let batch = await sender.createMessageBatch();
@@ -78,7 +96,7 @@ async function dispatch(
 			if (!batch.tryAddMessage(message)) {
 				await sender.sendMessages(batch);
 				batch = await sender.createMessageBatch();
-				context.log(`Dispatched ${batch.count} jobs.`);
+				context.log(`[${config.queueName}] Dispatched: ${batch.count}`);
 				if (!batch.tryAddMessage(message)) {
 					throw new Error(`Message too large to fit in a batch: ${body.caseReference}`);
 				}
@@ -87,7 +105,7 @@ async function dispatch(
 
 		if (batch.count > 0) {
 			await sender.sendMessages(batch);
-			context.log(`Dispatched ${batch.count} jobs.`);
+			context.log(`[${config.queueName}] Dispatched ${batch.count} jobs.`);
 		}
 	} finally {
 		await sender.close();
@@ -96,13 +114,13 @@ async function dispatch(
 }
 
 async function drain(
+	config: DispatchConfig,
 	databaseConnectionString: string,
 	busConnectionString: string,
-	queueName: string,
 	context: InvocationContext
 ): Promise<void> {
 	const client = new ServiceBusClient(busConnectionString);
-	const receiver = client.createReceiver(queueName, { receiveMode: 'peekLock' });
+	const receiver = client.createReceiver(config.queueName, { receiveMode: 'peekLock' });
 	const prisma = newDatabaseClient(databaseConnectionString);
 	const chunkSize = Number(process.env.MIGRATIONSTEP_UPDATE_CHUNK_SIZE ?? 1000);
 	const parallelism = Number(process.env.SERVICE_BUS_PARALLELISM ?? 50);
@@ -116,7 +134,11 @@ async function drain(
 			}
 
 			await prisma.migrationStep.updateMany({
-				where: { id: { in: messages.map((message) => (message.body as CaseToMigrate).dataStepId) } },
+				where: {
+					id: {
+						in: messages.map((message) => (message.body as Record<string, unknown>)[config.stepIdField] as number)
+					}
+				},
 				data: { inProgress: false }
 			});
 
@@ -132,7 +154,7 @@ async function drain(
 		await client.close();
 	}
 
-	context.log(`Drained ${total} messages from queue.`);
+	context.log(`[${config.queueName}] Drained: ${total}`);
 }
 
 function isEndOfWindow(): boolean {
@@ -144,7 +166,6 @@ function isEndOfWindow(): boolean {
 
 async function run(timer: Timer, context: InvocationContext): Promise<void> {
 	const busConnectionString = process.env.SERVICE_BUS_CONNECTION!;
-	const queueName = process.env.SERVICE_BUS_QUEUE_NAME ?? 'data-migration';
 	const databaseConnectionString = process.env.SQL_CONNECTION_STRING;
 
 	if (!busConnectionString) {
@@ -154,11 +175,36 @@ async function run(timer: Timer, context: InvocationContext): Promise<void> {
 		throw new Error('Missing SQL_CONNECTION_STRING application setting.');
 	}
 
-	if (isEndOfWindow()) {
-		context.log('End of work window.');
-		await drain(databaseConnectionString, busConnectionString, queueName, context);
-	} else {
-		await dispatch(databaseConnectionString, busConnectionString, queueName, context);
+	const configs: DispatchConfig[] = [
+		{
+			queueName: 'data-step',
+			where: { DataStep: { inProgress: false, complete: false } },
+			stepIdField: 'dataStepId'
+		},
+		{
+			queueName: 'document-list-step',
+			where: { DocumentListStep: { inProgress: false, complete: false } },
+			stepIdField: 'documentListStepId'
+		},
+		{
+			queueName: 'documents-step',
+			where: { DocumentListStep: { complete: true }, DocumentsStep: { inProgress: false, complete: false } },
+			stepIdField: 'documentsStepId'
+		},
+		{
+			queueName: 'validation-step',
+			where: {
+				DataStep: { complete: true },
+				DocumentsStep: { complete: true },
+				ValidationStep: { inProgress: false, complete: false }
+			},
+			stepIdField: 'validationStepId'
+		}
+	];
+	const action = isEndOfWindow() ? drain : dispatch;
+	context.log(`mode: ${action.name}`);
+	for (const config of configs) {
+		await action(config, databaseConnectionString, busConnectionString, context);
 	}
 }
 
