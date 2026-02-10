@@ -7,9 +7,10 @@
   "scripts": {
     "start": "func start",
     "dispatch": "func start --functions migrationDispatcher",
-    "worker": "func start --functions dataMigration documentMigration validationStep",
-    "data": "func start --functions dataMigration",
-    "document": "func start --functions documentMigration",
+    "worker": "func start --functions dataStep documentListStep documentStep validationStep",
+    "data": "func start --functions dataStep",
+    "document-list": "func start --functions documentListStep",
+    "document": "func start --functions documentStep",
     "validation": "func start --functions validationStep"
   },
   "dependencies": {

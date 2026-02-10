@@ -144,7 +144,7 @@ function isEndOfWindow(): boolean {
 
 async function run(timer: Timer, context: InvocationContext): Promise<void> {
 	const busConnectionString = process.env.SERVICE_BUS_CONNECTION!;
-	const queueName = process.env.SERVICE_BUS_QUEUE_NAME ?? 'migration-jobs';
+	const queueName = process.env.SERVICE_BUS_QUEUE_NAME ?? 'data-migration';
 	const databaseConnectionString = process.env.SQL_CONNECTION_STRING;
 
 	if (!busConnectionString) {

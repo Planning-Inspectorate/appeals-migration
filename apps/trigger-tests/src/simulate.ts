@@ -6,20 +6,26 @@ function delayMilliseconds(milliseconds: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
-export async function dataMigration(caseToMigrate: CaseToMigrate, context: InvocationContext): Promise<void> {
-	context.log(`Starting data migration for ${caseToMigrate.caseReference}`);
+export async function dataStep(caseToMigrate: CaseToMigrate, context: InvocationContext): Promise<void> {
+	context.log(`Starting data step for ${caseToMigrate.caseReference}`);
 	await delayMilliseconds(randomInt(1000, 3000));
-	context.log(`Completed data migration for ${caseToMigrate.caseReference}`);
+	context.log(`Completed data step for ${caseToMigrate.caseReference}`);
 }
 
-export async function documentMigration(caseToMigrate: CaseToMigrate, context: InvocationContext): Promise<void> {
-	context.log(`Starting document migration for ${caseToMigrate.caseReference}`);
+export async function documentListStep(caseToMigrate: CaseToMigrate, context: InvocationContext): Promise<void> {
+	context.log(`Starting document list step for ${caseToMigrate.caseReference}`);
 	await delayMilliseconds(randomInt(1000, 3000));
-	context.log(`Completed document migration for ${caseToMigrate.caseReference}`);
+	context.log(`Completed document list step for ${caseToMigrate.caseReference}`);
+}
+
+export async function documentStep(caseToMigrate: CaseToMigrate, context: InvocationContext): Promise<void> {
+	context.log(`Starting document step for ${caseToMigrate.caseReference}`);
+	await delayMilliseconds(randomInt(1000, 3000));
+	context.log(`Completed document step for ${caseToMigrate.caseReference}`);
 }
 
 export async function validationStep(caseToMigrate: CaseToMigrate, context: InvocationContext): Promise<void> {
-	context.log(`Starting validation for ${caseToMigrate.caseReference}`);
+	context.log(`Starting validation step for ${caseToMigrate.caseReference}`);
 	await delayMilliseconds(randomInt(1000, 3000));
-	context.log(`Completed validation for ${caseToMigrate.caseReference}`);
+	context.log(`Completed validation step for ${caseToMigrate.caseReference}`);
 }
