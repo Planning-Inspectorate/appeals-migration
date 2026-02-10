@@ -7,7 +7,10 @@
   "scripts": {
     "start": "func start",
     "dispatch": "func start --functions migrationDispatcher",
-    "worker": "func start --functions migrationWorker"
+    "worker": "func start --functions dataMigration documentMigration validationStep",
+    "data": "func start --functions dataMigration",
+    "document": "func start --functions documentMigration",
+    "validation": "func start --functions validationStep"
   },
   "dependencies": {
     "@azure/functions": "^4.11.1",
