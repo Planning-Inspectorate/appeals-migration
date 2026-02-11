@@ -131,32 +131,32 @@ export const completeAppealHasCase: AppealHas = {
 
 /**
  * Minimal AppealHas case with only required fields
+ * Test data for minimal case scenarios
  */
-export const minimalAppealHasCase: Partial<AppealHas> = {
+export const minimalAppealHasCase = {
 	caseId: 2,
 	caseReference: 'CASE-002',
-	lpaCode: 'Q8888',
-	caseCreatedDate: 'invalid-date',
-	caseUpdatedDate: null
+	lpaCode: 'Q8888'
 };
 
 /**
  * AppealHas case with decimal values for testing number parsing
+ * Test data for decimal field parsing
  */
-export const decimalAppealHasCase: Partial<AppealHas> = {
+export const decimalAppealHasCase = {
 	caseId: 3,
 	caseReference: 'CASE-003',
 	lpaCode: 'Q7777',
-	caseCreatedDate: '2024-01-01T00:00:00Z',
-	caseUpdatedDate: null,
-	siteAreaSquareMetres: 150.75 as any,
+	allocationBand: '2.5',
+	siteAreaSquareMetres: '150.75',
 	floorSpaceSquareMetres: null
 };
 
 /**
  * AppealHas case for testing missing required fields
+ * Test data for validation scenarios
  */
-export const missingReferenceCase: Partial<AppealHas> = {
+export const missingReferenceCase = {
 	caseId: 4,
 	caseReference: null,
 	lpaCode: 'Q9999'
@@ -164,9 +164,37 @@ export const missingReferenceCase: Partial<AppealHas> = {
 
 /**
  * AppealHas case for testing missing LPA code
+ * Test data for LPA validation scenarios
  */
-export const missingLPACase: Partial<AppealHas> = {
+export const missingLPACase = {
 	caseId: 5,
 	caseReference: 'CASE-005',
 	lpaCode: null
+};
+
+/**
+ * AppealHas case with advert details for testing array parsing
+ * Test data for advert details array handling
+ */
+export const caseWithAdvertDetails = {
+	caseId: 13,
+	caseReference: 'CASE-013',
+	lpaCode: 'Q9999',
+	advertDetails: [
+		{ advertInPosition: true, highwayLand: false },
+		{ advertInPosition: false, highwayLand: true }
+	], // Array format for advert details in source data
+	applicationDate: '2024-01-01T00:00:00Z'
+};
+
+/**
+ * AppealHas case with notification methods for testing comma-separated string parsing
+ * Test data for notification method parsing
+ */
+export const caseWithNotificationMethods = {
+	caseId: 14,
+	caseReference: 'CASE-014',
+	lpaCode: 'Q9999',
+	notificationMethod: 'email,post,website',
+	lpaQuestionnaireSubmittedDate: '2024-01-01T00:00:00Z'
 };
