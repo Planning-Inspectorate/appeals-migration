@@ -1,9 +1,10 @@
+import { ServiceBusAdministrationClient, ServiceBusClient } from '@azure/service-bus';
 import { newDatabaseClient } from '@pins/appeals-migration-database';
-import { newOdwDatabaseClient } from '@pins/odw-curated-database';
-import { newManageAppealsDatabaseClient } from '@pins/manage-appeals-database';
 import type { PrismaClient as MigrationPrismaClient } from '@pins/appeals-migration-database/src/client/client.ts';
-import type { PrismaClient as SourcePrismaClient } from '@pins/odw-curated-database/src/client/client.ts';
+import { newManageAppealsDatabaseClient } from '@pins/manage-appeals-database';
 import type { PrismaClient as SinkPrismaClient } from '@pins/manage-appeals-database/src/client/client.ts';
+import { newOdwDatabaseClient } from '@pins/odw-curated-database';
+import type { PrismaClient as SourcePrismaClient } from '@pins/odw-curated-database/src/client/client.ts';
 import type { Config } from './config.ts';
 
 /**
@@ -14,6 +15,8 @@ export class FunctionService {
 	databaseClient: MigrationPrismaClient;
 	sourceDatabaseClient: SourcePrismaClient;
 	sinkDatabaseClient: SinkPrismaClient;
+	serviceBusClient: ServiceBusClient;
+	serviceBusAdministrationClient: ServiceBusAdministrationClient;
 
 	constructor(config: Config) {
 		this.#config = config;
@@ -29,6 +32,8 @@ export class FunctionService {
 		this.databaseClient = newDatabaseClient(config.database);
 		this.sourceDatabaseClient = newOdwDatabaseClient(config.sourceDatabase);
 		this.sinkDatabaseClient = newManageAppealsDatabaseClient(config.sinkDatabase);
+		this.serviceBusClient = new ServiceBusClient(config.serviceBus);
+		this.serviceBusAdministrationClient = new ServiceBusAdministrationClient(config.serviceBus);
 	}
 
 	get aListCasesToMigrateSchedule() {
@@ -49,5 +54,20 @@ export class FunctionService {
 
 	get eValidateMigratedCasesSchedule() {
 		return this.#config.functions.eValidateMigratedCases.schedule;
+	}
+
+	get dispatcherSchedule() {
+		return this.#config.functions.dispatcher.schedule;
+	}
+
+	get dispatcherEndWindow() {
+		return {
+			endHour: this.#config.functions.dispatcher.endHour,
+			endMinutes: this.#config.functions.dispatcher.endMinutes
+		};
+	}
+
+	get dispatcherQueueTarget() {
+		return this.#config.functions.dispatcher.queueTarget;
 	}
 }

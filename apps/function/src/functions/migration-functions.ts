@@ -4,6 +4,8 @@ import { buildListCasesToMigrate } from './a-list-cases-to-migrate/impl.ts';
 import { buildMigrateData } from './b-migrate-data/impl.ts';
 import { buildListDocumentsToMigrate } from './c-list-documents-to-migrate/impl.ts';
 import { buildMigrateDocuments } from './d-migrate-documents/impl.ts';
+import { buildDispatcher } from './dispatcher/dispatcher.ts';
+import { createWorker } from './dispatcher/worker.ts';
 import { buildValidateMigratedCases } from './e-validate-migrated-cases/impl.ts';
 
 const service = initialiseService();
@@ -15,30 +17,43 @@ app.timer('a-list-cases-to-migrate', {
 	handler: buildListCasesToMigrate(service)
 });
 
-console.log(`registering 'b-migrate-data' on schedule ${service.bMigrateDataSchedule}`);
+console.log(`registering 'dispatcher' on schedule ${service.dispatcherSchedule}`);
 
-app.timer('b-migrate-data', {
-	schedule: service.bMigrateDataSchedule,
-	handler: buildMigrateData(service)
+app.timer('dispatcher', {
+	schedule: service.dispatcherSchedule,
+	handler: buildDispatcher(service)
 });
 
-console.log(`registering 'c-list-documents-to-migrate' on schedule ${service.cListDocumentsToMigrateSchedule}`);
+// prettier-ignore
+createWorker(
+	service,
+	'b-migrate-data',
+	'data-step',
+	buildMigrateData(service),
+	'dataStepId'
+);
 
-app.timer('c-list-documents-to-migrate', {
-	schedule: service.cListDocumentsToMigrateSchedule,
-	handler: buildListDocumentsToMigrate(service)
-});
+createWorker(
+	service,
+	'c-list-documents-to-migrate',
+	'document-list-step',
+	buildListDocumentsToMigrate(service),
+	'documentListStepId'
+);
 
-console.log(`registering 'd-migrate-documents' on schedule ${service.dMigrateDocumentsSchedule}`);
+// prettier-ignore
+createWorker(
+	service,
+	'd-migrate-documents',
+	'documents-step',
+	buildMigrateDocuments(service),
+	'documentsStepId'
+);
 
-app.timer('d-migrate-documents', {
-	schedule: service.dMigrateDocumentsSchedule,
-	handler: buildMigrateDocuments(service)
-});
-
-console.log(`registering 'e-validate-migrated-cases' on schedule ${service.eValidateMigratedCasesSchedule}`);
-
-app.timer('e-validate-migrated-cases', {
-	schedule: service.eValidateMigratedCasesSchedule,
-	handler: buildValidateMigratedCases(service)
-});
+createWorker(
+	service,
+	'e-validate-migrated-cases',
+	'validation-step',
+	buildValidateMigratedCases(service),
+	'validationStepId'
+);

@@ -1,13 +1,13 @@
 import type { FunctionService } from '../../service.ts';
-import type { TimerHandler } from '@azure/functions';
+import type { MigrationFunction } from '../../types.ts';
 
 /**
  * An example scheduled function implementation
  */
-export function buildValidateMigratedCases(service: FunctionService): TimerHandler {
-	return async (timer, context) => {
+export function buildValidateMigratedCases(service: FunctionService): MigrationFunction {
+	return async (caseToMigrate, context) => {
 		try {
-			context.log('running example function on timer', timer);
+			context.log('running example function on case ', caseToMigrate);
 
 			// check the DB connection is working
 			await service.databaseClient.$queryRaw`SELECT 1`;

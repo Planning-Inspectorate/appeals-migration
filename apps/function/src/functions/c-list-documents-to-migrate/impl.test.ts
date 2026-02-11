@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { describe, test, mock } from 'node:test';
 import assert from 'node:assert/strict';
+import { describe, mock, test } from 'node:test';
 import { buildListDocumentsToMigrate } from './impl.ts';
 
 describe('impl - buildListDocumentsToMigrate', () => {
@@ -9,44 +9,14 @@ describe('impl - buildListDocumentsToMigrate', () => {
 		error: mock.fn()
 	});
 
-	test('logs and returns when no cases are available', async () => {
-		const migration = {
-			claimNextCaseForDocumentList: mock.fn(async () => null),
-			updateDocumentListStepComplete: mock.fn(),
-			upsertDocumentsToMigrate: mock.fn()
-		};
-
-		const source = {
-			fetchDocumentsByCaseReference: mock.fn()
-		};
-
-		const migrationDb = { $transaction: mock.fn() };
-		const service = {
-			databaseClient: migrationDb,
-			sourceDatabaseClient: {}
-		};
-
-		const handler = buildListDocumentsToMigrate(service as any, migration as any, source as any);
-		const context = makeContext();
-
-		await handler({} as any, context as any);
-
-		assert.equal(migration.claimNextCaseForDocumentList.mock.calls.length, 1);
-		assert.equal(source.fetchDocumentsByCaseReference.mock.calls.length, 0);
-		assert.equal(migrationDb.$transaction.mock.calls.length, 0);
-
-		assert.ok(context.log.mock.calls.some((c) => c.arguments[0] === 'No cases ready for document list building'));
-	});
-
-	test('processes case end-to-end when claim succeeds', async () => {
-		const claimedCase = { caseReference: 'CASE-1', documentListStepId: 123 };
+	test('processes case end-to-end', async () => {
+		const caseToMigrate = { caseReference: 'CASE-1', documentListStepId: 123 };
 		const documents = [
 			{ documentId: 'DOC-1', caseReference: 'CASE-1' },
 			{ documentId: 'DOC-2', caseReference: 'CASE-1' }
 		];
 
 		const migration = {
-			claimNextCaseForDocumentList: mock.fn(async () => claimedCase),
 			updateDocumentListStepComplete: mock.fn(async () => undefined),
 			upsertDocumentsToMigrate: mock.fn(async () => undefined)
 		};
@@ -69,9 +39,8 @@ describe('impl - buildListDocumentsToMigrate', () => {
 		const handler = buildListDocumentsToMigrate(service as any, migration as any, source as any);
 		const context = makeContext();
 
-		await handler({} as any, context as any);
+		await handler(caseToMigrate as any, context as any);
 
-		assert.equal(migration.claimNextCaseForDocumentList.mock.calls.length, 1);
 		assert.deepEqual(source.fetchDocumentsByCaseReference.mock.calls[0].arguments, [{}, 'CASE-1']);
 		assert.equal(migrationDb.$transaction.mock.calls.length, 1);
 		assert.deepEqual(migration.upsertDocumentsToMigrate.mock.calls[0].arguments, [tx, documents]);
@@ -84,15 +53,14 @@ describe('impl - buildListDocumentsToMigrate', () => {
 
 	test('logs and rethrows when an error occurs', async () => {
 		const migration = {
-			claimNextCaseForDocumentList: mock.fn(async () => {
-				throw new Error('boom');
-			}),
 			updateDocumentListStepComplete: mock.fn(),
 			upsertDocumentsToMigrate: mock.fn()
 		};
 
 		const source = {
-			fetchDocumentsByCaseReference: mock.fn()
+			fetchDocumentsByCaseReference: mock.fn(async () => {
+				throw new Error('boom');
+			})
 		};
 
 		const service = {
@@ -100,10 +68,11 @@ describe('impl - buildListDocumentsToMigrate', () => {
 			sourceDatabaseClient: {}
 		};
 
+		const caseToMigrate = { caseReference: 'CASE-ERR' };
 		const handler = buildListDocumentsToMigrate(service as any, migration as any, source as any);
 		const context = makeContext();
 
-		await assert.rejects(() => handler({} as any, context as any), /boom/);
+		await assert.rejects(() => handler(caseToMigrate as any, context as any), /boom/);
 
 		assert.equal(context.error.mock.calls.length, 1);
 		assert.equal(context.error.mock.calls[0].arguments[0], 'Error during document list builder run');
