@@ -43,49 +43,207 @@ function parseSpecialisms(specialismsString: string | null | undefined): string[
 }
 
 /**
- * Parse validation details string into structured reason objects
+ * Parse comma-separated addresses into NeighbouringSite create structure
+ * Source format: "125 Main Street, 127 Main Street"
+ */
+function parseNeighbouringSiteAddresses(
+	addressesString: string | null | undefined
+): { create: Array<{ address: { create: Prisma.AddressCreateWithoutNeighbouringSitesInput } }> } | undefined {
+	if (!addressesString) return undefined;
+
+	const addresses = addressesString
+		.split(',')
+		.map((addr) => addr.trim())
+		.filter((addr) => addr.length > 0);
+
+	if (addresses.length === 0) return undefined;
+
+	return {
+		create: addresses.map((addressLine1) => ({
+			address: {
+				create: {
+					addressLine1,
+					addressCountry: 'United Kingdom'
+				}
+			}
+		}))
+	};
+}
+
+/**
+ * Parse notification method array into LPANotificationMethodsSelected structure
+ * Source format in JSON schema: ["notice", "letter", "advert"]
+ * But in Prisma source it's a string, so we handle both
+ */
+function parseNotificationMethods(
+	notificationMethod: string | string[] | null | undefined
+): { create: Array<{ lpaNotificationMethod: { connect: { key: string } } }> } | undefined {
+	if (!notificationMethod) return undefined;
+
+	const methods = Array.isArray(notificationMethod)
+		? notificationMethod
+		: notificationMethod.split(',').map((m) => m.trim().toLowerCase());
+
+	if (methods.length === 0) return undefined;
+
+	// Map source notification methods to target keys
+	const keyMapping: Record<string, string> = {
+		email: 'notice',
+		post: 'letter',
+		website: 'advert',
+		letter: 'letter',
+		advert: 'advert',
+		notice: 'notice'
+	};
+
+	return {
+		create: methods.map((method) => {
+			const key = keyMapping[method] || method;
+			return {
+				lpaNotificationMethod: { connect: { key } }
+			};
+		})
+	};
+}
+
+/**
+ * Parse advert details into AppellantCaseAdvertDetails structure
+ * Source format in Prisma: string (but JSON schema shows array of objects)
+ * For now, we can't parse this without knowing the exact format
+ */
+function parseAdvertDetails(
+	advertDetails: string | any[] | null | undefined
+): { createMany: { data: Array<{ advertInPosition: boolean; highwayLand: boolean }> } } | undefined {
+	// If it's a string in source, we can't parse it without more information
+	// The JSON schema shows it should be an array, but Prisma source schema has it as string
+	if (!advertDetails) return undefined;
+
+	// If it's already an array (from JSON schema format)
+	if (Array.isArray(advertDetails) && advertDetails.length > 0) {
+		return {
+			createMany: {
+				data: advertDetails.map((detail) => ({
+					advertInPosition: detail.advertInPosition ?? false,
+					highwayLand: detail.highwayLand ?? false
+				}))
+			}
+		};
+	}
+
+	// String format not yet supported - needs reverse engineering
+	return undefined;
+}
+
+/**
+ * Parse affected listed building numbers into ListedBuildingSelected structure
+ * Source format: comma-separated string "10023, 17824" or array
+ */
+function parseAffectedListedBuildings(
+	affectedListedBuildingNumbers: string | string[] | null | undefined
+): { create: Array<{ listEntry: string; affectsListedBuilding: boolean }> } | undefined {
+	if (!affectedListedBuildingNumbers) return undefined;
+
+	const numbers = Array.isArray(affectedListedBuildingNumbers)
+		? affectedListedBuildingNumbers
+		: affectedListedBuildingNumbers.split(',').map((n) => n.trim());
+
+	if (numbers.length === 0) return undefined;
+
+	return {
+		create: numbers.map((listEntry) => ({
+			listEntry,
+			affectsListedBuilding: true
+		}))
+	};
+}
+
+/**
+ * Parse nearby case references into AppealRelationship records
+ * Source format: comma-separated string "CASE-100, CASE-101" or array
+ * Maps to AppealRelationship table with type="related"
+ */
+function parseNearbyCaseReferences(
+	currentCaseRef: string,
+	nearbyCaseReferences: string | string[] | null | undefined
+): { create: Array<{ type: string; parentRef: string; childRef: string }> } | undefined {
+	if (!nearbyCaseReferences) return undefined;
+
+	const references = Array.isArray(nearbyCaseReferences)
+		? nearbyCaseReferences
+		: nearbyCaseReferences.split(',').map((ref) => ref.trim());
+
+	if (references.length === 0) return undefined;
+
+	return {
+		create: references.map((childRef) => ({
+			type: 'related',
+			parentRef: currentCaseRef,
+			childRef
+		}))
+	};
+}
+
+/**
+ * Type for validation reason detail objects
+ * Contains either incomplete or invalid reason fields with their connectOrCreate structure
+ */
+type ValidationReasonDetail = Record<
+	string,
+	{
+		connectOrCreate?: {
+			where: { name: string };
+			create: { name: string };
+		};
+		create?: Array<{ text: string }>;
+	}
+>;
+
+/**
+ * // Input without details
+ * parseValidationDetails("Simple reason", "invalid")
+ * // Returns: [{
+ * //   appellantCaseInvalidReason: { connectOrCreate: { where: { name: "Simple reason" }, create: { name: "Simple reason" } } }
+ * // }]
  */
 function parseValidationDetails(
 	detailsString: string | null | undefined,
 	type: 'incomplete' | 'invalid'
-): any[] | undefined {
+): Array<ValidationReasonDetail> | undefined {
 	if (!detailsString) return undefined;
 
-	return detailsString
+	const reasons = detailsString
 		.split(',')
-		.map((detail) => {
-			const trimmedDetail = detail.trim();
-			if (!trimmedDetail) return null;
+		.map((reason) => reason.trim())
+		.filter((reason) => reason.length > 0);
 
-			const colonIndex = trimmedDetail.indexOf(':');
-			let reasonName: string;
-			let textDetail: string | undefined;
+	if (reasons.length === 0) return undefined;
 
-			if (colonIndex > 0) {
-				reasonName = trimmedDetail.substring(0, colonIndex).trim();
-				textDetail = trimmedDetail.substring(colonIndex + 1).trim();
-			} else {
-				reasonName = trimmedDetail;
-			}
+	const reasonKey = type === 'incomplete' ? 'appellantCaseIncompleteReason' : 'appellantCaseInvalidReason';
+	const textKey = type === 'incomplete' ? 'appellantCaseIncompleteReasonText' : 'appellantCaseInvalidReasonText';
 
-			const baseObject: any = {
-				[type === 'incomplete' ? 'appellantCaseIncompleteReason' : 'appellantCaseInvalidReason']: {
-					connectOrCreate: {
-						where: { name: reasonName },
-						create: { name: reasonName }
-					}
+	return reasons.map((reason) => {
+		const colonIndex = reason.indexOf(':');
+		const hasDetail = colonIndex !== -1;
+		const name = hasDetail ? reason.substring(0, colonIndex).trim() : reason.trim();
+		const detail = hasDetail ? reason.substring(colonIndex + 1).trim() : '';
+
+		const result: any = {
+			[reasonKey]: {
+				connectOrCreate: {
+					where: { name },
+					create: { name }
 				}
-			};
-
-			if (textDetail) {
-				baseObject[type === 'incomplete' ? 'appellantCaseIncompleteReasonText' : 'appellantCaseInvalidReasonText'] = {
-					create: { text: textDetail }
-				};
 			}
+		};
 
-			return baseObject;
-		})
-		.filter((obj) => obj !== null);
+		if (detail) {
+			result[textKey] = {
+				create: [{ text: detail }]
+			};
+		}
+
+		return result;
+	});
 }
 
 /**
@@ -97,12 +255,20 @@ function buildValidationOutcome(outcome: string | null | undefined) {
 }
 
 /**
+ * Build LPA questionnaire validation outcome connection
+ */
+function buildLPAValidationOutcome(outcome: string | null | undefined) {
+	if (!outcome) return;
+	return { connect: { name: outcome.toLowerCase() } };
+}
+
+/**
  * Build validation reasons with parsed details
  */
 function buildValidationReasons(details: string | null | undefined, type: 'incomplete' | 'invalid') {
 	const parsed = parseValidationDetails(details, type);
 	if (!parsed) return;
-	return { create: parsed };
+	return { create: parsed as any };
 }
 
 /**
@@ -110,7 +276,7 @@ function buildValidationReasons(details: string | null | undefined, type: 'incom
  */
 function buildKnowledgeMapping(knowledge: string | null | undefined) {
 	if (!knowledge) return;
-	return { connect: { name: knowledge } };
+	return { connect: { key: knowledge } };
 }
 
 /**
@@ -131,26 +297,48 @@ function buildProcedureType(caseProcedure: string | null | undefined) {
 
 /**
  * Build PADS inspector connection
+ * Uses connectOrCreate to handle cases where PADSUser doesn't exist yet
+ * Note: name field is required but not available in source data, using sapId as placeholder
  */
 function buildPadsInspector(padsSapId: string | null | undefined) {
 	if (!padsSapId) return;
-	return { connect: { sapId: padsSapId } };
+	return {
+		connectOrCreate: {
+			where: { sapId: padsSapId },
+			create: {
+				sapId: padsSapId,
+				name: padsSapId // Placeholder - actual name should be updated separately
+			}
+		}
+	};
 }
 
 /**
  * Build case officer connection via Azure AD user ID
+ * Uses connectOrCreate to handle cases where User doesn't exist yet
  */
 function buildCaseOfficer(caseOfficerId: string | null | undefined) {
 	if (!caseOfficerId) return;
-	return { connect: { azureAdUserId: caseOfficerId } };
+	return {
+		connectOrCreate: {
+			where: { azureAdUserId: caseOfficerId },
+			create: { azureAdUserId: caseOfficerId }
+		}
+	};
 }
 
 /**
  * Build inspector connection via Azure AD user ID
+ * Uses connectOrCreate to handle cases where User doesn't exist yet
  */
 function buildInspector(inspectorId: string | null | undefined) {
 	if (!inspectorId) return;
-	return { connect: { azureAdUserId: inspectorId } };
+	return {
+		connectOrCreate: {
+			where: { azureAdUserId: inspectorId },
+			create: { azureAdUserId: inspectorId }
+		}
+	};
 }
 
 /**
@@ -202,7 +390,9 @@ function buildAppealStatus(
 		create: [
 			{
 				status: source.caseStatus,
-				valid: true
+				valid: true,
+				// Use caseUpdatedDate as best guess for when this status was set
+				createdAt: parseDate(source.caseUpdatedDate)
 			}
 		]
 	};
@@ -231,6 +421,9 @@ function buildAppealSpecialisms(
 
 /**
  * Build address from site address fields
+ *
+ * Note: The schema specifies either grid references OR site address fields are required,
+ * so checking siteAddressLine1 is sufficient as it's the primary address field.
  */
 function buildAddress(source: AppealHas | AppealS78): { create: Prisma.AddressCreateWithoutAppealInput } | undefined {
 	if (!source.siteAddressLine1) return;
@@ -293,11 +486,10 @@ function buildAppellantCase(
 
 			originalDevelopmentDescription: stringOrUndefined(source.originalDevelopmentDescription),
 			changedDevelopmentDescription: source.changedDevelopmentDescription ?? undefined,
+			typeOfPlanningApplication: stringOrUndefined(source.typeOfPlanningApplication),
 
-			appellantCostsAppliedFor: source.appellantCostsAppliedFor ?? undefined,
-
-			enforcementNotice: source.enforcementNotice ?? undefined,
-			isGreenBelt: source.isGreenBelt ?? undefined,
+			knowsOtherOwners: buildKnowledgeMapping(source.knowsOtherOwners),
+			knowsAllOwners: buildKnowledgeMapping(source.knowsAllOwners),
 
 			siteGridReferenceEasting: stringOrUndefined(source.siteGridReferenceEasting),
 			siteGridReferenceNorthing: stringOrUndefined(source.siteGridReferenceNorthing),
@@ -305,7 +497,6 @@ function buildAppellantCase(
 			caseworkReason: stringOrUndefined(source.caseworkReason),
 			jurisdiction: stringOrUndefined(source.jurisdiction),
 
-			typeOfPlanningApplication: stringOrUndefined(source.typeOfPlanningApplication),
 			landownerPermission: source.hasLandownersPermission ?? undefined,
 			appellantCaseValidationOutcome: buildValidationOutcome(source.caseValidationOutcome),
 			appellantCaseIncompleteReasonsSelected: buildValidationReasons(
@@ -313,8 +504,15 @@ function buildAppellantCase(
 				'incomplete'
 			),
 			appellantCaseInvalidReasonsSelected: buildValidationReasons(source.caseValidationInvalidDetails, 'invalid'),
-			knowsOtherOwners: buildKnowledgeMapping(source.knowsOtherOwners),
-			knowsAllOwners: buildKnowledgeMapping(source.knowsAllOwners)
+
+			appellantCostsAppliedFor: source.appellantCostsAppliedFor ?? undefined,
+			enforcementNotice: source.enforcementNotice ?? undefined,
+
+			// Complex array-based fields
+			appellantCaseAdvertDetails: parseAdvertDetails(source.advertDetails)
+
+			// Note: source.nearbyCaseReferences - Mapped to Appeal.childAppeals (AppealRelationship table)
+			// Note: source.isSiteOnHighwayLand - Handled within advertDetails mapping
 		}
 	};
 }
@@ -357,9 +555,20 @@ function buildLPAQuestionnaire(
 	return {
 		create: {
 			lpaQuestionnaireSubmittedDate: parseDate(source.lpaQuestionnaireSubmittedDate),
+			// source.lpaQuestionnaireCreatedDate: Mapped to lpaqCreatedDate in appeals-back-office
 			lpaqCreatedDate: parseDate(source.lpaQuestionnaireCreatedDate) ?? new Date(0),
 			lpaStatement: stringOrUndefined(source.lpaStatement),
+			lpaQuestionnaireValidationOutcome: buildLPAValidationOutcome(source.lpaQuestionnaireValidationOutcome),
+			// source.lpaQuestionnaireValidationOutcomeDate: Mapped to lpaqValidationDate in appeals-back-office
+			// Logic: findStatusDate(appealStatus, EVENT) ?? findStatusDate(appealStatus, AWAITING_EVENT)
+			// Using lpaqCreatedDate as approximation since field doesn't exist in sink
+			// source.lpaQuestionnaireValidationDetails: CAN BE IMPLEMENTED - parsed from lpaQuestionnaireIncompleteReasonsSelected
+			// Appeals-back-office reconstructs this from the reasons we're already storing
 			newConditionDetails: stringOrUndefined(source.newConditionDetails),
+
+			// Complex array-based fields
+			lpaNotificationMethods: parseNotificationMethods(source.notificationMethod),
+			listedBuildingDetails: parseAffectedListedBuildings(source.affectedListedBuildingNumbers),
 			siteAccessDetails: stringOrUndefined(source.siteAccessDetails),
 			siteSafetyDetails: stringOrUndefined(source.siteSafetyDetails),
 			isCorrectAppealType: source.isCorrectAppealType ?? undefined,
@@ -407,6 +616,9 @@ export function mapSourceToSinkAppeal(sourceCase: AppealHas | AppealS78): Prisma
 		throw new Error('lpaCode is required for appeal migration');
 	}
 
+	// Note: sourceCase.caseId is the source database primary key, not mapped to sink
+	// The sink uses auto-increment id instead
+
 	return {
 		reference: sourceCase.caseReference,
 		submissionId: stringOrUndefined(sourceCase.submissionId),
@@ -421,18 +633,28 @@ export function mapSourceToSinkAppeal(sourceCase: AppealHas | AppealS78): Prisma
 		caseCreatedDate: parseDate(sourceCase.caseCreatedDate),
 		caseUpdatedDate: parseDate(sourceCase.caseUpdatedDate),
 		caseValidDate: parseDate(sourceCase.caseValidDate),
+		// source.caseValidationDate: VIRTUAL FIELD - calculated by appeals-back-office from appealStatus array, not stored in DB
+		// Appeals-back-office calculates it on read, we don't store it on write
 		caseExtensionDate: parseDate(sourceCase.caseExtensionDate),
 		caseStartedDate: parseDate(sourceCase.caseStartedDate),
 		casePublishedDate: parseDate(sourceCase.casePublishedDate),
 		caseCompletedDate: parseDate(sourceCase.caseCompletedDate),
 		withdrawalRequestDate: parseDate(sourceCase.caseWithdrawnDate),
 		caseTransferredId: stringOrUndefined(sourceCase.caseTransferredDate),
+		// source.transferredCaseClosedDate: VIRTUAL FIELD - calculated by appeals-back-office from appealStatus array, not stored in DB
+		// source.caseDecisionPublishedDate: VIRTUAL FIELD - set to null by appeals-back-office, not stored in DB
+		// source.linkedCaseStatus: VIRTUAL FIELD - calculated from childAppeals relation (if parent='lead', if child='child')
+		// Can be derived from childAppeals relation we're already storing
+		// source.leadCaseReference: VIRTUAL FIELD - calculated from childAppeals relation (appeal.reference if lead, child.parentRef if child)
+		// Can be derived from childAppeals relation we're already storing
 
 		lpa: {
 			connect: { lpaCode: sourceCase.lpaCode }
 		},
 
 		address: buildAddress(sourceCase),
+		neighbouringSites: parseNeighbouringSiteAddresses(sourceCase.neighbouringSiteAddresses),
+		childAppeals: parseNearbyCaseReferences(sourceCase.caseReference, sourceCase.nearbyCaseReferences),
 		appellantCase: buildAppellantCase(sourceCase),
 		lpaQuestionnaire: buildLPAQuestionnaire(sourceCase),
 		inspectorDecision: buildInspectorDecision(sourceCase),
