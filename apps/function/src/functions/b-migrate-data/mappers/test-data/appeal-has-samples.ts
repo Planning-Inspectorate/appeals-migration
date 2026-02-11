@@ -1,4 +1,5 @@
 import type { AppealHas } from '@pins/odw-curated-database/src/client/client.ts';
+import { Decimal } from '@pins/odw-curated-database/src/client/internal/prismaNamespace.ts';
 
 /**
  * Complete AppealHas case with all fields populated for comprehensive testing
@@ -37,7 +38,7 @@ export const completeAppealHasCase: AppealHas = {
 
 	// Allocation
 	allocationLevel: 'A',
-	allocationBand: 1 as any,
+	allocationBand: new Decimal(1),
 	caseSpecialisms: 'Historic Buildings, Trees',
 
 	// Address fields
@@ -53,8 +54,8 @@ export const completeAppealHasCase: AppealHas = {
 	applicationDecisionDate: '2024-01-15T00:00:00Z',
 	siteAccessDetails: 'Gate at front',
 	siteSafetyDetails: 'Watch for dog',
-	siteAreaSquareMetres: 100.5 as any,
-	floorSpaceSquareMetres: 50.25 as any,
+	siteAreaSquareMetres: new Decimal(100.5),
+	floorSpaceSquareMetres: new Decimal(50.25),
 	ownsAllLand: true,
 	ownsSomeLand: false,
 	advertisedAppeal: true,
@@ -106,7 +107,7 @@ export const completeAppealHasCase: AppealHas = {
 	infrastructureLevyExpectedDate: null,
 	lpaProcedurePreference: 'hearing',
 	lpaProcedurePreferenceDetails: 'Hearing preferred due to complexity',
-	lpaProcedurePreferenceDuration: 2 as any,
+	lpaProcedurePreferenceDuration: new Decimal(2),
 	reasonForNeighbourVisits: 'Impact on neighbours',
 
 	// InspectorDecision fields
