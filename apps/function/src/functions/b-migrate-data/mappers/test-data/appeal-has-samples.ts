@@ -3,18 +3,42 @@ import type { AppealHas } from '@pins/odw-curated-database/src/client/client.ts'
 /**
  * Complete AppealHas case with all fields populated for comprehensive testing
  */
-export const completeAppealHasCase: Partial<AppealHas> = {
+export const completeAppealHasCase: AppealHas = {
 	caseId: 1,
 	caseReference: 'CASE-001',
+	submissionId: 'SUB-001',
 	lpaCode: 'Q9999',
 	applicationReference: 'APP-001',
 	caseCreatedDate: '2024-01-01T00:00:00Z',
 	caseUpdatedDate: '2024-01-02T00:00:00Z',
 	caseValidDate: '2024-01-03T00:00:00Z',
+	caseValidationDate: '2024-01-03T00:00:00Z',
 	caseStartedDate: '2024-01-04T00:00:00Z',
 	casePublishedDate: '2024-01-05T00:00:00Z',
 	caseCompletedDate: '2024-01-06T00:00:00Z',
 	caseWithdrawnDate: '2024-01-07T00:00:00Z',
+	caseTransferredDate: '2024-01-08T00:00:00Z',
+	caseExtensionDate: '2024-01-09T00:00:00Z',
+	caseSubmittedDate: '2024-01-01T00:00:00Z',
+	caseSubmissionDueDate: '2024-01-15T00:00:00Z',
+
+	// Case type and status
+	caseStatus: 'ready_to_start',
+	caseType: 'D',
+	caseProcedure: 'written',
+	linkedCaseStatus: null,
+	leadCaseReference: null,
+	transferredCaseClosedDate: null,
+
+	// Team assignments
+	caseOfficerId: 'officer-123',
+	inspectorId: 'inspector-456',
+	padsSapId: 'SAP-789',
+
+	// Allocation
+	allocationLevel: 'A',
+	allocationBand: 1 as any,
+	caseSpecialisms: 'Historic Buildings, Trees',
 
 	// Address fields
 	siteAddressLine1: '123 Main Street',
@@ -34,9 +58,13 @@ export const completeAppealHasCase: Partial<AppealHas> = {
 	ownsAllLand: true,
 	ownsSomeLand: false,
 	advertisedAppeal: true,
+	notificationMethod: 'Letter',
 	ownersInformed: true,
 	originalDevelopmentDescription: 'Extension to house',
 	changedDevelopmentDescription: false,
+	nearbyCaseReferences: 'CASE-100, CASE-101',
+	neighbouringSiteAddresses: '125 Main Street, 127 Main Street',
+	affectedListedBuildingNumbers: 'LB-001, LB-002',
 	appellantCostsAppliedFor: false,
 	enforcementNotice: false,
 	isGreenBelt: true,
@@ -45,10 +73,25 @@ export const completeAppealHasCase: Partial<AppealHas> = {
 	caseworkReason: 'Complex case',
 	jurisdiction: 'England',
 	typeOfPlanningApplication: 'full',
+	hasLandownersPermission: true,
+
+	// Validation fields - complex parsing
+	caseValidationOutcome: 'incomplete',
+	caseValidationIncompleteDetails: 'Documents missing: Site plan not provided, Incorrect fee: Payment incomplete',
+	caseValidationInvalidDetails: null,
+
+	// Knowledge of owners - lookup fields
+	knowsOtherOwners: 'Yes',
+	knowsAllOwners: 'No',
 
 	// LPAQuestionnaire fields
+	lpaQuestionnaireDueDate: '2024-01-20T00:00:00Z',
 	lpaQuestionnaireSubmittedDate: '2024-01-10T00:00:00Z',
 	lpaQuestionnaireCreatedDate: '2024-01-09T00:00:00Z',
+	lpaQuestionnairePublishedDate: '2024-01-11T00:00:00Z',
+	lpaQuestionnaireValidationOutcome: 'complete',
+	lpaQuestionnaireValidationOutcomeDate: '2024-01-12T00:00:00Z',
+	lpaQuestionnaireValidationDetails: null,
 	lpaStatement: 'LPA statement text',
 	newConditionDetails: 'New conditions',
 	isCorrectAppealType: true,
@@ -60,13 +103,30 @@ export const completeAppealHasCase: Partial<AppealHas> = {
 	hasInfrastructureLevy: true,
 	isInfrastructureLevyFormallyAdopted: true,
 	infrastructureLevyAdoptedDate: '2023-06-01T00:00:00Z',
+	infrastructureLevyExpectedDate: null,
 	lpaProcedurePreference: 'hearing',
+	lpaProcedurePreferenceDetails: 'Hearing preferred due to complexity',
 	lpaProcedurePreferenceDuration: 2 as any,
 	reasonForNeighbourVisits: 'Impact on neighbours',
 
 	// InspectorDecision fields
 	caseDecisionOutcome: 'allowed',
-	caseDecisionOutcomeDate: '2024-02-01T00:00:00Z'
+	caseDecisionOutcomeDate: '2024-02-01T00:00:00Z',
+	caseDecisionPublishedDate: '2024-02-02T00:00:00Z',
+
+	// Additional date fields
+	importantInformation: 'High profile case',
+	redeterminedIndicator: false,
+	dateCostsReportDespatched: null,
+	dateNotRecoveredOrDerecovered: null,
+	dateRecovered: null,
+	originalCaseDecisionDate: null,
+	targetDate: '2024-03-01T00:00:00Z',
+	isSiteInAreaOfSpecialControlAdverts: false,
+	wasApplicationRefusedDueToHighwayOrTraffic: false,
+	didAppellantSubmitCompletePhotosAndPlans: true,
+	advertDetails: null,
+	designatedSitesNames: 'SSSI-123'
 };
 
 /**
