@@ -1,10 +1,9 @@
-import { claimNextCaseToMigrate, updateDataStepComplete } from './migration/case-to-migrate.ts';
-import { fetchCaseDetails } from './source/case-details.ts';
-import { mapSourceToSinkAppeal } from './mappers/map-source-to-sink.ts';
-import { upsertAppeal } from './sink/appeal.ts';
-
 import type { FunctionService } from '../../service.ts';
-import type { TimerHandler } from '@azure/functions';
+import type { MigrationFunction } from '../../types.ts';
+import { mapSourceToSinkAppeal } from './mappers/map-source-to-sink.ts';
+import { claimNextCaseToMigrate, updateDataStepComplete } from './migration/case-to-migrate.ts';
+import { upsertAppeal } from './sink/appeal.ts';
+import { fetchCaseDetails } from './source/case-details.ts';
 
 type Migration = {
 	claimNextCaseToMigrate: typeof claimNextCaseToMigrate;
@@ -46,20 +45,12 @@ export function buildMigrateData(
 	source: Source = defaultSource,
 	mappers: Mappers = defaultMappers,
 	sink: Sink = defaultSink
-): TimerHandler {
-	return async (_timer, context) => {
+): MigrationFunction {
+	return async (caseToMigrate, context) => {
 		try {
 			const migrationDatabase = service.databaseClient;
 			const sourceDatabase = service.sourceDatabaseClient;
 			const sinkDatabase = service.sinkDatabaseClient;
-
-			const caseToMigrate = await migration.claimNextCaseToMigrate(migrationDatabase);
-
-			if (!caseToMigrate) {
-				context.log('No cases available to migrate');
-				return;
-			}
-
 			const caseReference = caseToMigrate.caseReference;
 			context.log(`Processing case: ${caseReference}`);
 
