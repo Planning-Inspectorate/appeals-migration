@@ -2,22 +2,23 @@ import type { InvocationContext } from '@azure/functions';
 import { app } from '@azure/functions';
 import type { CaseToMigrate } from '@pins/appeals-migration-database/src/client/client.ts';
 import type { FunctionService } from '../../service.ts';
+import type { StepIdField } from './types.ts';
 
 type MigrationFunction = (caseToMigrate: CaseToMigrate, context: InvocationContext) => Promise<void>;
 
 async function handleMigration(
 	service: FunctionService,
 	migrationFunction: MigrationFunction,
-	stepIdField: string,
+	stepIdField: StepIdField,
 	caseToMigrate: CaseToMigrate,
 	context: InvocationContext
 ): Promise<void> {
 	/*
 	// TODO enable when implemented
 	await service.databaseClient.migrationStep.update({
-		where: { id: (caseToMigrate as Record<string, unknown>)[stepIdField] as number },
+		where: { id: caseToMigrate[stepIdField] },
 		data: {
-			status: "in-progress",
+			status: "processing",
 			startTimestamp: new Date(),
 			workerId: context.invocationId
 		}
@@ -32,7 +33,7 @@ async function handleMigration(
 	}
 
 	await service.databaseClient.migrationStep.update({
-		where: { id: (caseToMigrate as Record<string, unknown>)[stepIdField] as number },
+		where: { id: caseToMigrate[stepIdField] },
 		data: {
 			inProgress: false,
 			complete: true
@@ -48,7 +49,7 @@ export function createWorker(
 	name: string,
 	queueName: string,
 	migrationFunction: MigrationFunction,
-	stepIdField: string
+	stepIdField: StepIdField
 ): void {
 	app.serviceBusQueue(name, {
 		connection: 'SERVICE_BUS_CONNECTION_STRING',

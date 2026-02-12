@@ -26,6 +26,8 @@ export interface Config {
 			endHour: number;
 			endMinutes: number;
 			queueTarget: number;
+			migrationStepUpdateChunkSize: number;
+			serviceBusParallelism: number;
 		};
 	};
 	manageAppeals: {
@@ -60,6 +62,8 @@ export function loadConfig(): Config {
 		DISPATCHER_END_HOUR,
 		DISPATCHER_CADENCE_MINUTES,
 		DISPATCHER_END_MINUTES,
+		MIGRATIONSTEP_UPDATE_CHUNK_SIZE,
+		SERVICE_BUS_PARALLELISM,
 		MAXIMUM_PARALLELISM,
 		BUFFER_PER_WORKER
 	} = process.env;
@@ -125,7 +129,9 @@ export function loadConfig(): Config {
 				schedule: dispatcherSchedule(),
 				endHour: Number(DISPATCHER_END_HOUR),
 				endMinutes: Number(DISPATCHER_END_MINUTES ?? 55),
-				queueTarget: Math.floor(Number(MAXIMUM_PARALLELISM) * Number(BUFFER_PER_WORKER))
+				queueTarget: Math.floor(Number(MAXIMUM_PARALLELISM) * Number(BUFFER_PER_WORKER)),
+				migrationStepUpdateChunkSize: Number(MIGRATIONSTEP_UPDATE_CHUNK_SIZE ?? 1000),
+				serviceBusParallelism: Number(SERVICE_BUS_PARALLELISM ?? 50)
 			}
 		},
 		manageAppeals: {

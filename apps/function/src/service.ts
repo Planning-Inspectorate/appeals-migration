@@ -70,4 +70,12 @@ export class FunctionService {
 	get dispatcherQueueTarget() {
 		return this.#config.functions.dispatcher.queueTarget;
 	}
+
+	get migrationStepUpdateChunkSize() {
+		return this.#config.functions.dispatcher.migrationStepUpdateChunkSize;
+	}
+
+	get serviceBusParallelism() {
+		return this.#config.functions.dispatcher.serviceBusParallelism;
+	}
 }
