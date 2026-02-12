@@ -2,6 +2,7 @@ import type http from 'node:http';
 import https from 'node:https';
 import httpntlm from 'httpntlm';
 import type { WriteStream } from 'node:fs';
+import { Readable } from 'node:stream';
 const ntlm = httpntlm.ntlm;
 
 type httpsGetImpl = typeof https.get;
@@ -9,7 +10,7 @@ type httpsGetImpl = typeof https.get;
 export interface DownloadDocumentOptions {
 	version?: number;
 	rendition?: boolean;
-	createWriteStream: (filename: string) => WriteStream;
+	createWriteStream?: (filename: string) => WriteStream;
 }
 
 /**
@@ -70,9 +71,27 @@ export class HorizonWebClient {
 		objId: string,
 		{ version, rendition, createWriteStream }: DownloadDocumentOptions
 	): Promise<string> {
+		if (!createWriteStream) {
+			throw new Error('createWriteStream is required');
+		}
+		const { filename, stream: file } = await this.getDocument(objId, { version, rendition });
+		const writeStream = createWriteStream(filename);
+		file.pipe(writeStream);
+		// wait for the stream to finish
+		await new Promise((resolve, reject) => {
+			file.on('end', resolve);
+			file.on('error', reject);
+		});
+		return filename;
+	}
+
+	async getDocument(
+		objectId: string,
+		{ version, rendition }: DownloadDocumentOptions = {}
+	): Promise<{ filename: string; stream: Readable }> {
 		const params = new URLSearchParams({
 			func: 'll',
-			objId,
+			objId: objectId,
 			objAction: 'download'
 		});
 		if (version) {
@@ -91,14 +110,7 @@ export class HorizonWebClient {
 			});
 			throw filenameOrError;
 		}
-		const writeStream = createWriteStream(filenameOrError);
-		file.pipe(writeStream);
-		// wait for the stream to finish
-		await new Promise((resolve, reject) => {
-			file.on('end', resolve);
-			file.on('error', reject);
-		});
-		return filenameOrError;
+		return { filename: filenameOrError, stream: file };
 	}
 
 	/**
