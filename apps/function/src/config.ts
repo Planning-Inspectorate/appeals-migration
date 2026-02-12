@@ -21,6 +21,11 @@ export interface Config {
 			schedule: string;
 		};
 	};
+	horizon: {
+		baseUrl: string;
+		username: string;
+		password: string;
+	};
 	manageAppeals: {
 		apiEndpoint: string;
 		documents: {
@@ -47,32 +52,33 @@ export function loadConfig(): Config {
 		MANAGE_APPEALS_DOCUMENTS_CONTAINER_NAME,
 		SQL_CONNECTION_STRING,
 		ODW_CURATED_SQL_CONNECTION_STRING,
-		MANAGE_APPEALS_SQL_CONNECTION_STRING
+		MANAGE_APPEALS_SQL_CONNECTION_STRING,
+		HORIZON_WEB_BASE_URL,
+		HORIZON_WEB_USERNAME,
+		HORIZON_WEB_PASSWORD
 	} = process.env;
 
-	if (!MANAGE_APPEALS_API_ENDPOINT) {
-		throw new Error('MANAGE_APPEALS_API_ENDPOINT is required');
-	}
-	if (!MANAGE_APPEALS_DOCUMENTS_ACCOUNT_NAME) {
-		throw new Error('MANAGE_APPEALS_DOCUMENTS_ACCOUNT_NAME is required');
-	}
-	if (!MANAGE_APPEALS_DOCUMENTS_CONTAINER_NAME) {
-		throw new Error('MANAGE_APPEALS_DOCUMENTS_CONTAINER_NAME is required');
-	}
-	if (!SQL_CONNECTION_STRING) {
-		throw new Error('SQL_CONNECTION_STRING is required');
-	}
-	if (!ODW_CURATED_SQL_CONNECTION_STRING) {
-		throw new Error('ODW_CURATED_SQL_CONNECTION_STRING is required');
-	}
-	if (!MANAGE_APPEALS_SQL_CONNECTION_STRING) {
-		throw new Error('MANAGE_APPEALS_SQL_CONNECTION_STRING is required');
+	const requiredConfig = {
+		MANAGE_APPEALS_DOCUMENTS_ACCOUNT_NAME,
+		MANAGE_APPEALS_DOCUMENTS_CONTAINER_NAME,
+		MANAGE_APPEALS_SQL_CONNECTION_STRING,
+		HORIZON_WEB_BASE_URL,
+		HORIZON_WEB_USERNAME,
+		HORIZON_WEB_PASSWORD,
+		SQL_CONNECTION_STRING,
+		ODW_CURATED_SQL_CONNECTION_STRING
+	};
+
+	for (const [k, v] of Object.entries(requiredConfig)) {
+		if (!v) {
+			throw new Error(`${k} is required`);
+		}
 	}
 
 	return {
-		database: SQL_CONNECTION_STRING,
-		sourceDatabase: ODW_CURATED_SQL_CONNECTION_STRING,
-		sinkDatabase: MANAGE_APPEALS_SQL_CONNECTION_STRING,
+		database: SQL_CONNECTION_STRING!,
+		sourceDatabase: ODW_CURATED_SQL_CONNECTION_STRING!,
+		sinkDatabase: MANAGE_APPEALS_SQL_CONNECTION_STRING!,
 		functions: {
 			aListCasesToMigrate: {
 				schedule: FUNC_LIST_CASE_TO_MIGRATE_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
@@ -90,11 +96,16 @@ export function loadConfig(): Config {
 				schedule: FUNC_VALIDATE_MIGRATED_CASES_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
 			}
 		},
+		horizon: {
+			baseUrl: HORIZON_WEB_BASE_URL!,
+			username: HORIZON_WEB_USERNAME!,
+			password: HORIZON_WEB_PASSWORD!
+		},
 		manageAppeals: {
-			apiEndpoint: MANAGE_APPEALS_API_ENDPOINT,
+			apiEndpoint: MANAGE_APPEALS_API_ENDPOINT!,
 			documents: {
-				accountName: MANAGE_APPEALS_DOCUMENTS_ACCOUNT_NAME,
-				containerName: MANAGE_APPEALS_DOCUMENTS_CONTAINER_NAME
+				accountName: MANAGE_APPEALS_DOCUMENTS_ACCOUNT_NAME!,
+				containerName: MANAGE_APPEALS_DOCUMENTS_CONTAINER_NAME!
 			}
 		}
 	};
