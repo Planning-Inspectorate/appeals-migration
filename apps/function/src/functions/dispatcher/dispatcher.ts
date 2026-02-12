@@ -1,12 +1,13 @@
 import type { InvocationContext, Timer, TimerHandler } from '@azure/functions';
-import type { CaseToMigrate } from '@pins/appeals-migration-database/src/client/client.ts';
+import type { CaseToMigrate, Prisma } from '@pins/appeals-migration-database/src/client/client.ts';
 import chunk from 'lodash.chunk';
 import type { FunctionService } from '../../service.ts';
+import type { StepIdField } from './types.ts';
 
 type DispatchConfig = {
 	queueName: string;
-	where: object;
-	stepIdField: string;
+	where: Prisma.CaseToMigrateWhereInput;
+	stepIdField: StepIdField;
 };
 
 async function getDispatchCount(
@@ -30,16 +31,13 @@ async function getCasesToMigrate(
 			where: config.where,
 			take: dispatchCount
 		});
-		const chunkSize = Number(process.env.MIGRATIONSTEP_UPDATE_CHUNK_SIZE ?? 1000);
-		const ids = selected.map((row) => (row as Record<string, unknown>)[config.stepIdField] as number);
-		for (const idsChunk of chunk(ids, chunkSize)) {
+		const ids = selected.map((row) => row[config.stepIdField]);
+		for (const idsChunk of chunk(ids, service.migrationStepUpdateChunkSize)) {
 			await transaction.migrationStep.updateMany({
 				where: { id: { in: idsChunk } },
 				data: {
 					inProgress: true
-					// TODO set status to in-progress when implemented
-					// TODO set startTimestamp when implemented
-					// TODO set workerId when implemented
+					// TODO set status to queued when implemented
 				}
 			});
 		}
@@ -48,16 +46,7 @@ async function getCasesToMigrate(
 }
 
 async function dispatch(config: DispatchConfig, service: FunctionService, context: InvocationContext): Promise<void> {
-	let dispatchCount;
-	try {
-		dispatchCount = await getDispatchCount(service, config.queueName, context);
-	} catch (error) {
-		context.error(
-			`Unable to get count for ${config.queueName}. The Service Bus connection may need Manage rights.`,
-			error
-		);
-		return;
-	}
+	const dispatchCount = await getDispatchCount(service, config.queueName, context);
 
 	context.log(`[${config.queueName}] Needed: ${dispatchCount}`);
 	if (dispatchCount === 0) {
@@ -94,7 +83,7 @@ async function dispatch(config: DispatchConfig, service: FunctionService, contex
 
 		if (batch.count > 0) {
 			await sender.sendMessages(batch);
-			context.log(`[${config.queueName}] Dispatched ${batch.count} jobs.`);
+			context.log(`[${config.queueName}] Dispatched: ${batch.count}`);
 		}
 	} finally {
 		await sender.close();
@@ -104,13 +93,11 @@ async function dispatch(config: DispatchConfig, service: FunctionService, contex
 async function drain(config: DispatchConfig, service: FunctionService, context: InvocationContext): Promise<void> {
 	const databaseClient = service.databaseClient;
 	const receiver = service.serviceBusClient.createReceiver(config.queueName, { receiveMode: 'peekLock' });
-	const chunkSize = Number(process.env.MIGRATIONSTEP_UPDATE_CHUNK_SIZE ?? 1000);
-	const parallelism = Number(process.env.SERVICE_BUS_PARALLELISM ?? 50);
 	let total = 0;
 
 	try {
 		while (true) {
-			const messages = await receiver.receiveMessages(chunkSize, { maxWaitTimeInMs: 5000 });
+			const messages = await receiver.receiveMessages(service.migrationStepUpdateChunkSize, { maxWaitTimeInMs: 5000 });
 			if (messages.length === 0) {
 				break;
 			}
@@ -118,13 +105,13 @@ async function drain(config: DispatchConfig, service: FunctionService, context: 
 			await databaseClient.migrationStep.updateMany({
 				where: {
 					id: {
-						in: messages.map((message) => (message.body as Record<string, unknown>)[config.stepIdField] as number)
+						in: messages.map((message) => (message.body as CaseToMigrate)[config.stepIdField])
 					}
 				},
 				data: { inProgress: false }
 			});
 
-			for (const messagesChunk of chunk(messages, parallelism)) {
+			for (const messagesChunk of chunk(messages, service.serviceBusParallelism)) {
 				await Promise.all(messagesChunk.map((message) => receiver.completeMessage(message)));
 			}
 
@@ -152,18 +139,26 @@ export function buildDispatcher(service: FunctionService): TimerHandler {
 		},
 		{
 			queueName: 'document-list-step',
-			where: { DocumentListStep: { inProgress: false, complete: false } },
+			where: {
+				DataStep: { complete: true },
+				DocumentListStep: { inProgress: false, complete: false }
+			},
 			stepIdField: 'documentListStepId'
 		},
 		{
 			queueName: 'documents-step',
-			where: { DocumentListStep: { complete: true }, DocumentsStep: { inProgress: false, complete: false } },
+			where: {
+				DataStep: { complete: true },
+				DocumentListStep: { complete: true },
+				DocumentsStep: { inProgress: false, complete: false }
+			},
 			stepIdField: 'documentsStepId'
 		},
 		{
 			queueName: 'validation-step',
 			where: {
 				DataStep: { complete: true },
+				DocumentListStep: { complete: true },
 				DocumentsStep: { complete: true },
 				ValidationStep: { inProgress: false, complete: false }
 			},
