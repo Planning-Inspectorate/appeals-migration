@@ -32,6 +32,7 @@
   "dependencies": {
     "@azure/functions": "^4.11.2",
     "@azure/identity": "^4.13.0",
+    "@azure/storage-blob": "^12.31.0",
     "@prisma/adapter-mssql": "^7.3.0",
     "@prisma/client": "^7.3.0",
     "body-parser": "^2.2.2",
