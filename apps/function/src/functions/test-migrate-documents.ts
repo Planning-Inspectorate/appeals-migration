@@ -17,9 +17,10 @@ app.get('test-migrate-documents', async (request, context) => {
 	for (const documentId of documentIds) {
 		context.log('fetching file', documentId);
 		const { filename, stream } = await service.horizonWebClient.getDocument(documentId);
-		const blob = service.sinkBlobContainerClient.getBlockBlobClient(filename);
+		const filepath = context.invocationId + '/' + filename;
+		const blob = service.sinkBlobContainerClient.getBlockBlobClient(filepath);
 		await blob.uploadStream(stream);
-		context.log(documentId, 'file written to', filename);
+		context.log(documentId, 'file written to', filepath);
 	}
 
 	const time = performance.now() - start;
