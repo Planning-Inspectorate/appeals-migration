@@ -17,7 +17,6 @@ describe('impl - buildListDocumentsToMigrate', () => {
 		];
 
 		const migration = {
-			updateDocumentListStepComplete: mock.fn(async () => undefined),
 			upsertDocumentsToMigrate: mock.fn(async () => undefined)
 		};
 
@@ -44,20 +43,14 @@ describe('impl - buildListDocumentsToMigrate', () => {
 		assert.deepEqual(source.fetchDocumentsByCaseReference.mock.calls[0].arguments, [{}, 'CASE-1']);
 		assert.equal(migrationDb.$transaction.mock.calls.length, 1);
 		assert.deepEqual(migration.upsertDocumentsToMigrate.mock.calls[0].arguments, [tx, documents]);
-		assert.deepEqual(migration.updateDocumentListStepComplete.mock.calls[0].arguments, [
-			migrationDb,
-			'CASE-1',
-			'complete'
-		]);
 
 		assert.ok(
 			context.log.mock.calls.some((c) => String(c.arguments[0]).includes('Completed document list for case CASE-1'))
 		);
 	});
 
-	test('logs and rethrows when an error occurs', async () => {
+	test('propagates errors from source fetch', async () => {
 		const migration = {
-			updateDocumentListStepComplete: mock.fn(),
 			upsertDocumentsToMigrate: mock.fn()
 		};
 
@@ -77,8 +70,5 @@ describe('impl - buildListDocumentsToMigrate', () => {
 		const context = makeContext();
 
 		await assert.rejects(() => handler(caseToMigrate as any, context as any), /boom/);
-
-		assert.equal(context.error.mock.calls.length, 1);
-		assert.equal(context.error.mock.calls[0].arguments[0], 'Error during document list builder run');
 	});
 });
