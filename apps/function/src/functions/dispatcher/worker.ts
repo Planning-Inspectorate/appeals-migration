@@ -8,39 +8,34 @@ type MigrationFunction = (caseToMigrate: CaseToMigrate, context: InvocationConte
 
 async function handleMigration(
 	service: FunctionService,
+	name: string,
 	migrationFunction: MigrationFunction,
 	stepIdField: StepIdField,
 	caseToMigrate: CaseToMigrate,
 	context: InvocationContext
 ): Promise<void> {
-	/*
-	// TODO enable when implemented
 	await service.databaseClient.migrationStep.update({
 		where: { id: caseToMigrate[stepIdField] },
 		data: {
-			status: "processing",
-			startTimestamp: new Date(),
-			workerId: context.invocationId
+			status: 'processing',
+			invocationId: context.invocationId,
+			startedAt: new Date()
 		}
 	});
-	*/
 
-	try {
-		await migrationFunction(caseToMigrate, context);
-	} catch (error) {
-		context.error(`Failed to migrate ${caseToMigrate.caseReference}`, error);
-		// TODO set status to failed and error message when implemented
-	}
+	const { status, errorMessage } = await migrationFunction(caseToMigrate, context)
+		.then(() => ({ status: 'complete', errorMessage: null }))
+		.catch((error) => {
+			context.error(`Failed in ${name} for case ${caseToMigrate.caseReference}:`, error);
+			return {
+				status: 'failed',
+				errorMessage: error instanceof Error ? error.message : String(error)
+			};
+		});
 
 	await service.databaseClient.migrationStep.update({
 		where: { id: caseToMigrate[stepIdField] },
-		data: {
-			inProgress: false,
-			complete: true
-			// TODO set status = complete / failed
-			// TODO set endTimestamp
-			// TODO set errorMessage, if any
-		}
+		data: { status, errorMessage, completedAt: new Date() }
 	});
 }
 
@@ -55,7 +50,7 @@ export function createWorker(
 		connection: 'SERVICE_BUS_CONNECTION_STRING',
 		queueName,
 		handler: async (caseToMigrate: CaseToMigrate, context: InvocationContext): Promise<void> => {
-			await handleMigration(service, migrationFunction, stepIdField, caseToMigrate, context);
+			await handleMigration(service, name, migrationFunction, stepIdField, caseToMigrate, context);
 		}
 	});
 }

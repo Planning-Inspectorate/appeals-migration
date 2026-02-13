@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { describe, test, mock } from 'node:test';
 import assert from 'node:assert';
+import { describe, mock, test } from 'node:test';
 import { upsertCaseReferences } from './case-to-migrate.ts';
 
 describe('upsertCaseReferences', () => {
@@ -29,10 +29,10 @@ describe('upsertCaseReferences', () => {
 			update: {},
 			create: {
 				caseReference: 'CASE-001',
-				DataStep: { create: { inProgress: false, complete: false } },
-				DocumentListStep: { create: { inProgress: false, complete: false } },
-				DocumentsStep: { create: { inProgress: false, complete: false } },
-				ValidationStep: { create: { inProgress: false, complete: false } }
+				DataStep: { create: {} },
+				DocumentListStep: { create: {} },
+				DocumentsStep: { create: {} },
+				ValidationStep: { create: {} }
 			}
 		});
 
