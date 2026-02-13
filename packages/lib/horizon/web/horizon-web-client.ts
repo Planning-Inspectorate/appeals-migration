@@ -2,8 +2,8 @@ import type http from 'node:http';
 import https from 'node:https';
 import httpntlm from 'httpntlm';
 import type { WriteStream } from 'node:fs';
-import { Readable } from 'node:stream';
-import { LookupFunction } from 'node:net';
+import type { Readable } from 'node:stream';
+import type { LookupFunction } from 'node:net';
 const ntlm = httpntlm.ntlm;
 
 type httpsGetImpl = typeof https.get;
