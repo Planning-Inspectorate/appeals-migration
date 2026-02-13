@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { describe, test, mock } from 'node:test';
 import assert from 'node:assert/strict';
+import { describe, mock, test } from 'node:test';
 import { claimNextCaseForDocumentList, updateDocumentListStepComplete } from './case-to-migrate.ts';
 
 type FindFirstArgs = Parameters<TxMock['caseToMigrate']['findFirst']>[0];
@@ -49,8 +49,8 @@ describe('case-to-migrate', () => {
 
 			const findCall = findFirst.mock.calls[0]?.arguments[0] as FindFirstArgs;
 			assert.deepEqual(findCall.where, {
-				DocumentListStep: { inProgress: false, complete: false },
-				DataStep: { complete: true }
+				DocumentListStep: { status: 'waiting' },
+				DataStep: { status: 'complete' }
 			});
 			assert.deepEqual(findCall.orderBy, { caseReference: 'asc' });
 			assert.deepEqual(findCall.select, { caseReference: true, documentListStepId: true });
@@ -58,7 +58,7 @@ describe('case-to-migrate', () => {
 			const updateCall = update.mock.calls[0]?.arguments[0] as UpdateArgs;
 			assert.deepEqual(updateCall, {
 				where: { id: 123 },
-				data: { inProgress: true }
+				data: { status: 'queued' }
 			});
 		});
 
@@ -80,7 +80,7 @@ describe('case-to-migrate', () => {
 	});
 
 	describe('updateDocumentListStepComplete', () => {
-		test('updates step to inProgress=false and complete=true', async () => {
+		test('updates step status to the given value', async () => {
 			const update = mock.fn(async () => ({}));
 
 			const db: MigrationDbMock = {
@@ -88,23 +88,16 @@ describe('case-to-migrate', () => {
 				caseToMigrate: { update }
 			};
 
-			await updateDocumentListStepComplete(db as any, 'TEST-001', true);
+			await updateDocumentListStepComplete(db as any, 'TEST-001', 'complete');
 
 			const call = update.mock.calls[0]?.arguments[0] as CaseUpdateArgs;
-			assert.deepEqual(call, {
-				where: { caseReference: 'TEST-001' },
-				data: {
-					DocumentListStep: {
-						update: {
-							inProgress: false,
-							complete: true
-						}
-					}
-				}
-			});
+			assert.deepEqual(call.where, { caseReference: 'TEST-001' });
+			assert.equal(call.data.DocumentListStep.update.status, 'complete');
+			assert.ok(call.data.DocumentListStep.update.completedAt instanceof Date);
+			assert.equal(call.data.DocumentListStep.update.errorMessage, undefined);
 		});
 
-		test('can mark step as incomplete', async () => {
+		test('can set step status to failed with error message', async () => {
 			const update = mock.fn(async () => ({}));
 
 			const db: MigrationDbMock = {
@@ -112,10 +105,12 @@ describe('case-to-migrate', () => {
 				caseToMigrate: { update }
 			};
 
-			await updateDocumentListStepComplete(db as any, 'TEST-001', false);
+			await updateDocumentListStepComplete(db as any, 'TEST-001', 'failed', 'something went wrong');
 
 			const call = update.mock.calls[0]?.arguments[0] as CaseUpdateArgs;
-			assert.deepEqual(call.data.DocumentListStep.update.complete, false);
+			assert.equal(call.data.DocumentListStep.update.status, 'failed');
+			assert.ok(call.data.DocumentListStep.update.completedAt instanceof Date);
+			assert.equal(call.data.DocumentListStep.update.errorMessage, 'something went wrong');
 		});
 	});
 });

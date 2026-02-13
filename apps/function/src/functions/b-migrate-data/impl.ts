@@ -57,8 +57,9 @@ export function buildMigrateData(
 			const caseDetails = await source.fetchCaseDetails(sourceDatabase, caseReference);
 
 			if (!caseDetails) {
-				context.error(`Case ${caseReference} not found in source database`);
-				await migration.updateDataStepComplete(migrationDatabase, caseReference, false);
+				const errorMessage = `Case ${caseReference} not found in source database`;
+				context.error(errorMessage);
+				await migration.updateDataStepComplete(migrationDatabase, caseReference, 'failed', errorMessage);
 				return;
 			}
 
@@ -72,7 +73,7 @@ export function buildMigrateData(
 				context.log(`Case ${caseReference} successfully migrated to sink database`);
 			}
 
-			await migration.updateDataStepComplete(migrationDatabase, caseReference, true);
+			await migration.updateDataStepComplete(migrationDatabase, caseReference, 'complete');
 		} catch (error) {
 			context.error('Error during transformer run', error);
 			throw error;

@@ -12,30 +12,10 @@ export async function upsertCaseReferences(
 			update: {},
 			create: {
 				caseReference: ref,
-				DataStep: {
-					create: {
-						inProgress: false,
-						complete: false
-					}
-				},
-				DocumentListStep: {
-					create: {
-						inProgress: false,
-						complete: false
-					}
-				},
-				DocumentsStep: {
-					create: {
-						inProgress: false,
-						complete: false
-					}
-				},
-				ValidationStep: {
-					create: {
-						inProgress: false,
-						complete: false
-					}
-				}
+				DataStep: { create: {} },
+				DocumentListStep: { create: {} },
+				DocumentsStep: { create: {} },
+				ValidationStep: { create: {} }
 			}
 		});
 	}

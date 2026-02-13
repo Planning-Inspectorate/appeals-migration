@@ -133,7 +133,7 @@ describe('buildDispatcher', () => {
 			assert.strictEqual(transaction.migrationStep.updateMany.mock.callCount(), 4);
 			assert.deepStrictEqual(transaction.migrationStep.updateMany.mock.calls[0].arguments[0], {
 				where: { id: { in: [10] } },
-				data: { inProgress: true }
+				data: { status: 'queued' }
 			});
 		});
 

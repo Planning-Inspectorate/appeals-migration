@@ -14,12 +14,7 @@ export async function upsertDocumentsToMigrate(
 			create: {
 				documentId: doc.documentId,
 				caseReference: doc.caseReference,
-				MigrationStep: {
-					create: {
-						inProgress: false,
-						complete: false
-					}
-				}
+				MigrationStep: { create: {} }
 			}
 		});
 	}

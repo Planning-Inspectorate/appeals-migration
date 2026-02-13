@@ -49,7 +49,7 @@ export function buildListDocumentsToMigrate(
 			});
 
 			// Step 4: Mark the document list step as complete
-			await migration.updateDocumentListStepComplete(migrationDatabase, caseReference, true);
+			await migration.updateDocumentListStepComplete(migrationDatabase, caseReference, 'complete');
 
 			context.log(`Completed document list for case ${caseReference}`);
 		} catch (error) {
