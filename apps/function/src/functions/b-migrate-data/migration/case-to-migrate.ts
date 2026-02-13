@@ -3,7 +3,7 @@ import type { PrismaClient as MigrationPrismaClient } from '@pins/appeals-migrat
 export async function claimNextCaseToMigrate(migrationDatabase: MigrationPrismaClient) {
 	return migrationDatabase.$transaction(async (tx) => {
 		const caseToMigrate = await tx.caseToMigrate.findFirst({
-			where: { DataStep: { inProgress: false, complete: false } },
+			where: { DataStep: { status: 'waiting' } },
 			orderBy: { caseReference: 'asc' }
 		});
 
@@ -11,7 +11,7 @@ export async function claimNextCaseToMigrate(migrationDatabase: MigrationPrismaC
 
 		await tx.migrationStep.update({
 			where: { id: caseToMigrate.dataStepId },
-			data: { inProgress: true }
+			data: { status: 'queued' }
 		});
 
 		return caseToMigrate;
@@ -21,7 +21,8 @@ export async function claimNextCaseToMigrate(migrationDatabase: MigrationPrismaC
 export async function updateDataStepComplete(
 	migrationDatabase: MigrationPrismaClient,
 	caseReference: string,
-	complete: boolean
+	status: string,
+	errorMessage?: string
 ) {
 	try {
 		return await migrationDatabase.caseToMigrate.update({
@@ -29,8 +30,9 @@ export async function updateDataStepComplete(
 			data: {
 				DataStep: {
 					update: {
-						inProgress: false,
-						complete
+						status,
+						completedAt: new Date(),
+						errorMessage
 					}
 				}
 			}

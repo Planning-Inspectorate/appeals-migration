@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { describe, test, mock } from 'node:test';
 import assert from 'node:assert';
+import { describe, mock, test } from 'node:test';
 import { claimNextCaseToMigrate, updateDataStepComplete } from './case-to-migrate.ts';
 
 describe('claimNextCaseToMigrate', () => {
@@ -22,12 +22,12 @@ describe('claimNextCaseToMigrate', () => {
 
 		assert.deepStrictEqual(result, mockCase);
 		assert.deepStrictEqual(migrationDatabase.caseToMigrate.findFirst.mock.calls[0].arguments[0], {
-			where: { DataStep: { inProgress: false, complete: false } },
+			where: { DataStep: { status: 'waiting' } },
 			orderBy: { caseReference: 'asc' }
 		});
 		assert.deepStrictEqual(migrationDatabase.migrationStep.update.mock.calls[0].arguments[0], {
 			where: { id: 1 },
-			data: { inProgress: true }
+			data: { status: 'queued' }
 		});
 	});
 
@@ -51,26 +51,20 @@ describe('claimNextCaseToMigrate', () => {
 });
 
 describe('updateDataStepComplete', () => {
-	test('updates complete flag and sets inProgress to false', async () => {
+	test('updates status to the given value', async () => {
 		const migrationDatabase = {
 			caseToMigrate: {
 				update: mock.fn(() => Promise.resolve({ caseReference: 'CASE-001', dataStepId: 1 }))
 			}
 		};
 
-		await updateDataStepComplete(migrationDatabase, 'CASE-001', true);
+		await updateDataStepComplete(migrationDatabase, 'CASE-001', 'complete');
 
-		assert.deepStrictEqual(migrationDatabase.caseToMigrate.update.mock.calls[0].arguments[0], {
-			where: { caseReference: 'CASE-001' },
-			data: {
-				DataStep: {
-					update: {
-						inProgress: false,
-						complete: true
-					}
-				}
-			}
-		});
+		const call = migrationDatabase.caseToMigrate.update.mock.calls[0].arguments[0];
+		assert.deepStrictEqual(call.where, { caseReference: 'CASE-001' });
+		assert.strictEqual(call.data.DataStep.update.status, 'complete');
+		assert.ok(call.data.DataStep.update.completedAt instanceof Date);
+		assert.strictEqual(call.data.DataStep.update.errorMessage, undefined);
 	});
 
 	test('throws error when case not found', async () => {
@@ -80,7 +74,7 @@ describe('updateDataStepComplete', () => {
 			}
 		};
 
-		await assert.rejects(() => updateDataStepComplete(migrationDatabase, 'CASE-999', true), {
+		await assert.rejects(() => updateDataStepComplete(migrationDatabase, 'CASE-999', 'complete', undefined), {
 			message: 'Case CASE-999 not found'
 		});
 	});

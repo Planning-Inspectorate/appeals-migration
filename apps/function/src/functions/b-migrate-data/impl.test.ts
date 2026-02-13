@@ -54,7 +54,7 @@ describe('buildMigrateData', () => {
 		assert.deepStrictEqual(migration.updateDataStepComplete.mock.calls[0].arguments, [
 			service.databaseClient,
 			'CASE-001',
-			true
+			'complete'
 		]);
 		assert.strictEqual(context.log.mock.calls[1].arguments[0], 'Case CASE-001 successfully migrated to sink database');
 	});
@@ -81,10 +81,10 @@ describe('buildMigrateData', () => {
 		await handler(caseToMigrate, context);
 
 		assert.strictEqual(context.log.mock.calls[1].arguments[0], 'Case CASE-002 already exists in sink database');
-		assert.strictEqual(migration.updateDataStepComplete.mock.calls[0].arguments[2], true);
+		assert.strictEqual(migration.updateDataStepComplete.mock.calls[0].arguments[2], 'complete');
 	});
 
-	test('marks case as incomplete when not found in source database', async () => {
+	test('marks case as failed when not found in source database', async () => {
 		const service = newService();
 		const migration = newMigration();
 		const source = newSource();
@@ -107,7 +107,8 @@ describe('buildMigrateData', () => {
 		assert.deepStrictEqual(migration.updateDataStepComplete.mock.calls[0].arguments, [
 			service.databaseClient,
 			'CASE-999',
-			false
+			'failed',
+			'Case CASE-999 not found in source database'
 		]);
 	});
 

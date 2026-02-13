@@ -11,13 +11,8 @@ export async function claimNextCaseForDocumentList(
 	return migrationDatabase.$transaction(async (tx) => {
 		const caseToProcess = await tx.caseToMigrate.findFirst({
 			where: {
-				DocumentListStep: {
-					inProgress: false,
-					complete: false
-				},
-				DataStep: {
-					complete: true
-				}
+				DocumentListStep: { status: 'waiting' },
+				DataStep: { status: 'complete' }
 			},
 			orderBy: { caseReference: 'asc' },
 			select: {
@@ -32,7 +27,7 @@ export async function claimNextCaseForDocumentList(
 
 		await tx.migrationStep.update({
 			where: { id: caseToProcess.documentListStepId },
-			data: { inProgress: true }
+			data: { status: 'queued' }
 		});
 
 		return caseToProcess;
@@ -42,15 +37,17 @@ export async function claimNextCaseForDocumentList(
 export async function updateDocumentListStepComplete(
 	migrationDatabase: MigrationPrismaClient,
 	caseReference: string,
-	complete: boolean
+	status: string,
+	errorMessage?: string
 ): Promise<void> {
 	await migrationDatabase.caseToMigrate.update({
 		where: { caseReference },
 		data: {
 			DocumentListStep: {
 				update: {
-					inProgress: false,
-					complete
+					status,
+					completedAt: new Date(),
+					errorMessage
 				}
 			}
 		}

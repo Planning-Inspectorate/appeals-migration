@@ -13,34 +13,28 @@ async function handleMigration(
 	caseToMigrate: CaseToMigrate,
 	context: InvocationContext
 ): Promise<void> {
-	/*
-	// TODO enable when implemented
 	await service.databaseClient.migrationStep.update({
 		where: { id: caseToMigrate[stepIdField] },
 		data: {
-			status: "processing",
-			startTimestamp: new Date(),
-			workerId: context.invocationId
+			status: 'processing',
+			invocationId: context.invocationId,
+			startedAt: new Date()
 		}
 	});
-	*/
 
-	try {
-		await migrationFunction(caseToMigrate, context);
-	} catch (error) {
-		context.error(`Failed to migrate ${caseToMigrate.caseReference}`, error);
-		// TODO set status to failed and error message when implemented
-	}
+	const { status, errorMessage } = await migrationFunction(caseToMigrate, context)
+		.then(() => ({ status: 'complete', errorMessage: null }))
+		.catch((error) => {
+			context.error(`Failed to migrate ${caseToMigrate.caseReference}`, error);
+			return {
+				status: 'failed',
+				errorMessage: error instanceof Error ? error.message : String(error)
+			};
+		});
 
 	await service.databaseClient.migrationStep.update({
 		where: { id: caseToMigrate[stepIdField] },
-		data: {
-			inProgress: false,
-			complete: true
-			// TODO set status = complete / failed
-			// TODO set endTimestamp
-			// TODO set errorMessage, if any
-		}
+		data: { status, errorMessage, completedAt: new Date() }
 	});
 }
 
