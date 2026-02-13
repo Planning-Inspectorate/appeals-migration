@@ -16,7 +16,8 @@ describe('buildMigrateData', () => {
 	});
 
 	const newSource = () => ({
-		fetchCaseDetails: mock.fn()
+		fetchCaseDetails: mock.fn(),
+		fetchServiceUsers: mock.fn()
 	});
 
 	const newMappers = () => ({
@@ -55,11 +56,13 @@ describe('buildMigrateData', () => {
 
 		const mockCase = { caseReference: 'CASE-001', dataStepId: 1 };
 		const mockCaseDetails = { type: 'has', data: { caseReference: 'CASE-001' } };
+		const mockServiceUsers = [];
 		const mockMappedAppeal = { reference: 'CASE-001' };
 		const mockResult = { existed: false, appeal: { id: 1, reference: 'CASE-001' } };
 
 		migration.claimNextCaseToMigrate.mock.mockImplementationOnce(() => mockCase);
 		source.fetchCaseDetails.mock.mockImplementationOnce(() => mockCaseDetails);
+		source.fetchServiceUsers.mock.mockImplementationOnce(() => mockServiceUsers);
 		mappers.mapSourceToSinkAppeal.mock.mockImplementationOnce(() => mockMappedAppeal);
 		sink.upsertAppeal.mock.mockImplementationOnce(() => mockResult);
 		migration.updateDataStepComplete.mock.mockImplementationOnce(() => {});
@@ -69,6 +72,7 @@ describe('buildMigrateData', () => {
 
 		assert.strictEqual(migration.claimNextCaseToMigrate.mock.callCount(), 1);
 		assert.strictEqual(source.fetchCaseDetails.mock.callCount(), 1);
+		assert.strictEqual(source.fetchServiceUsers.mock.callCount(), 1);
 		assert.strictEqual(mappers.mapSourceToSinkAppeal.mock.callCount(), 1);
 		assert.strictEqual(sink.upsertAppeal.mock.callCount(), 1);
 		assert.strictEqual(migration.updateDataStepComplete.mock.callCount(), 1);
@@ -77,7 +81,7 @@ describe('buildMigrateData', () => {
 			'CASE-001',
 			true
 		]);
-		assert.strictEqual(context.log.mock.calls[1].arguments[0], 'Case CASE-001 successfully migrated to sink database');
+		assert.strictEqual(context.log.mock.calls[2].arguments[0], 'Case CASE-001 successfully migrated to sink database');
 	});
 
 	test('logs message when case already exists in sink database', async () => {
@@ -95,6 +99,7 @@ describe('buildMigrateData', () => {
 
 		migration.claimNextCaseToMigrate.mock.mockImplementationOnce(() => mockCase);
 		source.fetchCaseDetails.mock.mockImplementationOnce(() => mockCaseDetails);
+		source.fetchServiceUsers.mock.mockImplementationOnce(() => []);
 		mappers.mapSourceToSinkAppeal.mock.mockImplementationOnce(() => mockMappedAppeal);
 		sink.upsertAppeal.mock.mockImplementationOnce(() => mockResult);
 		migration.updateDataStepComplete.mock.mockImplementationOnce(() => {});
@@ -102,7 +107,7 @@ describe('buildMigrateData', () => {
 		const handler = buildMigrateData(service, migration, source, mappers, sink);
 		await handler({}, context);
 
-		assert.strictEqual(context.log.mock.calls[1].arguments[0], 'Case CASE-002 already exists in sink database');
+		assert.strictEqual(context.log.mock.calls[2].arguments[0], 'Case CASE-002 already exists in sink database');
 		assert.strictEqual(migration.updateDataStepComplete.mock.calls[0].arguments[2], true);
 	});
 

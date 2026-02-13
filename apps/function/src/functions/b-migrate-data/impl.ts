@@ -1,5 +1,6 @@
 import { claimNextCaseToMigrate, updateDataStepComplete } from './migration/case-to-migrate.ts';
 import { fetchCaseDetails } from './source/case-details.ts';
+import { fetchServiceUsers } from './source/service-users.ts';
 import { mapSourceToSinkAppeal } from './mappers/map-source-to-sink.ts';
 import { upsertAppeal } from './sink/appeal.ts';
 
@@ -13,6 +14,7 @@ type Migration = {
 
 type Source = {
 	fetchCaseDetails: typeof fetchCaseDetails;
+	fetchServiceUsers: typeof fetchServiceUsers;
 };
 
 type Mappers = {
@@ -29,7 +31,8 @@ const defaultMigration: Migration = {
 };
 
 const defaultSource: Source = {
-	fetchCaseDetails
+	fetchCaseDetails,
+	fetchServiceUsers
 };
 
 const defaultMappers: Mappers = {
@@ -71,7 +74,11 @@ export function buildMigrateData(
 				return;
 			}
 
-			const mappedAppeal = mappers.mapSourceToSinkAppeal(caseDetails.data);
+			// Fetch service users for the case
+			const serviceUsers = await source.fetchServiceUsers(sourceDatabase, caseReference);
+			context.log(`Found ${serviceUsers.length} service user(s) for case ${caseReference}`);
+
+			const mappedAppeal = mappers.mapSourceToSinkAppeal(caseDetails.data, serviceUsers);
 
 			const result = await sink.upsertAppeal(sinkDatabase, mappedAppeal);
 
