@@ -31,7 +31,17 @@ module "function_main" {
   # settings
   function_node_version = var.apps_config.functions_node_version
   app_settings = {
-    SQL_CONNECTION_STRING = local.key_vault_refs["sql-app-connection-string"]
+    SQL_CONNECTION_STRING                   = local.key_vault_refs["sql-app-connection-string"]
+    MANAGE_APPEALS_DOCUMENTS_ACCOUNT_NAME   = "azurerm_storage_account.functions.name"
+    MANAGE_APPEALS_DOCUMENTS_CONTAINER_NAME = "document-migration-test"
+    MANAGE_APPEALS_SQL_CONNECTION_STRING    = "placeholder"
+    HORIZON_WEB_BASE_URL                    = local.key_vault_refs["horizon-web-base-url"]
+    HORIZON_WEB_USERNAME                    = local.key_vault_refs["horizon-web-username"]
+    HORIZON_WEB_PASSWORD                    = local.key_vault_refs["horizon-web-password"]
+    HORIZON_WEB_PASSWORD                    = local.key_vault_refs["horizon-web-password"]
+    HORIZON_WEB_DNS_MAPPING                 = local.key_vault_refs["horizon-web-dns-mapping"]
+    SQL_CONNECTION_STRING                   = "placeholder"
+    ODW_CURATED_SQL_CONNECTION_STRING       = "placeholder"
   }
 }
 
