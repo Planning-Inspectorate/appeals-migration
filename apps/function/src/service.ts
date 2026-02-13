@@ -41,8 +41,7 @@ export class FunctionService {
 		);
 		this.sinkBlobContainerClient = blobClient.getContainerClient(config.manageAppeals.documents.containerName);
 
-		const horizon = config.horizon;
-		this.horizonWebClient = new HorizonWebClient(horizon.baseUrl, horizon.username, horizon.password);
+		this.horizonWebClient = new HorizonWebClient(config.horizon);
 	}
 
 	get aListCasesToMigrateSchedule() {

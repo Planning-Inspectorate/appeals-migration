@@ -1,4 +1,5 @@
 import { loadEnvFile } from 'node:process';
+import { HorizonWebClientOptions } from '@pins/appeals-migration-lib/horizon/web/horizon-web-client.ts';
 
 export interface Config {
 	database: string;
@@ -21,11 +22,7 @@ export interface Config {
 			schedule: string;
 		};
 	};
-	horizon: {
-		baseUrl: string;
-		username: string;
-		password: string;
-	};
+	horizon: HorizonWebClientOptions;
 	manageAppeals: {
 		apiEndpoint: string;
 		documents: {
@@ -54,6 +51,7 @@ export function loadConfig(): Config {
 		ODW_CURATED_SQL_CONNECTION_STRING,
 		MANAGE_APPEALS_SQL_CONNECTION_STRING,
 		HORIZON_WEB_BASE_URL,
+		HORIZON_WEB_DNS_MAPPING,
 		HORIZON_WEB_USERNAME,
 		HORIZON_WEB_PASSWORD
 	} = process.env;
@@ -99,7 +97,8 @@ export function loadConfig(): Config {
 		horizon: {
 			baseUrl: HORIZON_WEB_BASE_URL!,
 			username: HORIZON_WEB_USERNAME!,
-			password: HORIZON_WEB_PASSWORD!
+			password: HORIZON_WEB_PASSWORD!,
+			dnsEntries: parseDnsMapping(HORIZON_WEB_DNS_MAPPING)
 		},
 		manageAppeals: {
 			apiEndpoint: MANAGE_APPEALS_API_ENDPOINT!,
@@ -109,4 +108,22 @@ export function loadConfig(): Config {
 			}
 		}
 	};
+}
+
+/**
+ * Mapping is provided in the form
+ *
+ * host1:ip1,host2:ip2
+ */
+function parseDnsMapping(dnsMapping: string | undefined) {
+	if (!dnsMapping) {
+		return undefined;
+	}
+	const entries = dnsMapping.split(',');
+	const dnsEntries: Record<string, string> = {};
+	for (const entry of entries) {
+		const [host, ip] = entry.split(':');
+		dnsEntries[host] = ip;
+	}
+	return dnsEntries;
 }

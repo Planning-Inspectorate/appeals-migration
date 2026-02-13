@@ -3,6 +3,7 @@ import https from 'node:https';
 import httpntlm from 'httpntlm';
 import type { WriteStream } from 'node:fs';
 import { Readable } from 'node:stream';
+import { LookupFunction } from 'node:net';
 const ntlm = httpntlm.ntlm;
 
 type httpsGetImpl = typeof https.get;
@@ -11,6 +12,17 @@ export interface DownloadDocumentOptions {
 	version?: number;
 	rendition?: boolean;
 	createWriteStream?: (filename: string) => WriteStream;
+}
+
+export interface HorizonWebClientOptions {
+	// baseUrl prepended to request URLs
+	baseUrl: string;
+	// sername for NTLM login
+	username: string;
+	// password for NTLM login
+	password: string;
+	// custom DNS lookup (ipv4 only)
+	dnsEntries?: Record<string, string>;
 }
 
 /**
@@ -35,25 +47,31 @@ export class HorizonWebClient {
 
 	/**
 	 *
-	 * @param baseUrl baseUrl prepended to request URLs
-	 * @param username username for NTLM login
-	 * @param password password for NTLM login
+	 * @param options baseUrl prepended to request URLs
 	 * @param httpsGet https.get implementation - here for testing override
 	 */
-	constructor(baseUrl: string, username: string, password: string, httpsGet: httpsGetImpl = https.get) {
-		if (!baseUrl) {
+	constructor(options: HorizonWebClientOptions, httpsGet: httpsGetImpl = https.get) {
+		if (!options.baseUrl) {
 			throw new Error('baseUrl is required');
 		}
-		this.#baseUrl = baseUrl;
-		if (!username) {
+		this.#baseUrl = options.baseUrl;
+		if (!options.username) {
 			throw new Error('username is required');
 		}
-		this.#username = username;
-		if (!password) {
+		this.#username = options.username;
+		if (!options.password) {
 			throw new Error('password is required');
 		}
-		this.#password = password;
-		this.#agent = new https.Agent({ keepAlive: true });
+		this.#password = options.password;
+		let dnsLookup: LookupFunction | undefined;
+		const { dnsEntries } = options;
+		if (dnsEntries) {
+			dnsLookup = HorizonWebClient.buildCustomDnsEntryLookup(dnsEntries);
+		}
+		this.#agent = new https.Agent({
+			keepAlive: true,
+			lookup: dnsLookup
+		});
 
 		this.#httpsGet = httpsGet;
 	}
@@ -350,5 +368,13 @@ export class HorizonWebClient {
 			return new Error(`download error, no filename in content-disposition header: '${contentDisposition}'`);
 		}
 		return decodeURIComponent(name[1]);
+	}
+
+	static buildCustomDnsEntryLookup(entries: Record<string, string>): LookupFunction {
+		return (hostname, opts, callback) => {
+			const ip = entries[hostname];
+			const array = opts.all ? [{ address: ip, family: 4 }] : ip;
+			callback(null, array, 4);
+		};
 	}
 }
