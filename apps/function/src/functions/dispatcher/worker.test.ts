@@ -84,7 +84,7 @@ describe('createWorker', () => {
 	test('marks step as failed with error message on migration failure', async () => {
 		const service = newService();
 		const error = new Error('migration failed');
-		const migration = mock.fn(async () => {
+		const migration = mock.fn(async function testMigration() {
 			throw error;
 		});
 		const context = newContext();
@@ -94,7 +94,7 @@ describe('createWorker', () => {
 		await handler(caseToMigrate, context);
 
 		assert.strictEqual(context.error.mock.callCount(), 1);
-		assert.strictEqual(context.error.mock.calls[0].arguments[0], 'Failed to migrate CASE-ERR');
+		assert.strictEqual(context.error.mock.calls[0].arguments[0], 'Failed in test-worker for case CASE-ERR:');
 		assert.strictEqual(context.error.mock.calls[0].arguments[1], error);
 		assert.strictEqual(service.databaseClient.migrationStep.update.mock.callCount(), 2);
 

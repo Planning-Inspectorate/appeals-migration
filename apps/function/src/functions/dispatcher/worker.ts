@@ -8,6 +8,7 @@ type MigrationFunction = (caseToMigrate: CaseToMigrate, context: InvocationConte
 
 async function handleMigration(
 	service: FunctionService,
+	name: string,
 	migrationFunction: MigrationFunction,
 	stepIdField: StepIdField,
 	caseToMigrate: CaseToMigrate,
@@ -25,7 +26,7 @@ async function handleMigration(
 	const { status, errorMessage } = await migrationFunction(caseToMigrate, context)
 		.then(() => ({ status: 'complete', errorMessage: null }))
 		.catch((error) => {
-			context.error(`Failed to migrate ${caseToMigrate.caseReference}`, error);
+			context.error(`Failed in ${name} for case ${caseToMigrate.caseReference}:`, error);
 			return {
 				status: 'failed',
 				errorMessage: error instanceof Error ? error.message : String(error)
@@ -49,7 +50,7 @@ export function createWorker(
 		connection: 'SERVICE_BUS_CONNECTION_STRING',
 		queueName,
 		handler: async (caseToMigrate: CaseToMigrate, context: InvocationContext): Promise<void> => {
-			await handleMigration(service, migrationFunction, stepIdField, caseToMigrate, context);
+			await handleMigration(service, name, migrationFunction, stepIdField, caseToMigrate, context);
 		}
 	});
 }
