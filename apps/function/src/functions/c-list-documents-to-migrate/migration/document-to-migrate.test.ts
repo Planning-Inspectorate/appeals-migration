@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { describe, test, mock } from 'node:test';
 import assert from 'node:assert/strict';
+import { describe, mock, test } from 'node:test';
 import { upsertDocumentsToMigrate } from './document-to-migrate.ts';
 
 type TxMock = {
@@ -38,12 +38,7 @@ describe('document-to-migrate', () => {
 		assert.deepEqual(firstCallArgs.create, {
 			documentId: 'DOC-1',
 			caseReference: 'CASE-1',
-			MigrationStep: {
-				create: {
-					inProgress: false,
-					complete: false
-				}
-			}
+			MigrationStep: { create: {} }
 		});
 
 		const secondCallArgs = upsert.mock.calls[1].arguments[0];
@@ -52,12 +47,7 @@ describe('document-to-migrate', () => {
 		assert.deepEqual(secondCallArgs.create, {
 			documentId: 'DOC-2',
 			caseReference: 'CASE-1',
-			MigrationStep: {
-				create: {
-					inProgress: false,
-					complete: false
-				}
-			}
+			MigrationStep: { create: {} }
 		});
 	});
 });

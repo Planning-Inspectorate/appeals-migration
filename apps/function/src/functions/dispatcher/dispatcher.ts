@@ -35,10 +35,7 @@ async function getCasesToMigrate(
 		for (const idsChunk of chunk(ids, service.migrationStepUpdateChunkSize)) {
 			await transaction.migrationStep.updateMany({
 				where: { id: { in: idsChunk } },
-				data: {
-					inProgress: true
-					// TODO set status to queued when implemented
-				}
+				data: { status: 'queued' }
 			});
 		}
 		return selected;
@@ -108,7 +105,7 @@ async function drain(config: DispatchConfig, service: FunctionService, context: 
 						in: messages.map((message) => (message.body as CaseToMigrate)[config.stepIdField])
 					}
 				},
-				data: { inProgress: false }
+				data: { status: 'waiting' }
 			});
 
 			for (const messagesChunk of chunk(messages, service.serviceBusParallelism)) {
@@ -134,33 +131,33 @@ export function buildDispatcher(service: FunctionService): TimerHandler {
 	const configs: DispatchConfig[] = [
 		{
 			queueName: 'data-step',
-			where: { DataStep: { inProgress: false, complete: false } },
+			where: { DataStep: { status: 'waiting' } },
 			stepIdField: 'dataStepId'
 		},
 		{
 			queueName: 'document-list-step',
 			where: {
-				DataStep: { complete: true },
-				DocumentListStep: { inProgress: false, complete: false }
+				DataStep: { status: 'complete' },
+				DocumentListStep: { status: 'waiting' }
 			},
 			stepIdField: 'documentListStepId'
 		},
 		{
 			queueName: 'documents-step',
 			where: {
-				DataStep: { complete: true },
-				DocumentListStep: { complete: true },
-				DocumentsStep: { inProgress: false, complete: false }
+				DataStep: { status: 'complete' },
+				DocumentListStep: { status: 'complete' },
+				DocumentsStep: { status: 'waiting' }
 			},
 			stepIdField: 'documentsStepId'
 		},
 		{
 			queueName: 'validation-step',
 			where: {
-				DataStep: { complete: true },
-				DocumentListStep: { complete: true },
-				DocumentsStep: { complete: true },
-				ValidationStep: { inProgress: false, complete: false }
+				DataStep: { status: 'complete' },
+				DocumentListStep: { status: 'complete' },
+				DocumentsStep: { status: 'complete' },
+				ValidationStep: { status: 'waiting' }
 			},
 			stepIdField: 'validationStepId'
 		}

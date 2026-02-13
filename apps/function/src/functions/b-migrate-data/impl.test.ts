@@ -10,10 +10,6 @@ describe('buildMigrateData', () => {
 		sinkDatabaseClient: { db: 'sink' }
 	});
 
-	const newMigration = () => ({
-		updateDataStepComplete: mock.fn()
-	});
-
 	const newSource = () => ({
 		fetchCaseDetails: mock.fn()
 	});
@@ -26,9 +22,8 @@ describe('buildMigrateData', () => {
 		upsertAppeal: mock.fn()
 	});
 
-	test('successfully processes a case from AppealHas and creates new appeal', async () => {
+	test('successfully processes a case and creates new appeal', async () => {
 		const service = newService();
-		const migration = newMigration();
 		const source = newSource();
 		const mappers = newMappers();
 		const sink = newSink();
@@ -42,26 +37,18 @@ describe('buildMigrateData', () => {
 		source.fetchCaseDetails.mock.mockImplementationOnce(() => mockCaseDetails);
 		mappers.mapSourceToSinkAppeal.mock.mockImplementationOnce(() => mockMappedAppeal);
 		sink.upsertAppeal.mock.mockImplementationOnce(() => mockResult);
-		migration.updateDataStepComplete.mock.mockImplementationOnce(() => {});
 
-		const handler = buildMigrateData(service, migration, source, mappers, sink);
+		const handler = buildMigrateData(service, source, mappers, sink);
 		await handler(caseToMigrate, context);
 
 		assert.strictEqual(source.fetchCaseDetails.mock.callCount(), 1);
 		assert.strictEqual(mappers.mapSourceToSinkAppeal.mock.callCount(), 1);
 		assert.strictEqual(sink.upsertAppeal.mock.callCount(), 1);
-		assert.strictEqual(migration.updateDataStepComplete.mock.callCount(), 1);
-		assert.deepStrictEqual(migration.updateDataStepComplete.mock.calls[0].arguments, [
-			service.databaseClient,
-			'CASE-001',
-			true
-		]);
 		assert.strictEqual(context.log.mock.calls[1].arguments[0], 'Case CASE-001 successfully migrated to sink database');
 	});
 
 	test('logs message when case already exists in sink database', async () => {
 		const service = newService();
-		const migration = newMigration();
 		const source = newSource();
 		const mappers = newMappers();
 		const sink = newSink();
@@ -75,18 +62,15 @@ describe('buildMigrateData', () => {
 		source.fetchCaseDetails.mock.mockImplementationOnce(() => mockCaseDetails);
 		mappers.mapSourceToSinkAppeal.mock.mockImplementationOnce(() => mockMappedAppeal);
 		sink.upsertAppeal.mock.mockImplementationOnce(() => mockResult);
-		migration.updateDataStepComplete.mock.mockImplementationOnce(() => {});
 
-		const handler = buildMigrateData(service, migration, source, mappers, sink);
+		const handler = buildMigrateData(service, source, mappers, sink);
 		await handler(caseToMigrate, context);
 
 		assert.strictEqual(context.log.mock.calls[1].arguments[0], 'Case CASE-002 already exists in sink database');
-		assert.strictEqual(migration.updateDataStepComplete.mock.calls[0].arguments[2], true);
 	});
 
-	test('marks case as incomplete when not found in source database', async () => {
+	test('throws when case not found in source database', async () => {
 		const service = newService();
-		const migration = newMigration();
 		const source = newSource();
 		const mappers = newMappers();
 		const sink = newSink();
@@ -95,25 +79,18 @@ describe('buildMigrateData', () => {
 		const caseToMigrate = { caseReference: 'CASE-999', dataStepId: 3 };
 
 		source.fetchCaseDetails.mock.mockImplementationOnce(() => null);
-		migration.updateDataStepComplete.mock.mockImplementationOnce(() => {});
 
-		const handler = buildMigrateData(service, migration, source, mappers, sink);
-		await handler(caseToMigrate, context);
+		const handler = buildMigrateData(service, source, mappers, sink);
 
-		assert.strictEqual(context.error.mock.callCount(), 1);
-		assert.strictEqual(context.error.mock.calls[0].arguments[0], 'Case CASE-999 not found in source database');
+		await assert.rejects(() => handler(caseToMigrate, context), {
+			message: 'Case CASE-999 not found in source database'
+		});
 		assert.strictEqual(mappers.mapSourceToSinkAppeal.mock.callCount(), 0);
 		assert.strictEqual(sink.upsertAppeal.mock.callCount(), 0);
-		assert.deepStrictEqual(migration.updateDataStepComplete.mock.calls[0].arguments, [
-			service.databaseClient,
-			'CASE-999',
-			false
-		]);
 	});
 
-	test('logs error and rethrows on failure', async () => {
+	test('propagates errors from source fetch', async () => {
 		const service = newService();
-		const migration = newMigration();
 		const source = newSource();
 		const mappers = newMappers();
 		const sink = newSink();
@@ -125,11 +102,8 @@ describe('buildMigrateData', () => {
 			throw error;
 		});
 
-		const handler = buildMigrateData(service, migration, source, mappers, sink);
+		const handler = buildMigrateData(service, source, mappers, sink);
 
 		await assert.rejects(() => handler(caseToMigrate, context), error);
-		assert.strictEqual(context.error.mock.callCount(), 1);
-		assert.strictEqual(context.error.mock.calls[0].arguments[0], 'Error during transformer run');
-		assert.strictEqual(context.error.mock.calls[0].arguments[1], error);
 	});
 });

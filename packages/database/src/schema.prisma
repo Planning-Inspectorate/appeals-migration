@@ -37,7 +37,6 @@ model CaseToMigrate {
   caseReference String @id
 
   // migration steps tracked per case
-  // InProgress fields used to lock the case for that processing step
 
   dataStepId Int           @unique
   DataStep   MigrationStep @relation("DataStep", fields: [dataStepId], references: [id], onUpdate: NoAction, onDelete: NoAction)
@@ -59,11 +58,12 @@ model CaseToMigrate {
 model MigrationStep {
   id Int @id @default(autoincrement())
 
-  /// whether this step is locked for processing
-  inProgress Boolean @default(false)
-  complete   Boolean @default(false)
-
-  // todo: attempts and/or failures?
+  /// status of this step: waiting | queued | processing | complete | failed
+  status       String    @default("waiting")
+  errorMessage String?
+  invocationId String?
+  startedAt    DateTime?
+  completedAt  DateTime?
 
   DataStepCase         CaseToMigrate?     @relation("DataStep")
   DocumentListStepCase CaseToMigrate?     @relation("DocumentListStep")
