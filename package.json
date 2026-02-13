@@ -32,6 +32,7 @@
   "dependencies": {
     "@azure/functions": "^4.11.2",
     "@azure/identity": "^4.13.0",
+    "@planning-inspectorate/data-model": "^2.21.1",
     "@prisma/adapter-mssql": "^7.3.0",
     "@prisma/client": "^7.3.0",
     "body-parser": "^2.2.2",

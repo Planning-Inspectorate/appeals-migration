@@ -1,5 +1,6 @@
 import { claimNextCaseToMigrate, updateDataStepComplete } from './migration/case-to-migrate.ts';
 import { fetchCaseDetails } from './source/case-details.ts';
+import { fetchEventDetails } from './source/event-details.ts';
 import { mapSourceToSinkAppeal } from './mappers/map-source-to-sink.ts';
 import { upsertAppeal } from './sink/appeal.ts';
 
@@ -13,6 +14,7 @@ type Migration = {
 
 type Source = {
 	fetchCaseDetails: typeof fetchCaseDetails;
+	fetchEventDetails: typeof fetchEventDetails;
 };
 
 type Mappers = {
@@ -29,7 +31,8 @@ const defaultMigration: Migration = {
 };
 
 const defaultSource: Source = {
-	fetchCaseDetails
+	fetchCaseDetails,
+	fetchEventDetails
 };
 
 const defaultMappers: Mappers = {
@@ -48,6 +51,7 @@ export function buildMigrateData(
 	sink: Sink = defaultSink
 ): TimerHandler {
 	return async (_timer, context) => {
+		let caseReference: string | undefined;
 		try {
 			const migrationDatabase = service.databaseClient;
 			const sourceDatabase = service.sourceDatabaseClient;
@@ -59,8 +63,7 @@ export function buildMigrateData(
 				context.log('No cases available to migrate');
 				return;
 			}
-
-			const caseReference = caseToMigrate.caseReference;
+			caseReference = caseToMigrate.caseReference;
 			context.log(`Processing case: ${caseReference}`);
 
 			const caseDetails = await source.fetchCaseDetails(sourceDatabase, caseReference);
@@ -71,7 +74,17 @@ export function buildMigrateData(
 				return;
 			}
 
-			const mappedAppeal = mappers.mapSourceToSinkAppeal(caseDetails.data);
+			const events = await source.fetchEventDetails(sourceDatabase, caseReference);
+
+			const mappedAppeal = mappers.mapSourceToSinkAppeal(
+				caseDetails.data,
+				events,
+				(eventType: string | null | undefined) => {
+					context.log(
+						`Warning: Unknown or null event type "${eventType}" for case ${caseReference}, skipping event mapping`
+					);
+				}
+			);
 
 			const result = await sink.upsertAppeal(sinkDatabase, mappedAppeal);
 
@@ -84,6 +97,13 @@ export function buildMigrateData(
 			await migration.updateDataStepComplete(migrationDatabase, caseReference, true);
 		} catch (error) {
 			context.error('Error during transformer run', error);
+			if (caseReference) {
+				try {
+					await migration.updateDataStepComplete(service.databaseClient, caseReference, false);
+				} catch (updateError) {
+					context.error('Failed to mark migration step as failed', updateError);
+				}
+			}
 			throw error;
 		}
 	};
