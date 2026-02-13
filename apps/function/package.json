@@ -12,6 +12,7 @@
   "private": true,
   "dependencies": {
     "@azure/functions": "*",
+    "@azure/storage-blob": "*",
     "@pins/appeals-migration-database": "^0.0.0",
     "@pins/manage-appeals-database": "^0.0.0",
     "@pins/odw-curated-database": "^0.0.0",
