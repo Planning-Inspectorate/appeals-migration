@@ -14,28 +14,33 @@ app.post('test-migrate-documents', async (request, context) => {
 	}
 	const start = performance.now();
 
-	for (const documentId of documentIds) {
-		context.log('fetching file', documentId);
-		const docStart = performance.now();
-		const { filename, stream } = await service.horizonWebClient.getDocument(documentId);
-		const filepath = context.invocationId + '/' + filename;
-		const blobClient = service.sinkBlobContainerClient.getBlockBlobClient(filepath);
-		await blobClient.uploadStream(stream);
-		const docTime = performance.now() - docStart;
-		const props = await blobClient.getProperties();
-		context.log(
-			documentId,
-			'file written to',
-			filepath,
-			'size',
-			bytesToString(props.contentLength),
-			'time',
-			msToString(docTime)
-		);
-	}
+	try {
+		for (const documentId of documentIds) {
+			context.log('fetching file', documentId);
+			const docStart = performance.now();
+			const { filename, stream } = await service.horizonWebClient.getDocument(documentId);
+			const filepath = context.invocationId + '/' + filename;
+			const blobClient = service.sinkBlobContainerClient.getBlockBlobClient(filepath);
+			await blobClient.uploadStream(stream);
+			const docTime = performance.now() - docStart;
+			const props = await blobClient.getProperties();
+			context.log(
+				documentId,
+				'file written to',
+				filepath,
+				'size',
+				bytesToString(props.contentLength),
+				'time',
+				msToString(docTime)
+			);
+		}
 
-	const time = performance.now() - start;
-	return { status: 200, jsonBody: { msg: 'migrated all documents', time: msToString(time) } };
+		const time = performance.now() - start;
+		return { status: 200, jsonBody: { msg: 'migrated all documents', time: msToString(time) } };
+	} catch (e) {
+		context.error(e, 'processing error');
+		return { status: 500, jsonBody: { msg: e.message || 'unknown error' } };
+	}
 });
 
 function bytesToString(bytes: number | undefined): string {
