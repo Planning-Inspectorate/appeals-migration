@@ -3,7 +3,7 @@ import { initialiseService } from '../init.ts';
 
 const service = initialiseService();
 
-app.get('test-migrate-documents', async (request, context) => {
+app.post('test-migrate-documents', async (request, context) => {
 	context.log('test migrate documents');
 	const documentIds = await request.json();
 	if (!Array.isArray(documentIds)) {
