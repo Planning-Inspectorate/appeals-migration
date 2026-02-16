@@ -8,6 +8,7 @@ import type { PrismaClient as SourcePrismaClient } from '@pins/odw-curated-datab
 import type { Config } from './config.ts';
 import { BlobServiceClient, ContainerClient } from '@azure/storage-blob';
 import { DefaultAzureCredential } from '@azure/identity';
+import { HorizonWebClient } from '@pins/appeals-migration-lib/horizon/web/horizon-web-client.ts';
 
 /**
  * This class encapsulates all the services and clients for the application
@@ -15,6 +16,7 @@ import { DefaultAzureCredential } from '@azure/identity';
 export class FunctionService {
 	#config: Config;
 	databaseClient: MigrationPrismaClient;
+	horizonWebClient: HorizonWebClient;
 	sourceDatabaseClient: SourcePrismaClient;
 	sinkDatabaseClient: SinkPrismaClient;
 	sinkBlobContainerClient: ContainerClient;
@@ -43,6 +45,8 @@ export class FunctionService {
 			new DefaultAzureCredential()
 		);
 		this.sinkBlobContainerClient = blobClient.getContainerClient(config.manageAppeals.documents.containerName);
+
+		this.horizonWebClient = new HorizonWebClient(config.horizon);
 	}
 
 	get aListCasesToMigrateSchedule() {
