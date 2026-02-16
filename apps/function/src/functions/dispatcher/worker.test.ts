@@ -2,6 +2,7 @@
 import { app } from '@azure/functions';
 import assert from 'node:assert';
 import { describe, mock, test } from 'node:test';
+import { stepStatus } from '../../types.ts';
 import { createWorker } from './worker.ts';
 
 describe('createWorker', () => {
@@ -71,13 +72,13 @@ describe('createWorker', () => {
 
 		const processingCall = service.databaseClient.migrationStep.update.mock.calls[0].arguments[0];
 		assert.deepStrictEqual(processingCall.where, { id: 10 });
-		assert.strictEqual(processingCall.data.status, 'processing');
+		assert.strictEqual(processingCall.data.status, stepStatus.processing);
 		assert.ok(processingCall.data.startedAt instanceof Date);
 		assert.strictEqual(processingCall.data.invocationId, 'test-invocation-id');
 
 		const completeCall = service.databaseClient.migrationStep.update.mock.calls[1].arguments[0];
 		assert.deepStrictEqual(completeCall.where, { id: 10 });
-		assert.strictEqual(completeCall.data.status, 'complete');
+		assert.strictEqual(completeCall.data.status, stepStatus.complete);
 		assert.ok(completeCall.data.completedAt instanceof Date);
 	});
 
@@ -100,7 +101,7 @@ describe('createWorker', () => {
 
 		const failedCall = service.databaseClient.migrationStep.update.mock.calls[1].arguments[0];
 		assert.deepStrictEqual(failedCall.where, { id: 20 });
-		assert.strictEqual(failedCall.data.status, 'failed');
+		assert.strictEqual(failedCall.data.status, stepStatus.failed);
 		assert.ok(failedCall.data.completedAt instanceof Date);
 		assert.strictEqual(failedCall.data.errorMessage, 'migration failed');
 	});
@@ -119,7 +120,7 @@ describe('createWorker', () => {
 
 		const completeCall = service.databaseClient.migrationStep.update.mock.calls[1].arguments[0];
 		assert.deepStrictEqual(completeCall.where, { id: 42 });
-		assert.strictEqual(completeCall.data.status, 'complete');
+		assert.strictEqual(completeCall.data.status, stepStatus.complete);
 	});
 
 	test('propagates database update error', async () => {
@@ -151,7 +152,7 @@ describe('createWorker', () => {
 
 		const failedCall = service.databaseClient.migrationStep.update.mock.calls[1].arguments[0];
 		assert.deepStrictEqual(failedCall.where, { id: 55 });
-		assert.strictEqual(failedCall.data.status, 'failed');
+		assert.strictEqual(failedCall.data.status, stepStatus.failed);
 		assert.strictEqual(failedCall.data.errorMessage, 'transient failure');
 	});
 
@@ -167,7 +168,7 @@ describe('createWorker', () => {
 		await handler(caseToMigrate, context);
 
 		const failedCall = service.databaseClient.migrationStep.update.mock.calls[1].arguments[0];
-		assert.strictEqual(failedCall.data.status, 'failed');
+		assert.strictEqual(failedCall.data.status, stepStatus.failed);
 		assert.strictEqual(failedCall.data.errorMessage, 'plain string error');
 	});
 });
