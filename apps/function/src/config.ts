@@ -10,18 +10,6 @@ export interface Config {
 		aListCasesToMigrate: {
 			schedule: string;
 		};
-		bMigrateData: {
-			schedule: string;
-		};
-		cListDocumentsToMigrate: {
-			schedule: string;
-		};
-		dMigrateDocuments: {
-			schedule: string;
-		};
-		eValidateMigratedCases: {
-			schedule: string;
-		};
 		dispatcher: {
 			schedule: string;
 			endHour: number;
@@ -54,10 +42,6 @@ export function loadConfig(): Config {
 		DISPATCHER_END_MINUTES,
 		DISPATCHER_START_HOUR,
 		FUNC_LIST_CASE_TO_MIGRATE_SCHEDULE,
-		FUNC_LIST_DOCUMENTS_TO_MIGRATE_SCHEDULE,
-		FUNC_MIGRATE_DOCUMENTS_SCHEDULE,
-		FUNC_TRANSFORMER_SCHEDULE,
-		FUNC_VALIDATE_MIGRATED_CASES_SCHEDULE,
 		HORIZON_WEB_BASE_URL,
 		HORIZON_WEB_USERNAME,
 		HORIZON_WEB_PASSWORD,
@@ -112,18 +96,6 @@ export function loadConfig(): Config {
 		functions: {
 			aListCasesToMigrate: {
 				schedule: FUNC_LIST_CASE_TO_MIGRATE_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
-			},
-			bMigrateData: {
-				schedule: FUNC_TRANSFORMER_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
-			},
-			cListDocumentsToMigrate: {
-				schedule: FUNC_LIST_DOCUMENTS_TO_MIGRATE_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
-			},
-			dMigrateDocuments: {
-				schedule: FUNC_MIGRATE_DOCUMENTS_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
-			},
-			eValidateMigratedCases: {
-				schedule: FUNC_VALIDATE_MIGRATED_CASES_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
 			},
 			dispatcher: {
 				schedule: dispatcherSchedule(),
