@@ -7,7 +7,8 @@ import { HorizonWebClient } from './horizon-web-client.ts';
 describe('horizon-web-client', () => {
 	const loginEndpoint = '/otcs/llisapi.dll?func=LL.Login';
 
-	const clientWithMockGet = (returnFileHeader) => {
+	const clientWithMockGet = (returnFileHeader, return404First) => {
+		let returned404 = false;
 		const newMockResponse = (status, headers = {}) => {
 			return {
 				statusCode: status,
@@ -49,12 +50,18 @@ describe('horizon-web-client', () => {
 					'set-cookie': ['LLCookie=abc123; Path=/']
 				});
 			} else if (cookies && cookies.includes('LLCookie=')) {
+				ntlmCallCount = 0;
 				let headers = {};
 				if (returnFileHeader) {
 					headers['content-disposition'] = 'attachment; filename="my-file.pdf"';
 				}
-				// Authed request - should return 200
-				response = newMockResponse(200, headers);
+				if (return404First && !returned404) {
+					response = newMockResponse(401);
+					returned404 = true;
+				} else {
+					// Authed request - should return 200
+					response = newMockResponse(200, headers);
+				}
 			}
 
 			setImmediate(() => cb(response));
@@ -69,23 +76,36 @@ describe('horizon-web-client', () => {
 		return { client, mockGet };
 	};
 	describe('get', () => {
+		const verifyLoginFlow = (mockFn: typeof mock.fn, offset: number = 0) => {
+			// NTLM type-1 req
+			assert.strictEqual(mockFn.calls[offset * 4].arguments[0], 'http://localhost/my-url');
+			assert.match(mockFn.calls[offset * 4].arguments[1]?.headers?.Authorization, /NTLM /);
+			// NTLM type-3 req
+			assert.strictEqual(mockFn.calls[1 + offset * 4].arguments[0], 'http://localhost/my-url');
+			assert.match(mockFn.calls[1 + offset * 4].arguments[1]?.headers?.Authorization, /NTLM /);
+			// login req
+			assert.strictEqual(mockFn.calls[2 + offset * 4].arguments[0], 'http://localhost' + loginEndpoint);
+			// auth'd get req
+			assert.strictEqual(mockFn.calls[3 + offset * 4].arguments[0], 'http://localhost/my-url');
+			assert.match(mockFn.calls[3 + offset * 4].arguments[1]?.headers?.Cookie, /LLCookie=abc123/);
+		};
 		it('should complete login flow for get requests', async () => {
 			const { client, mockGet } = clientWithMockGet();
 			await client.get('/my-url');
 
 			// four calls expected
 			assert.strictEqual(mockGet.mock.callCount(), 4);
-			// NTLM type-1 req
-			assert.strictEqual(mockGet.mock.calls[0].arguments[0], 'http://localhost/my-url');
-			assert.match(mockGet.mock.calls[0].arguments[1]?.headers?.Authorization, /NTLM /);
-			// NTLM type-3 req
-			assert.strictEqual(mockGet.mock.calls[1].arguments[0], 'http://localhost/my-url');
-			assert.match(mockGet.mock.calls[0].arguments[1]?.headers?.Authorization, /NTLM /);
-			// login req
-			assert.strictEqual(mockGet.mock.calls[2].arguments[0], 'http://localhost' + loginEndpoint);
-			// auth'd get req
-			assert.strictEqual(mockGet.mock.calls[3].arguments[0], 'http://localhost/my-url');
-			assert.match(mockGet.mock.calls[3].arguments[1]?.headers?.Cookie, /LLCookie=abc123/);
+			verifyLoginFlow(mockGet.mock, 0);
+		});
+		it('should re-attempt login flow if 401 is recieved', async () => {
+			const { client, mockGet } = clientWithMockGet(false, true);
+			await client.get('/my-url');
+
+			// eight calls expected - two login attempts
+			assert.strictEqual(mockGet.mock.callCount(), 8);
+			for (let i = 0; i < 2; i++) {
+				verifyLoginFlow(mockGet.mock, i);
+			}
 		});
 	});
 	describe('pipeDocument', () => {

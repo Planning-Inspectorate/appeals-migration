@@ -23,7 +23,9 @@ export class HorizonWebClient {
 	readonly #agent: https.Agent;
 
 	// cookie jar for storing cookies between requests
-	readonly #cookieJar: Record<string, string> = {};
+	#cookieJar: Record<string, string> = {};
+	// number of attempts at re-authenticating
+	#reAuthAttempts: number = 0;
 
 	/**
 	 * to ensure we only attempt one login at a time we save the login promise to await in subsequent calls
@@ -184,7 +186,7 @@ export class HorizonWebClient {
 	 * @param url
 	 * @private
 	 */
-	async #authedGetRequest(url: string) {
+	async #authedGetRequest(url: string): Promise<http.IncomingMessage> {
 		if (!this.#hasAuth) {
 			throw new Error('requests must be authorised first');
 		}
@@ -195,6 +197,19 @@ export class HorizonWebClient {
 		const res = await this.#get(url, { headers });
 		if (res.headers['set-cookie']) {
 			this.#updateCookies(res);
+		}
+		if (res.statusCode === 401) {
+			// if we get 401 for an authed request, then re-auth
+			if (this.#reAuthAttempts >= 3) {
+				// don't get stuck in a loop
+				return res;
+			}
+			// clear cookies to start login again
+			this.#cookieJar = {};
+			this.#reAuthAttempts++;
+			return this.get(url);
+		} else {
+			this.#reAuthAttempts = 0;
 		}
 		return res;
 	}
