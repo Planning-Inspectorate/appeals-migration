@@ -1,5 +1,5 @@
-import { CaseSearchRequest, CaseSearchResponse, CaseSearchSummaryResponse } from './case-search.ts';
-import { GetCaseResponse } from './get-case.ts';
+import type { CaseSearchRequest, CaseSearchResponse, CaseSearchSummaryResponse } from './case-search.ts';
+import type { GetCaseResponse } from './get-case.ts';
 
 export interface IHorizonApi {
 	searchCases(req: CaseSearchRequest): Promise<CaseSearchResponse>;
