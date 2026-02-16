@@ -17,7 +17,7 @@ async function run() {
 		throw new Error('OBJ_ID is required');
 	}
 
-	const client = new HorizonWebClient(baseUrl, username, password);
+	const client = new HorizonWebClient({ baseUrl, username, password });
 
 	const properties = await client.get(`/otcs/llisapi.dll?func=ll&objId=${objId}&objAction=info`);
 	console.log(properties.statusCode);

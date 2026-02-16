@@ -12,6 +12,15 @@ export interface DownloadDocumentOptions {
 	createWriteStream: (filename: string) => WriteStream;
 }
 
+export interface HorizonWebClientOptions {
+	// baseUrl prepended to request URLs
+	baseUrl: string;
+	// sername for NTLM login
+	username: string;
+	// password for NTLM login
+	password: string;
+}
+
 /**
  * A client for interacting with Horizon web services
  * This class handles NTLM auth (with the 'httpntlm' module) and the OpenText/Horizon specific redirect/login behavior
@@ -34,24 +43,22 @@ export class HorizonWebClient {
 
 	/**
 	 *
-	 * @param baseUrl baseUrl prepended to request URLs
-	 * @param username username for NTLM login
-	 * @param password password for NTLM login
+	 * @param options options for configuring the client
 	 * @param httpsGet https.get implementation - here for testing override
 	 */
-	constructor(baseUrl: string, username: string, password: string, httpsGet: httpsGetImpl = https.get) {
-		if (!baseUrl) {
+	constructor(options: HorizonWebClientOptions, httpsGet: httpsGetImpl = https.get) {
+		if (!options.baseUrl) {
 			throw new Error('baseUrl is required');
 		}
-		this.#baseUrl = baseUrl;
-		if (!username) {
+		this.#baseUrl = options.baseUrl;
+		if (!options.username) {
 			throw new Error('username is required');
 		}
-		this.#username = username;
-		if (!password) {
+		this.#username = options.username;
+		if (!options.password) {
 			throw new Error('password is required');
 		}
-		this.#password = password;
+		this.#password = options.password;
 		this.#agent = new https.Agent({ keepAlive: true });
 
 		this.#httpsGet = httpsGet;

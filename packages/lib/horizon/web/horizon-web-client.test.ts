@@ -65,7 +65,14 @@ describe('horizon-web-client', () => {
 			};
 		});
 
-		const client = new HorizonWebClient('http://localhost', 'username', 'password', mockGet);
+		const client = new HorizonWebClient(
+			{
+				baseUrl: 'http://localhost',
+				username: 'username',
+				password: 'password'
+			},
+			mockGet
+		);
 		return { client, mockGet };
 	};
 	describe('get', () => {
