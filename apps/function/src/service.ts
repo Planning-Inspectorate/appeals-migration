@@ -6,6 +6,8 @@ import type { PrismaClient as SinkPrismaClient } from '@pins/manage-appeals-data
 import { newOdwDatabaseClient } from '@pins/odw-curated-database';
 import type { PrismaClient as SourcePrismaClient } from '@pins/odw-curated-database/src/client/client.ts';
 import type { Config } from './config.ts';
+import { BlobServiceClient, ContainerClient } from '@azure/storage-blob';
+import { DefaultAzureCredential } from '@azure/identity';
 
 /**
  * This class encapsulates all the services and clients for the application
@@ -15,6 +17,7 @@ export class FunctionService {
 	databaseClient: MigrationPrismaClient;
 	sourceDatabaseClient: SourcePrismaClient;
 	sinkDatabaseClient: SinkPrismaClient;
+	sinkBlobContainerClient: ContainerClient;
 	serviceBusClient: ServiceBusClient;
 	serviceBusAdministrationClient: ServiceBusAdministrationClient;
 
@@ -34,6 +37,12 @@ export class FunctionService {
 		this.sinkDatabaseClient = newManageAppealsDatabaseClient(config.sinkDatabase);
 		this.serviceBusClient = new ServiceBusClient(config.serviceBus);
 		this.serviceBusAdministrationClient = new ServiceBusAdministrationClient(config.serviceBus);
+
+		const blobClient = new BlobServiceClient(
+			`https://${config.manageAppeals.documents.accountName}.blob.core.windows.net`,
+			new DefaultAzureCredential()
+		);
+		this.sinkBlobContainerClient = blobClient.getContainerClient(config.manageAppeals.documents.containerName);
 	}
 
 	get aListCasesToMigrateSchedule() {
