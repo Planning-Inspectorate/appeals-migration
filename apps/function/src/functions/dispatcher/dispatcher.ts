@@ -2,6 +2,7 @@ import type { InvocationContext, Timer, TimerHandler } from '@azure/functions';
 import type { CaseToMigrate, Prisma } from '@pins/appeals-migration-database/src/client/client.ts';
 import chunk from 'lodash.chunk';
 import type { FunctionService } from '../../service.ts';
+import { stepStatus } from '../../types.ts';
 import type { StepIdField } from './types.ts';
 
 type DispatchConfig = {
@@ -35,7 +36,7 @@ async function getCasesToMigrate(
 		for (const idsChunk of chunk(ids, service.migrationStepUpdateChunkSize)) {
 			await transaction.migrationStep.updateMany({
 				where: { id: { in: idsChunk } },
-				data: { status: 'queued' }
+				data: { status: stepStatus.queued }
 			});
 		}
 		return selected;
@@ -105,7 +106,7 @@ async function drain(config: DispatchConfig, service: FunctionService, context: 
 						in: messages.map((message) => (message.body as CaseToMigrate)[config.stepIdField])
 					}
 				},
-				data: { status: 'waiting' }
+				data: { status: stepStatus.waiting }
 			});
 
 			for (const messagesChunk of chunk(messages, service.serviceBusParallelism)) {
@@ -131,33 +132,33 @@ export function buildDispatcher(service: FunctionService): TimerHandler {
 	const configs: DispatchConfig[] = [
 		{
 			queueName: 'data-step',
-			where: { DataStep: { status: 'waiting' } },
+			where: { DataStep: { status: stepStatus.waiting } },
 			stepIdField: 'dataStepId'
 		},
 		{
 			queueName: 'document-list-step',
 			where: {
-				DataStep: { status: 'complete' },
-				DocumentListStep: { status: 'waiting' }
+				DataStep: { status: stepStatus.complete },
+				DocumentListStep: { status: stepStatus.waiting }
 			},
 			stepIdField: 'documentListStepId'
 		},
 		{
 			queueName: 'documents-step',
 			where: {
-				DataStep: { status: 'complete' },
-				DocumentListStep: { status: 'complete' },
-				DocumentsStep: { status: 'waiting' }
+				DataStep: { status: stepStatus.complete },
+				DocumentListStep: { status: stepStatus.complete },
+				DocumentsStep: { status: stepStatus.waiting }
 			},
 			stepIdField: 'documentsStepId'
 		},
 		{
 			queueName: 'validation-step',
 			where: {
-				DataStep: { status: 'complete' },
-				DocumentListStep: { status: 'complete' },
-				DocumentsStep: { status: 'complete' },
-				ValidationStep: { status: 'waiting' }
+				DataStep: { status: stepStatus.complete },
+				DocumentListStep: { status: stepStatus.complete },
+				DocumentsStep: { status: stepStatus.complete },
+				ValidationStep: { status: stepStatus.waiting }
 			},
 			stepIdField: 'validationStepId'
 		}

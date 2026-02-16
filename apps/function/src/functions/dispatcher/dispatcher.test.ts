@@ -1,6 +1,7 @@
 // @ts-nocheck
 import assert from 'node:assert';
 import { describe, mock, test } from 'node:test';
+import { stepStatus } from '../../types.ts';
 import { buildDispatcher } from './dispatcher.ts';
 
 describe('buildDispatcher', () => {
@@ -133,7 +134,7 @@ describe('buildDispatcher', () => {
 			assert.strictEqual(transaction.migrationStep.updateMany.mock.callCount(), 4);
 			assert.deepStrictEqual(transaction.migrationStep.updateMany.mock.calls[0].arguments[0], {
 				where: { id: { in: [10] } },
-				data: { status: 'queued' }
+				data: { status: stepStatus.queued }
 			});
 		});
 
@@ -319,6 +320,10 @@ describe('buildDispatcher', () => {
 
 			assert.strictEqual(context.log.mock.calls[0].arguments[0], 'mode: drain');
 			assert.strictEqual(service.databaseClient.migrationStep.updateMany.mock.callCount(), 1);
+			assert.strictEqual(
+				service.databaseClient.migrationStep.updateMany.mock.calls[0].arguments[0].data.status,
+				stepStatus.waiting
+			);
 			assert.strictEqual(receiver.completeMessage.mock.callCount(), 2);
 			assert.strictEqual(receiver.close.mock.callCount(), 4);
 		});
