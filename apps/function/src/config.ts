@@ -1,4 +1,5 @@
 import { loadEnvFile } from 'node:process';
+import type { HorizonWebClientOptions } from '@pins/appeals-migration-lib/horizon/web/horizon-web-client.ts';
 
 export interface Config {
 	database: string;
@@ -30,6 +31,7 @@ export interface Config {
 			serviceBusParallelism: number;
 		};
 	};
+	horizon: HorizonWebClientOptions;
 	manageAppeals: {
 		apiEndpoint: string;
 		documents: {
@@ -56,6 +58,10 @@ export function loadConfig(): Config {
 		FUNC_MIGRATE_DOCUMENTS_SCHEDULE,
 		FUNC_TRANSFORMER_SCHEDULE,
 		FUNC_VALIDATE_MIGRATED_CASES_SCHEDULE,
+		HORIZON_WEB_BASE_URL,
+		HORIZON_WEB_USERNAME,
+		HORIZON_WEB_PASSWORD,
+		HORIZON_WEB_DNS_MAPPING,
 		MANAGE_APPEALS_API_ENDPOINT,
 		MANAGE_APPEALS_DOCUMENTS_ACCOUNT_NAME,
 		MANAGE_APPEALS_DOCUMENTS_CONTAINER_NAME,
@@ -72,6 +78,9 @@ export function loadConfig(): Config {
 		BUFFER_PER_WORKER,
 		DISPATCHER_END_HOUR,
 		DISPATCHER_START_HOUR,
+		HORIZON_WEB_BASE_URL,
+		HORIZON_WEB_USERNAME,
+		HORIZON_WEB_PASSWORD,
 		MANAGE_APPEALS_DOCUMENTS_ACCOUNT_NAME,
 		MANAGE_APPEALS_DOCUMENTS_CONTAINER_NAME,
 		MANAGE_APPEALS_SQL_CONNECTION_STRING,
@@ -125,6 +134,12 @@ export function loadConfig(): Config {
 				serviceBusParallelism: Number(SERVICE_BUS_PARALLELISM ?? 50)
 			}
 		},
+		horizon: {
+			baseUrl: HORIZON_WEB_BASE_URL!,
+			username: HORIZON_WEB_USERNAME!,
+			password: HORIZON_WEB_PASSWORD!,
+			dnsEntries: parseDnsMapping(HORIZON_WEB_DNS_MAPPING)
+		},
 		manageAppeals: {
 			apiEndpoint: MANAGE_APPEALS_API_ENDPOINT!,
 			documents: {
@@ -133,4 +148,22 @@ export function loadConfig(): Config {
 			}
 		}
 	};
+}
+
+/**
+ * Mapping is provided in the form
+ *
+ * host1:ip1,host2:ip2
+ */
+function parseDnsMapping(dnsMapping: string | undefined) {
+	if (!dnsMapping) {
+		return undefined;
+	}
+	const entries = dnsMapping.split(',');
+	const dnsEntries: Record<string, string> = {};
+	for (const entry of entries) {
+		const [host, ip] = entry.split(':');
+		dnsEntries[host] = ip;
+	}
+	return dnsEntries;
 }
