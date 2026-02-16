@@ -53,22 +53,6 @@ export class FunctionService {
 		return this.#config.functions.aListCasesToMigrate.schedule;
 	}
 
-	get bMigrateDataSchedule() {
-		return this.#config.functions.bMigrateData.schedule;
-	}
-
-	get cListDocumentsToMigrateSchedule() {
-		return this.#config.functions.cListDocumentsToMigrate.schedule;
-	}
-
-	get dMigrateDocumentsSchedule() {
-		return this.#config.functions.dMigrateDocuments.schedule;
-	}
-
-	get eValidateMigratedCasesSchedule() {
-		return this.#config.functions.eValidateMigratedCases.schedule;
-	}
-
 	get dispatcherSchedule() {
 		return this.#config.functions.dispatcher.schedule;
 	}
