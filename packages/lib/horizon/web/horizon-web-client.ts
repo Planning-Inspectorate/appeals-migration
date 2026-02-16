@@ -2,6 +2,7 @@ import type http from 'node:http';
 import https from 'node:https';
 import httpntlm from 'httpntlm';
 import type { WriteStream } from 'node:fs';
+import type { LookupFunction } from 'node:net';
 const ntlm = httpntlm.ntlm;
 
 type httpsGetImpl = typeof https.get;
@@ -19,6 +20,8 @@ export interface HorizonWebClientOptions {
 	username: string;
 	// password for NTLM login
 	password: string;
+	// custom DNS lookup (ipv4 only)
+	dnsEntries?: Record<string, string>;
 }
 
 /**
@@ -59,7 +62,15 @@ export class HorizonWebClient {
 			throw new Error('password is required');
 		}
 		this.#password = options.password;
-		this.#agent = new https.Agent({ keepAlive: true });
+		let dnsLookup: LookupFunction | undefined;
+		const { dnsEntries } = options;
+		if (dnsEntries) {
+			dnsLookup = HorizonWebClient.buildCustomDnsEntryLookup(dnsEntries);
+		}
+		this.#agent = new https.Agent({
+			keepAlive: true,
+			lookup: dnsLookup
+		});
 
 		this.#httpsGet = httpsGet;
 	}
@@ -345,5 +356,13 @@ export class HorizonWebClient {
 			return new Error(`download error, no filename in content-disposition header: '${contentDisposition}'`);
 		}
 		return decodeURIComponent(name[1]);
+	}
+
+	static buildCustomDnsEntryLookup(entries: Record<string, string>): LookupFunction {
+		return (hostname, opts, callback) => {
+			const ip = entries[hostname];
+			const array = opts.all ? [{ address: ip, family: 4 }] : ip;
+			callback(null, array, 4);
+		};
 	}
 }
