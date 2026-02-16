@@ -182,4 +182,24 @@ describe('horizon-web-client', () => {
 			assert.strictEqual(name, 'my-doc.pdf');
 		});
 	});
+	describe('buildCustomDnsEntryLookup', () => {
+		it('should return ip entries based on the map provided', () => {
+			const lookup = HorizonWebClient.buildCustomDnsEntryLookup({
+				'example.com': '192.168.0.1'
+			});
+			const callback = mock.fn();
+			lookup('example.com', {}, callback);
+			assert.strictEqual(callback.mock.callCount(), 1);
+			assert.deepStrictEqual(callback.mock.calls[0].arguments, [null, '192.168.0.1', 4]);
+		});
+		it('should return an array if all option passed', () => {
+			const lookup = HorizonWebClient.buildCustomDnsEntryLookup({
+				'example.com': '192.168.0.1'
+			});
+			const callback = mock.fn();
+			lookup('example.com', { all: true }, callback);
+			assert.strictEqual(callback.mock.callCount(), 1);
+			assert.deepStrictEqual(callback.mock.calls[0].arguments, [null, [{ address: '192.168.0.1', family: 4 }], 4]);
+		});
+	});
 });
