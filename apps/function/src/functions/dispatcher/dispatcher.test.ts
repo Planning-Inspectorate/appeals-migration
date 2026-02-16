@@ -320,6 +320,10 @@ describe('buildDispatcher', () => {
 
 			assert.strictEqual(context.log.mock.calls[0].arguments[0], 'mode: drain');
 			assert.strictEqual(service.databaseClient.migrationStep.updateMany.mock.callCount(), 1);
+			assert.strictEqual(
+				service.databaseClient.migrationStep.updateMany.mock.calls[0].arguments[0].data.status,
+				stepStatus.waiting
+			);
 			assert.strictEqual(receiver.completeMessage.mock.callCount(), 2);
 			assert.strictEqual(receiver.close.mock.callCount(), 4);
 		});
