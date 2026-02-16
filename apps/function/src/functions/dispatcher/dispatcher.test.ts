@@ -1,6 +1,7 @@
 // @ts-nocheck
 import assert from 'node:assert';
 import { describe, mock, test } from 'node:test';
+import { stepStatus } from '../../types.ts';
 import { buildDispatcher } from './dispatcher.ts';
 
 describe('buildDispatcher', () => {
@@ -133,7 +134,7 @@ describe('buildDispatcher', () => {
 			assert.strictEqual(transaction.migrationStep.updateMany.mock.callCount(), 4);
 			assert.deepStrictEqual(transaction.migrationStep.updateMany.mock.calls[0].arguments[0], {
 				where: { id: { in: [10] } },
-				data: { status: 'queued' }
+				data: { status: stepStatus.queued }
 			});
 		});
 
