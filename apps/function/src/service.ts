@@ -6,7 +6,7 @@ import type { PrismaClient as SinkPrismaClient } from '@pins/manage-appeals-data
 import { newOdwDatabaseClient } from '@pins/odw-curated-database';
 import type { PrismaClient as SourcePrismaClient } from '@pins/odw-curated-database/src/client/client.ts';
 import type { Config } from './config.ts';
-import { BlobServiceClient, ContainerClient } from '@azure/storage-blob';
+import { BlobServiceClient, type ContainerClient } from '@azure/storage-blob';
 import { DefaultAzureCredential } from '@azure/identity';
 import { HorizonWebClient } from '@pins/appeals-migration-lib/horizon/web/horizon-web-client.ts';
 
