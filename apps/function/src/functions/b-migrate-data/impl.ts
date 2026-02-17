@@ -3,9 +3,11 @@ import type { MigrationFunction } from '../../types.ts';
 import { mapSourceToSinkAppeal } from './mappers/map-source-to-sink.ts';
 import { upsertAppeal } from './sink/appeal.ts';
 import { fetchCaseDetails } from './source/case-details.ts';
+import { fetchEventDetails } from './source/event-details.ts';
 
 type Source = {
 	fetchCaseDetails: typeof fetchCaseDetails;
+	fetchEventDetails: typeof fetchEventDetails;
 };
 
 type Mappers = {
@@ -17,7 +19,8 @@ type Sink = {
 };
 
 const defaultSource: Source = {
-	fetchCaseDetails
+	fetchCaseDetails,
+	fetchEventDetails
 };
 
 const defaultMappers: Mappers = {
@@ -46,7 +49,9 @@ export function buildMigrateData(
 			throw new Error(`Case ${caseReference} not found in source database`);
 		}
 
-		const mappedAppeal = mappers.mapSourceToSinkAppeal(caseDetails.data);
+		const events = await source.fetchEventDetails(sourceDatabase, caseReference);
+
+		const mappedAppeal = mappers.mapSourceToSinkAppeal(caseDetails.data, events);
 
 		const result = await sink.upsertAppeal(sinkDatabase, mappedAppeal);
 
