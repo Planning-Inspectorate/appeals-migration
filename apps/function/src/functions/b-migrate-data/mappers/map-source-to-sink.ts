@@ -1,10 +1,17 @@
-import type { AppealHas, AppealS78, AppealEvent } from '@pins/odw-curated-database/src/client/client.ts';
+import type {
+	AppealHas,
+	AppealS78,
+	AppealEvent,
+	AppealServiceUser
+} from '@pins/odw-curated-database/src/client/client.ts';
 import type { Prisma } from '@pins/manage-appeals-database/src/client/client.d.ts';
 import { mapEventToSink } from './map-event-to-sink.ts';
+import { mapServiceUsersToAppealRelations } from './map-service-user.ts';
 
 export function mapSourceToSinkAppeal(
 	sourceCase: AppealHas | AppealS78,
-	events?: AppealEvent[]
+	events?: AppealEvent[],
+	serviceUsers?: AppealServiceUser[]
 ): Prisma.AppealCreateInput {
 	const baseAppeal = {
 		reference: sourceCase.caseReference
@@ -39,6 +46,31 @@ export function mapSourceToSinkAppeal(
 				}
 				baseAppeal.siteVisit = eventMapping.siteVisit;
 			}
+		}
+	}
+
+	// Map service users to appellant and agent relations
+	if (serviceUsers && serviceUsers.length > 0) {
+		const serviceUserRelations = mapServiceUsersToAppealRelations(serviceUsers);
+
+		if (serviceUserRelations.appellant) {
+			if (baseAppeal.appellant) {
+				throw new Error(
+					`Duplicate appellant found for case ${sourceCase.caseReference}. Cannot map multiple appellants.`
+				);
+			}
+			baseAppeal.appellant = {
+				create: serviceUserRelations.appellant
+			};
+		}
+
+		if (serviceUserRelations.agent) {
+			if (baseAppeal.agent) {
+				throw new Error(`Duplicate agent found for case ${sourceCase.caseReference}. Cannot map multiple agents.`);
+			}
+			baseAppeal.agent = {
+				create: serviceUserRelations.agent
+			};
 		}
 	}
 
