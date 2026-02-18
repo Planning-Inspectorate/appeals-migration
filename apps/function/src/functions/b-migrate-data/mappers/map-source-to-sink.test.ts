@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { describe, test } from 'node:test';
 import assert from 'node:assert';
+import { SERVICE_USER_TYPE } from '@planning-inspectorate/data-model';
 import { mapSourceToSinkAppeal } from './map-source-to-sink.ts';
 
 describe('mapSourceToSinkAppeal', () => {
@@ -73,6 +74,147 @@ describe('mapSourceToSinkAppeal', () => {
 			},
 			{
 				message: /Unknown event type: in_house/
+			}
+		);
+	});
+
+	test('maps appellant from service users', () => {
+		const sourceCase = { caseReference: 'CASE-006' };
+		const serviceUsers = [
+			{
+				id: '1',
+				firstName: 'John',
+				lastName: 'Appellant',
+				emailAddress: 'appellant@example.com',
+				serviceUserType: SERVICE_USER_TYPE.APPELLANT,
+				caseReference: 'CASE-006',
+				addressLine1: '123 Main St',
+				postcode: 'SW1A 1AA'
+			}
+		];
+
+		const result = mapSourceToSinkAppeal(sourceCase, undefined, serviceUsers);
+
+		assert.strictEqual(result.reference, 'CASE-006');
+		assert.ok(result.appellant);
+		assert.ok(result.appellant.create);
+		assert.strictEqual(result.appellant.create.firstName, 'John');
+		assert.strictEqual(result.appellant.create.lastName, 'Appellant');
+		assert.strictEqual(result.appellant.create.email, 'appellant@example.com');
+		assert.ok(result.appellant.create.address);
+	});
+
+	test('maps agent from service users', () => {
+		const sourceCase = { caseReference: 'CASE-007' };
+		const serviceUsers = [
+			{
+				id: '2',
+				firstName: 'Jane',
+				lastName: 'Agent',
+				emailAddress: 'agent@example.com',
+				serviceUserType: SERVICE_USER_TYPE.AGENT,
+				caseReference: 'CASE-007',
+				telephoneNumber: '020 1234 5678'
+			}
+		];
+
+		const result = mapSourceToSinkAppeal(sourceCase, undefined, serviceUsers);
+
+		assert.strictEqual(result.reference, 'CASE-007');
+		assert.ok(result.agent);
+		assert.ok(result.agent.create);
+		assert.strictEqual(result.agent.create.firstName, 'Jane');
+		assert.strictEqual(result.agent.create.lastName, 'Agent');
+		assert.strictEqual(result.agent.create.email, 'agent@example.com');
+		assert.strictEqual(result.agent.create.phoneNumber, '020 1234 5678');
+	});
+
+	test('maps both events and service users', () => {
+		const sourceCase = { caseReference: 'CASE-008' };
+		const events = [{ eventType: 'hearing', eventStartDateTime: '2024-01-15T10:00:00Z' }];
+		const serviceUsers = [
+			{
+				id: '1',
+				firstName: 'John',
+				lastName: 'Appellant',
+				emailAddress: 'appellant@example.com',
+				serviceUserType: SERVICE_USER_TYPE.APPELLANT,
+				caseReference: 'CASE-008'
+			}
+		];
+
+		const result = mapSourceToSinkAppeal(sourceCase, events, serviceUsers);
+
+		assert.strictEqual(result.reference, 'CASE-008');
+		assert.ok(result.hearing?.create);
+		assert.ok(result.appellant?.create);
+		assert.strictEqual(result.appellant.create.firstName, 'John');
+	});
+
+	test('handles empty service users array', () => {
+		const result = mapSourceToSinkAppeal({ caseReference: 'CASE-009' }, undefined, []);
+
+		assert.strictEqual(result.reference, 'CASE-009');
+		assert.strictEqual(result.appellant, undefined);
+		assert.strictEqual(result.agent, undefined);
+	});
+
+	test('throws error when duplicate appellants found in service users', () => {
+		const serviceUsers = [
+			{
+				id: '1',
+				firstName: 'First',
+				lastName: 'Appellant',
+				emailAddress: 'first@example.com',
+				serviceUserType: SERVICE_USER_TYPE.APPELLANT,
+				caseReference: 'CASE-010'
+			},
+			{
+				id: '2',
+				firstName: 'Second',
+				lastName: 'Appellant',
+				emailAddress: 'second@example.com',
+				serviceUserType: SERVICE_USER_TYPE.APPELLANT,
+				caseReference: 'CASE-010'
+			}
+		];
+
+		assert.throws(
+			() => {
+				mapSourceToSinkAppeal({ caseReference: 'CASE-010' }, undefined, serviceUsers);
+			},
+			{
+				message: /Duplicate appellant found in service users/
+			}
+		);
+	});
+
+	test('throws error when duplicate agents found in service users', () => {
+		const serviceUsers = [
+			{
+				id: '1',
+				firstName: 'First',
+				lastName: 'Agent',
+				emailAddress: 'first@example.com',
+				serviceUserType: SERVICE_USER_TYPE.AGENT,
+				caseReference: 'CASE-011'
+			},
+			{
+				id: '2',
+				firstName: 'Second',
+				lastName: 'Agent',
+				emailAddress: 'second@example.com',
+				serviceUserType: SERVICE_USER_TYPE.AGENT,
+				caseReference: 'CASE-011'
+			}
+		];
+
+		assert.throws(
+			() => {
+				mapSourceToSinkAppeal({ caseReference: 'CASE-011' }, undefined, serviceUsers);
+			},
+			{
+				message: /Duplicate agent found in service users/
 			}
 		);
 	});
