@@ -47,7 +47,7 @@ createWorker(
 	'd-migrate-documents',
 	'documents-step',
 	buildMigrateDocuments(service),
-	'documentsStepId'
+	'migrationStepId'
 );
 
 createWorker(

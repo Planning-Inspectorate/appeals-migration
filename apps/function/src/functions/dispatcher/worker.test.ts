@@ -12,13 +12,23 @@ describe('createWorker', () => {
 		invocationId: 'test-invocation-id'
 	});
 
-	const newService = () => ({
-		databaseClient: {
+	const newService = () => {
+		const databaseClient = {
+			documentToMigrate: {
+				count: mock.fn(async () => 1)
+			},
+			caseToMigrate: {
+				findUnique: mock.fn(async () => null)
+			},
 			migrationStep: {
-				update: mock.fn()
-			}
-		}
-	});
+				update: mock.fn(),
+				updateMany: mock.fn()
+			},
+			$transaction: mock.fn(async (callback) => callback(databaseClient))
+		};
+
+		return { databaseClient };
+	};
 
 	const captureHandler = (service, name, queue, migration, field) => {
 		let captured;
@@ -170,5 +180,56 @@ describe('createWorker', () => {
 		const failedCall = service.databaseClient.migrationStep.update.mock.calls[1].arguments[0];
 		assert.strictEqual(failedCall.data.status, stepStatus.failed);
 		assert.strictEqual(failedCall.data.errorMessage, 'plain string error');
+	});
+
+	test('completes case documents step when final document migration completes', async () => {
+		const service = newService();
+		service.databaseClient.documentToMigrate.count.mock.mockImplementation(async () => 0);
+		service.databaseClient.caseToMigrate.findUnique.mock.mockImplementation(async () => ({ documentsStepId: 88 }));
+		const migration = mock.fn(async () => {});
+		const context = newContext();
+		const migrationItem = { caseReference: 'CASE-010', migrationStepId: 50 };
+
+		const handler = captureHandler(service, 'docs-worker', 'docs-queue', migration, 'migrationStepId');
+		await handler(migrationItem, context);
+
+		assert.strictEqual(service.databaseClient.documentToMigrate.count.mock.callCount(), 1);
+		assert.strictEqual(service.databaseClient.caseToMigrate.findUnique.mock.callCount(), 2);
+		assert.strictEqual(service.databaseClient.migrationStep.update.mock.callCount(), 3);
+
+		const caseStepUpdateCall = service.databaseClient.migrationStep.update.mock.calls[2].arguments[0];
+		assert.deepStrictEqual(caseStepUpdateCall.where, { id: 88 });
+		assert.strictEqual(caseStepUpdateCall.data.status, stepStatus.complete);
+	});
+
+	test('does not complete case documents step when documents remain incomplete', async () => {
+		const service = newService();
+		service.databaseClient.documentToMigrate.count.mock.mockImplementation(async () => 2);
+		const migration = mock.fn(async () => {});
+		const context = newContext();
+		const migrationItem = { caseReference: 'CASE-011', migrationStepId: 51 };
+
+		const handler = captureHandler(service, 'docs-worker', 'docs-queue', migration, 'migrationStepId');
+		await handler(migrationItem, context);
+
+		assert.strictEqual(service.databaseClient.documentToMigrate.count.mock.callCount(), 1);
+		assert.strictEqual(service.databaseClient.caseToMigrate.findUnique.mock.callCount(), 1);
+		assert.strictEqual(service.databaseClient.migrationStep.update.mock.callCount(), 2);
+	});
+
+	test('does not complete case documents step when case lookup returns null', async () => {
+		const service = newService();
+		service.databaseClient.documentToMigrate.count.mock.mockImplementation(async () => 0);
+		service.databaseClient.caseToMigrate.findUnique.mock.mockImplementation(async () => null);
+		const migration = mock.fn(async () => {});
+		const context = newContext();
+		const migrationItem = { caseReference: 'CASE-012', migrationStepId: 52 };
+
+		const handler = captureHandler(service, 'docs-worker', 'docs-queue', migration, 'migrationStepId');
+		await handler(migrationItem, context);
+
+		assert.strictEqual(service.databaseClient.documentToMigrate.count.mock.callCount(), 1);
+		assert.strictEqual(service.databaseClient.caseToMigrate.findUnique.mock.callCount(), 2);
+		assert.strictEqual(service.databaseClient.migrationStep.update.mock.callCount(), 2);
 	});
 });
