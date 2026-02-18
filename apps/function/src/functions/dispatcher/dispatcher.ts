@@ -1,13 +1,15 @@
 import type { InvocationContext, Timer, TimerHandler } from '@azure/functions';
-import type { CaseToMigrate, Prisma } from '@pins/appeals-migration-database/src/client/client.ts';
+import type { Prisma } from '@pins/appeals-migration-database/src/client/client.ts';
 import chunk from 'lodash.chunk';
 import type { FunctionService } from '../../service.ts';
-import { stepStatus } from '../../types.ts';
+import { stepStatus, type ItemToMigrate } from '../../types.ts';
+import { getStepId } from './common.ts';
 import type { StepIdField } from './types.ts';
 
 type DispatchConfig = {
+	queueItemType: 'case' | 'document';
 	queueName: string;
-	where: Prisma.CaseToMigrateWhereInput;
+	where: Prisma.CaseToMigrateWhereInput | Prisma.DocumentToMigrateWhereInput;
 	stepIdField: StepIdField;
 };
 
@@ -22,17 +24,24 @@ async function getDispatchCount(
 	return Math.max(0, service.dispatcherQueueTarget - activeMessageCount);
 }
 
-async function getCasesToMigrate(
+async function getItemsToMigrate(
 	config: DispatchConfig,
 	service: FunctionService,
 	dispatchCount: number
-): Promise<CaseToMigrate[]> {
+): Promise<ItemToMigrate[]> {
 	return await service.databaseClient.$transaction(async (transaction) => {
-		const selected = await transaction.caseToMigrate.findMany({
-			where: config.where,
-			take: dispatchCount
-		});
-		const ids = selected.map((row) => row[config.stepIdField]);
+		const selected: ItemToMigrate[] =
+			config.queueItemType === 'case'
+				? await transaction.caseToMigrate.findMany({
+						where: config.where as Prisma.CaseToMigrateWhereInput,
+						take: dispatchCount
+					})
+				: await transaction.documentToMigrate.findMany({
+						where: config.where as Prisma.DocumentToMigrateWhereInput,
+						take: dispatchCount
+					});
+
+		const ids = selected.map((row) => getStepId(row, config.stepIdField));
 		for (const idsChunk of chunk(ids, service.migrationStepUpdateChunkSize)) {
 			await transaction.migrationStep.updateMany({
 				where: { id: { in: idsChunk } },
@@ -51,8 +60,8 @@ async function dispatch(config: DispatchConfig, service: FunctionService, contex
 		return;
 	}
 
-	const cases = await getCasesToMigrate(config, service, dispatchCount);
-	if (cases.length === 0) {
+	const queueItems = await getItemsToMigrate(config, service, dispatchCount);
+	if (queueItems.length === 0) {
 		context.log(`[${config.queueName}] No cases to migrate.`);
 		return;
 	}
@@ -62,7 +71,7 @@ async function dispatch(config: DispatchConfig, service: FunctionService, contex
 	try {
 		let batch = await sender.createMessageBatch();
 
-		for (const body of cases) {
+		for (const body of queueItems) {
 			const message = {
 				body,
 				contentType: 'application/json',
@@ -74,7 +83,7 @@ async function dispatch(config: DispatchConfig, service: FunctionService, contex
 				batch = await sender.createMessageBatch();
 				context.log(`[${config.queueName}] Dispatched: ${batch.count}`);
 				if (!batch.tryAddMessage(message)) {
-					throw new Error(`Message too large to fit in a batch: ${body.caseReference}`);
+					throw new Error(`Message too large to fit in a batch: ${JSON.stringify(body)}`);
 				}
 			}
 		}
@@ -103,11 +112,30 @@ async function drain(config: DispatchConfig, service: FunctionService, context: 
 			await databaseClient.migrationStep.updateMany({
 				where: {
 					id: {
-						in: messages.map((message) => (message.body as CaseToMigrate)[config.stepIdField])
+						in: messages.map((message) => getStepId(message.body as ItemToMigrate, config.stepIdField))
 					}
 				},
 				data: { status: stepStatus.waiting }
 			});
+
+			if (config.queueName === 'documents-step') {
+				const caseReferences = [...new Set(messages.map((message) => (message.body as ItemToMigrate).caseReference))];
+				const cases = await databaseClient.caseToMigrate.findMany({
+					where: { caseReference: { in: caseReferences } },
+					select: { documentsStepId: true }
+				});
+
+				const ids = cases.map((caseToMigrate) => caseToMigrate.documentsStepId);
+				for (const idsChunk of chunk(ids, service.migrationStepUpdateChunkSize)) {
+					await databaseClient.migrationStep.updateMany({
+						where: {
+							id: { in: idsChunk },
+							status: stepStatus.processing
+						},
+						data: { status: stepStatus.waiting }
+					});
+				}
+			}
 
 			for (const messagesChunk of chunk(messages, service.serviceBusParallelism)) {
 				await Promise.all(messagesChunk.map((message) => receiver.completeMessage(message)));
@@ -131,11 +159,13 @@ function isEndOfWindow(service: FunctionService): boolean {
 export function buildDispatcher(service: FunctionService): TimerHandler {
 	const configs: DispatchConfig[] = [
 		{
+			queueItemType: 'case',
 			queueName: 'data-step',
 			where: { DataStep: { status: stepStatus.waiting } },
 			stepIdField: 'dataStepId'
 		},
 		{
+			queueItemType: 'case',
 			queueName: 'document-list-step',
 			where: {
 				DataStep: { status: stepStatus.complete },
@@ -144,15 +174,20 @@ export function buildDispatcher(service: FunctionService): TimerHandler {
 			stepIdField: 'documentListStepId'
 		},
 		{
+			queueItemType: 'document',
 			queueName: 'documents-step',
 			where: {
-				DataStep: { status: stepStatus.complete },
-				DocumentListStep: { status: stepStatus.complete },
-				DocumentsStep: { status: stepStatus.waiting }
-			},
-			stepIdField: 'documentsStepId'
+				MigrationStep: { status: stepStatus.waiting },
+				CaseToMigrate: {
+					DataStep: { status: stepStatus.complete },
+					DocumentListStep: { status: stepStatus.complete },
+					DocumentsStep: { status: { in: [stepStatus.waiting, stepStatus.processing] } }
+				}
+			} as Prisma.DocumentToMigrateWhereInput,
+			stepIdField: 'migrationStepId'
 		},
 		{
+			queueItemType: 'case',
 			queueName: 'validation-step',
 			where: {
 				DataStep: { status: stepStatus.complete },

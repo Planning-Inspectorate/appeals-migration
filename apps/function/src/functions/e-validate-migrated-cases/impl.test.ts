@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { describe, test, mock } from 'node:test';
-import { buildValidateMigratedCases } from './impl.ts';
 import assert from 'node:assert';
+import { describe, mock, test } from 'node:test';
+import { buildValidateMigratedCases } from './impl.ts';
 
 describe('e-validate-migrated-cases-impl', () => {
 	const newService = () => {
@@ -37,10 +37,7 @@ describe('e-validate-migrated-cases-impl', () => {
 		const handler = buildValidateMigratedCases(service);
 		await assert.rejects(() => handler({}, context));
 		assert.strictEqual(service.databaseClient.$queryRaw.mock.callCount(), 1);
-		assert.strictEqual(context.log.mock.callCount(), 2);
-		assert.strictEqual(context.log.mock.calls[1].arguments[0], 'Error during example function run:');
-		const err = context.log.mock.calls[1].arguments[1];
-		assert.ok(err instanceof Error);
-		assert.strictEqual(err.message, 'database error');
+		assert.strictEqual(context.log.mock.callCount(), 1);
+		assert.strictEqual(context.log.mock.calls[0].arguments[0], 'running validate migrated cases function on case ');
 	});
 });

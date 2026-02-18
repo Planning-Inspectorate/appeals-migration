@@ -1,9 +1,9 @@
-import { upsertDocumentsToMigrate } from './migration/document-to-migrate.ts';
-import { fetchDocumentsByCaseReference } from './source/document.ts';
-
 import type { PrismaClient as MigrationPrismaClient } from '@pins/appeals-migration-database/src/client/client.ts';
+import type { CaseToMigrate } from 'packages/database/src/client/client.ts';
 import type { FunctionService } from '../../service.ts';
 import type { MigrationFunction } from '../../types.ts';
+import { upsertDocumentsToMigrate } from './migration/document-to-migrate.ts';
+import { fetchDocumentsByCaseReference } from './source/document.ts';
 
 type Migration = {
 	upsertDocumentsToMigrate: typeof upsertDocumentsToMigrate;
@@ -26,9 +26,10 @@ export function buildListDocumentsToMigrate(
 	migration: Migration = defaultMigration,
 	source: Source = defaultSource
 ): MigrationFunction {
-	return async (caseToMigrate, context) => {
+	return async (itemToMigrate, context) => {
 		const migrationDatabase = service.databaseClient;
 		const sourceDatabase = service.sourceDatabaseClient;
+		const caseToMigrate = itemToMigrate as CaseToMigrate;
 		const caseReference = caseToMigrate.caseReference;
 		context.log(`Processing case: ${caseReference}`);
 

@@ -13,7 +13,7 @@ export async function upsertDocumentsToMigrate(
 			update: {},
 			create: {
 				documentId: doc.documentId,
-				caseReference: doc.caseReference,
+				CaseToMigrate: { connect: { caseReference: doc.caseReference } },
 				MigrationStep: { create: {} }
 			}
 		});

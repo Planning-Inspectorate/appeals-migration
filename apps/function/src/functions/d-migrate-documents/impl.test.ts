@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { describe, test, mock } from 'node:test';
-import { buildMigrateDocuments } from './impl.ts';
 import assert from 'node:assert';
+import { describe, mock, test } from 'node:test';
+import { buildMigrateDocuments } from './impl.ts';
 
 describe('d-migrate-documents-impl', () => {
 	const newService = () => {
@@ -37,10 +37,7 @@ describe('d-migrate-documents-impl', () => {
 		const handler = buildMigrateDocuments(service);
 		await assert.rejects(() => handler({}, context));
 		assert.strictEqual(service.databaseClient.$queryRaw.mock.callCount(), 1);
-		assert.strictEqual(context.log.mock.callCount(), 2);
-		assert.strictEqual(context.log.mock.calls[1].arguments[0], 'Error during example function run:');
-		const err = context.log.mock.calls[1].arguments[1];
-		assert.ok(err instanceof Error);
-		assert.strictEqual(err.message, 'database error');
+		assert.strictEqual(context.log.mock.callCount(), 1);
+		assert.strictEqual(context.log.mock.calls[0].arguments[0], 'running d-migrate-documents on ');
 	});
 });

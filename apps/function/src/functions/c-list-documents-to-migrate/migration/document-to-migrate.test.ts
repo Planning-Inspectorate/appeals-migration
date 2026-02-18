@@ -37,7 +37,7 @@ describe('document-to-migrate', () => {
 		assert.deepEqual(firstCallArgs.update, {});
 		assert.deepEqual(firstCallArgs.create, {
 			documentId: 'DOC-1',
-			caseReference: 'CASE-1',
+			CaseToMigrate: { connect: { caseReference: 'CASE-1' } },
 			MigrationStep: { create: {} }
 		});
 
@@ -46,7 +46,7 @@ describe('document-to-migrate', () => {
 		assert.deepEqual(secondCallArgs.update, {});
 		assert.deepEqual(secondCallArgs.create, {
 			documentId: 'DOC-2',
-			caseReference: 'CASE-1',
+			CaseToMigrate: { connect: { caseReference: 'CASE-1' } },
 			MigrationStep: { create: {} }
 		});
 	});

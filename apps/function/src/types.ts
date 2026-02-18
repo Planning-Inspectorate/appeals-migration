@@ -1,7 +1,9 @@
 import type { InvocationContext } from '@azure/functions';
-import type { CaseToMigrate } from '@pins/appeals-migration-database/src/client/client.ts';
+import type { CaseToMigrate, DocumentToMigrate } from '@pins/appeals-migration-database/src/client/client.ts';
 
-export type MigrationFunction = (caseToMigrate: CaseToMigrate, context: InvocationContext) => Promise<void>;
+export type ItemToMigrate = CaseToMigrate | DocumentToMigrate;
+
+export type MigrationFunction = (itemToMigrate: ItemToMigrate, context: InvocationContext) => Promise<void>;
 
 export const stepStatus = {
 	waiting: 'waiting',
