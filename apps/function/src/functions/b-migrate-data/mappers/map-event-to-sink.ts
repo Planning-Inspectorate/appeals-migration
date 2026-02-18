@@ -1,26 +1,14 @@
 import type { AppealEvent } from '@pins/odw-curated-database/src/client/client.ts';
 import type { Prisma } from '@pins/manage-appeals-database/src/client/client.d.ts';
 import { APPEAL_EVENT_TYPE } from '@planning-inspectorate/data-model';
-
-function parseDate(dateString: string | null | undefined): Date | null {
-	if (!dateString) {
-		return null;
-	}
-
-	try {
-		const parsed = new Date(dateString);
-		return isNaN(parsed.getTime()) ? null : parsed;
-	} catch {
-		return null;
-	}
-}
+import { parseDate, trimAndLowercase, nullToUndefined } from '../../shared/helpers/index.ts';
 
 function getEventCategory(eventType: string | null | undefined): 'hearing' | 'inquiry' | 'site_visit' | null {
-	if (!eventType) {
+	const normalizedType = trimAndLowercase(eventType);
+
+	if (!normalizedType) {
 		return null;
 	}
-
-	const normalizedType = eventType.toLowerCase().trim();
 
 	if (normalizedType === APPEAL_EVENT_TYPE.HEARING || normalizedType === APPEAL_EVENT_TYPE.HEARING_VIRTUAL) {
 		return 'hearing';
@@ -60,11 +48,11 @@ function mapEventAddress(
 	}
 
 	return {
-		addressLine1: event.addressLine1 || undefined,
-		addressLine2: event.addressLine2 || undefined,
-		addressTown: event.addressTown || undefined,
-		addressCounty: event.addressCounty || undefined,
-		postcode: event.addressPostcode || undefined
+		addressLine1: nullToUndefined(event.addressLine1),
+		addressLine2: nullToUndefined(event.addressLine2),
+		addressTown: nullToUndefined(event.addressTown),
+		addressCounty: nullToUndefined(event.addressCounty),
+		postcode: nullToUndefined(event.addressPostcode)
 	};
 }
 
@@ -82,7 +70,7 @@ function mapEventBaseData(event: AppealEvent): EventBaseData | null {
 	}
 
 	const address = mapEventAddress(event);
-	const endTime = parseDate(event.eventEndDateTime) || undefined;
+	const endTime = nullToUndefined(parseDate(event.eventEndDateTime));
 
 	return { startTime, endTime, address };
 }
@@ -124,21 +112,18 @@ export function mapEventToInquiry(event: AppealEvent): Prisma.InquiryCreateWitho
 }
 
 export function mapEventToSiteVisit(event: AppealEvent): Prisma.SiteVisitCreateWithoutAppealInput | null {
-	const startTime = parseDate(event.eventStartDateTime);
+	const baseData = mapEventBaseData(event);
 
-	if (!startTime) {
+	if (!baseData) {
 		return null;
 	}
 
-	const endTime = parseDate(event.eventEndDateTime) || undefined;
-
-	// Map eventType to siteVisitType.key for connection
-	const siteVisitTypeKey = event.eventType?.toLowerCase().trim();
+	const siteVisitTypeKey = trimAndLowercase(event.eventType);
 
 	return {
-		visitDate: startTime,
-		visitStartTime: startTime,
-		visitEndTime: endTime,
+		visitDate: baseData.startTime,
+		visitStartTime: baseData.startTime,
+		visitEndTime: baseData.endTime,
 		...(siteVisitTypeKey && {
 			siteVisitType: {
 				connect: {

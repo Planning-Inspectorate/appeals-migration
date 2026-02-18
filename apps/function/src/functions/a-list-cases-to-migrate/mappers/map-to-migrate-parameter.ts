@@ -1,41 +1,30 @@
 import type { Prisma } from '@pins/odw-curated-database/src/client/client.ts';
 import type { ToMigrateParameter } from '@pins/appeals-migration-database/src/client/client.ts';
+import { createDateRange } from '../../shared/helpers/index.ts';
+
+function addIfPresent(where: Record<string, unknown>, key: string, value: string | null | undefined): void {
+	if (value != null && value !== '') {
+		where[key] = value;
+	}
+}
 
 export function mapToMigrateParameterToWhere(
 	param: ToMigrateParameter
 ): Prisma.AppealHasWhereInput & Prisma.AppealS78WhereInput {
 	const where: Prisma.AppealHasWhereInput & Prisma.AppealS78WhereInput = {};
 
-	if (param.status != null && param.status !== '') {
-		where.caseStatus = param.status;
+	addIfPresent(where, 'caseStatus', param.status);
+	addIfPresent(where, 'caseProcedure', param.procedureType);
+	addIfPresent(where, 'lpaCode', param.lpa);
+
+	const dateReceivedRange = createDateRange(param.dateReceivedFrom, param.dateReceivedTo);
+	if (dateReceivedRange) {
+		where.caseSubmittedDate = dateReceivedRange;
 	}
 
-	if (param.procedureType != null && param.procedureType !== '') {
-		where.caseProcedure = param.procedureType;
-	}
-
-	if (param.lpa != null && param.lpa !== '') {
-		where.lpaCode = param.lpa;
-	}
-
-	if (param.dateReceivedFrom != null || param.dateReceivedTo != null) {
-		where.caseSubmittedDate = {};
-		if (param.dateReceivedFrom != null) {
-			where.caseSubmittedDate.gte = param.dateReceivedFrom.toISOString();
-		}
-		if (param.dateReceivedTo != null) {
-			where.caseSubmittedDate.lte = param.dateReceivedTo.toISOString();
-		}
-	}
-
-	if (param.decisionDateFrom != null || param.decisionDateTo != null) {
-		where.caseDecisionOutcomeDate = {};
-		if (param.decisionDateFrom != null) {
-			where.caseDecisionOutcomeDate.gte = param.decisionDateFrom.toISOString();
-		}
-		if (param.decisionDateTo != null) {
-			where.caseDecisionOutcomeDate.lte = param.decisionDateTo.toISOString();
-		}
+	const decisionDateRange = createDateRange(param.decisionDateFrom, param.decisionDateTo);
+	if (decisionDateRange) {
+		where.caseDecisionOutcomeDate = decisionDateRange;
 	}
 
 	return where;
