@@ -53,6 +53,8 @@ model CaseToMigrate {
   // validation outcome
   dataValidated      Boolean?
   documentsValidated Boolean?
+
+  DocumentToMigrate DocumentToMigrate[] @relation("CaseToMigrateDocuments")
 }
 
 model MigrationStep {
@@ -77,6 +79,8 @@ model DocumentToMigrate {
   documentId String @id
 
   caseReference String
+
+  CaseToMigrate CaseToMigrate @relation("CaseToMigrateDocuments", fields: [caseReference], references: [caseReference], onUpdate: NoAction, onDelete: NoAction)
 
   migrationStepId Int           @unique
   MigrationStep   MigrationStep @relation(fields: [migrationStepId], references: [id], onUpdate: NoAction, onDelete: NoAction)

@@ -1,5 +1,7 @@
-import type { CaseToMigrate } from '@pins/appeals-migration-database/src/client/client.ts';
+import type { CaseToMigrate, DocumentToMigrate } from '@pins/appeals-migration-database/src/client/client.ts';
 
-export type StepIdField = {
-	[Key in keyof CaseToMigrate]: CaseToMigrate[Key] extends number ? Key : never;
-}[keyof CaseToMigrate];
+type NumericFieldNames<Type> = {
+	[Key in keyof Type]: Type[Key] extends number ? Key : never;
+}[keyof Type];
+
+export type StepIdField = NumericFieldNames<CaseToMigrate> | NumericFieldNames<DocumentToMigrate>;

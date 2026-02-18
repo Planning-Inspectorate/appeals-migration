@@ -39,9 +39,11 @@ describe('buildDispatcher', () => {
 			$transaction: mock.fn(async (callback) =>
 				callback({
 					caseToMigrate: { findMany: mock.fn(async () => []) },
+					documentToMigrate: { findMany: mock.fn(async () => []) },
 					migrationStep: { updateMany: mock.fn() }
 				})
 			),
+			caseToMigrate: { findMany: mock.fn(async () => []) },
 			migrationStep: { updateMany: mock.fn() }
 		},
 		dispatcherQueueTarget: queueTarget,
@@ -88,6 +90,10 @@ describe('buildDispatcher', () => {
 				{ caseReference: 'CASE-001', dataStepId: 1 },
 				{ caseReference: 'CASE-002', dataStepId: 2 }
 			];
+			const documents = [
+				{ caseReference: 'CASE-001', migrationStepId: 1 },
+				{ caseReference: 'CASE-002', migrationStepId: 2 }
+			];
 			const batch = newBatch();
 			const sender = newSender();
 			sender.createMessageBatch.mock.mockImplementation(async () => batch);
@@ -95,6 +101,7 @@ describe('buildDispatcher', () => {
 
 			const transaction = {
 				caseToMigrate: { findMany: mock.fn(async () => cases) },
+				documentToMigrate: { findMany: mock.fn(async () => documents) },
 				migrationStep: { updateMany: mock.fn() }
 			};
 
@@ -113,6 +120,7 @@ describe('buildDispatcher', () => {
 
 		test('marks migration steps as in progress during transaction', async () => {
 			const cases = [{ caseReference: 'CASE-001', dataStepId: 10 }];
+			const documents = [{ caseReference: 'CASE-001', migrationStepId: 10 }];
 			const batch = newBatch();
 			batch.count = 1;
 			const sender = newSender();
@@ -120,6 +128,7 @@ describe('buildDispatcher', () => {
 
 			const transaction = {
 				caseToMigrate: { findMany: mock.fn(async () => cases) },
+				documentToMigrate: { findMany: mock.fn(async () => documents) },
 				migrationStep: { updateMany: mock.fn() }
 			};
 
@@ -136,12 +145,24 @@ describe('buildDispatcher', () => {
 				where: { id: { in: [10] } },
 				data: { status: stepStatus.queued }
 			});
+			assert.deepStrictEqual(transaction.documentToMigrate.findMany.mock.calls[0].arguments[0].where, {
+				MigrationStep: { status: stepStatus.waiting },
+				CaseToMigrate: {
+					DataStep: { status: stepStatus.complete },
+					DocumentListStep: { status: stepStatus.complete },
+					DocumentsStep: { status: { in: [stepStatus.waiting, stepStatus.processing] } }
+				}
+			});
 		});
 
 		test('sends additional batch when message does not fit', async () => {
 			const cases = [
 				{ caseReference: 'CASE-001', dataStepId: 1 },
 				{ caseReference: 'CASE-002', dataStepId: 2 }
+			];
+			const documents = [
+				{ caseReference: 'CASE-001', migrationStepId: 1 },
+				{ caseReference: 'CASE-002', migrationStepId: 2 }
 			];
 
 			let firstBatchFull = false;
@@ -169,6 +190,7 @@ describe('buildDispatcher', () => {
 
 			const transaction = {
 				caseToMigrate: { findMany: mock.fn(async () => cases) },
+				documentToMigrate: { findMany: mock.fn(async () => documents) },
 				migrationStep: { updateMany: mock.fn() }
 			};
 
@@ -185,6 +207,7 @@ describe('buildDispatcher', () => {
 
 		test('throws when message is too large for any batch', async () => {
 			const cases = [{ caseReference: 'LARGE-001', dataStepId: 1 }];
+			const documents = [{ caseReference: 'LARGE-001', migrationStepId: 1 }];
 
 			const batch = {
 				count: 0,
@@ -195,6 +218,7 @@ describe('buildDispatcher', () => {
 
 			const transaction = {
 				caseToMigrate: { findMany: mock.fn(async () => cases) },
+				documentToMigrate: { findMany: mock.fn(async () => documents) },
 				migrationStep: { updateMany: mock.fn() }
 			};
 
@@ -217,6 +241,7 @@ describe('buildDispatcher', () => {
 
 		test('closes sender even when error occurs', async () => {
 			const cases = [{ caseReference: 'ERR-001', dataStepId: 1 }];
+			const documents = [{ caseReference: 'ERR-001', migrationStepId: 1 }];
 
 			const batch = {
 				count: 0,
@@ -227,6 +252,7 @@ describe('buildDispatcher', () => {
 
 			const transaction = {
 				caseToMigrate: { findMany: mock.fn(async () => cases) },
+				documentToMigrate: { findMany: mock.fn(async () => documents) },
 				migrationStep: { updateMany: mock.fn() }
 			};
 
@@ -261,6 +287,10 @@ describe('buildDispatcher', () => {
 				caseReference: `CASE-${index}`,
 				dataStepId: index + 1
 			}));
+			const documents = Array.from({ length: 3 }, (_, index) => ({
+				caseReference: `CASE-${index}`,
+				migrationStepId: index + 1
+			}));
 
 			const batch = newBatch();
 			batch.count = 3;
@@ -269,6 +299,7 @@ describe('buildDispatcher', () => {
 
 			const transaction = {
 				caseToMigrate: { findMany: mock.fn(async () => cases) },
+				documentToMigrate: { findMany: mock.fn(async () => documents) },
 				migrationStep: { updateMany: mock.fn() }
 			};
 
@@ -415,6 +446,42 @@ describe('buildDispatcher', () => {
 			const receiverCalls = service.serviceBusClient.createReceiver.mock.calls;
 			assert.strictEqual(receiverCalls.length, 4);
 			assert.deepStrictEqual(receiverCalls[0].arguments[1], { receiveMode: 'peekLock' });
+		});
+
+		test('resets case documents step to waiting when draining documents queue', async () => {
+			const emptyReceiver = newReceiver();
+			emptyReceiver.receiveMessages.mock.mockImplementation(async () => []);
+
+			const documentMessages = [{ body: { caseReference: 'CASE-001', migrationStepId: 300 } }];
+			const documentsReceiver = newReceiver();
+			let called = false;
+			documentsReceiver.receiveMessages.mock.mockImplementation(async () => {
+				if (called) {
+					return [];
+				}
+				called = true;
+				return documentMessages;
+			});
+
+			const service = newDrainService();
+			service.databaseClient.caseToMigrate.findMany.mock.mockImplementation(async () => [{ documentsStepId: 400 }]);
+			service.serviceBusClient.createReceiver.mock.mockImplementation((queueName) =>
+				queueName === 'documents-step' ? documentsReceiver : emptyReceiver
+			);
+			const context = newContext();
+
+			const handler = buildDispatcher(service);
+			await handler({}, context);
+
+			assert.strictEqual(service.databaseClient.migrationStep.updateMany.mock.callCount(), 2);
+			assert.deepStrictEqual(service.databaseClient.migrationStep.updateMany.mock.calls[0].arguments[0], {
+				where: { id: { in: [300] } },
+				data: { status: stepStatus.waiting }
+			});
+			assert.deepStrictEqual(service.databaseClient.migrationStep.updateMany.mock.calls[1].arguments[0], {
+				where: { id: { in: [400] }, status: stepStatus.processing },
+				data: { status: stepStatus.waiting }
+			});
 		});
 	});
 });
