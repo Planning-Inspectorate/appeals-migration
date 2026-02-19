@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { Prisma } from '@pins/odw-curated-database/src/client/client.ts';
 import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
 import assert from 'node:assert';
 import { describe, test } from 'node:test';
@@ -35,13 +36,12 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 	test('maps core date fields', () => {
 		const result = mapSourceToSinkAppeal(mockAppealHasCase);
 
-		assert.ok(result.caseCreatedDate instanceof Date);
-		assert.ok(result.caseUpdatedDate instanceof Date);
-		assert.ok(result.caseValidDate instanceof Date);
-		assert.ok(result.caseStartedDate instanceof Date);
+		assert.strictEqual(result.caseCreatedDate?.toISOString(), '2024-01-10T09:00:00.000Z');
+		assert.strictEqual(result.caseUpdatedDate?.toISOString(), '2024-01-20T14:30:00.000Z');
+		assert.strictEqual(result.caseValidDate?.toISOString(), '2024-01-22T09:00:00.000Z');
+		assert.strictEqual(result.caseStartedDate?.toISOString(), '2024-01-25T11:00:00.000Z');
 		assert.strictEqual(result.caseExtensionDate, undefined);
-		assert.ok(result.casePublishedDate instanceof Date);
-		assert.strictEqual(result.caseCompletedDate, undefined);
+		assert.strictEqual(result.casePublishedDate?.toISOString(), '2024-01-28T16:00:00.000Z');
 	});
 
 	test('maps lookup relations', () => {
@@ -182,7 +182,6 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 		// These should be undefined when source data is null
 		assert.strictEqual(result.submissionId, undefined);
 		assert.strictEqual(result.caseExtensionDate, undefined);
-		assert.strictEqual(result.caseCompletedDate, undefined);
 		assert.ok(result.address);
 		assert.strictEqual(result.childAppeals, undefined);
 		assert.strictEqual(result.neighbouringSites, undefined);
@@ -266,7 +265,6 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 		assert.strictEqual(result.caseExtensionDate, undefined);
 		assert.strictEqual(result.caseStartedDate, undefined);
 		assert.strictEqual(result.casePublishedDate, undefined);
-		assert.strictEqual(result.caseCompletedDate, undefined);
 	});
 
 	test('handles nearbyCaseReferences null case', () => {
@@ -485,5 +483,337 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 
 		assert.ok(result.allocation);
 		assert.strictEqual(result.allocation.create.band, 2.5);
+	});
+});
+
+describe('mapSourceToSinkAppeal - LPA Questionnaire Mapping', () => {
+	test('returns undefined lpaQuestionnaire when all fields are null', () => {
+		const result = mapSourceToSinkAppeal(mockAppealHasCase);
+
+		assert.strictEqual(result.lpaQuestionnaire, undefined);
+	});
+
+	test('maps scalar date fields', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			lpaQuestionnaireCreatedDate: '2024-02-05T09:00:00.000Z'
+		};
+
+		const result = mapSourceToSinkAppeal(source);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.ok(result.lpaQuestionnaire.create.lpaQuestionnaireSubmittedDate instanceof Date);
+		assert.ok(result.lpaQuestionnaire.create.lpaqCreatedDate instanceof Date);
+	});
+
+	test('does not set lpaqCreatedDate when lpaQuestionnaireCreatedDate is null', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			lpaQuestionnaireCreatedDate: null
+		};
+
+		const result = mapSourceToSinkAppeal(source);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.strictEqual(result.lpaQuestionnaire.create.lpaqCreatedDate, undefined);
+	});
+
+	test('maps lpaProcedurePreferenceDuration Decimal to number', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			lpaProcedurePreferenceDuration: new Prisma.Decimal(3)
+		};
+
+		const result = mapSourceToSinkAppeal(source);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.strictEqual(result.lpaQuestionnaire.create.lpaProcedurePreferenceDuration, 3);
+	});
+
+	test('maps lpaQuestionnaireValidationOutcome via connect by name', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			lpaQuestionnaireValidationOutcome: 'complete'
+		};
+
+		const result = mapSourceToSinkAppeal(source);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.ok(result.lpaQuestionnaire.create.lpaQuestionnaireValidationOutcome);
+		assert.strictEqual(result.lpaQuestionnaire.create.lpaQuestionnaireValidationOutcome.connect.name, 'complete');
+	});
+
+	test('omits lpaQuestionnaireValidationOutcome when null', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			lpaQuestionnaireValidationOutcome: null
+		};
+
+		const result = mapSourceToSinkAppeal(source);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.strictEqual(result.lpaQuestionnaire.create.lpaQuestionnaireValidationOutcome, undefined);
+	});
+
+	test('maps notificationMethod JSON array to lpaNotificationMethods array', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			notificationMethod: '["letter","email","site-notice"]'
+		};
+
+		const result = mapSourceToSinkAppeal(source);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.ok(result.lpaQuestionnaire.create.lpaNotificationMethods);
+		assert.strictEqual(result.lpaQuestionnaire.create.lpaNotificationMethods.create.length, 3);
+		assert.strictEqual(
+			result.lpaQuestionnaire.create.lpaNotificationMethods.create[0].lpaNotificationMethod.connect.key,
+			'letter'
+		);
+		assert.strictEqual(
+			result.lpaQuestionnaire.create.lpaNotificationMethods.create[1].lpaNotificationMethod.connect.key,
+			'email'
+		);
+		assert.strictEqual(
+			result.lpaQuestionnaire.create.lpaNotificationMethods.create[2].lpaNotificationMethod.connect.key,
+			'site-notice'
+		);
+	});
+
+	test('omits lpaNotificationMethods when notificationMethod is null', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			notificationMethod: null
+		};
+
+		const result = mapSourceToSinkAppeal(source);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.strictEqual(result.lpaQuestionnaire.create.lpaNotificationMethods, undefined);
+	});
+
+	test('maps boolean fields', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			isCorrectAppealType: true,
+			inConservationArea: false,
+			affectsScheduledMonument: false,
+			isAonbNationalLandscape: true,
+			hasProtectedSpecies: false,
+			hasInfrastructureLevy: true,
+			isInfrastructureLevyFormallyAdopted: false,
+			lpaCostsAppliedFor: true,
+			isSiteInAreaOfSpecialControlAdverts: false,
+			wasApplicationRefusedDueToHighwayOrTraffic: true,
+			didAppellantSubmitCompletePhotosAndPlans: false
+		};
+
+		const result = mapSourceToSinkAppeal(source);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.strictEqual(result.lpaQuestionnaire.create.isCorrectAppealType, true);
+		assert.strictEqual(result.lpaQuestionnaire.create.inConservationArea, false);
+		assert.strictEqual(result.lpaQuestionnaire.create.affectsScheduledMonument, false);
+		assert.strictEqual(result.lpaQuestionnaire.create.isAonbNationalLandscape, true);
+		assert.strictEqual(result.lpaQuestionnaire.create.hasProtectedSpecies, false);
+		assert.strictEqual(result.lpaQuestionnaire.create.hasInfrastructureLevy, true);
+		assert.strictEqual(result.lpaQuestionnaire.create.isInfrastructureLevyFormallyAdopted, false);
+		assert.strictEqual(result.lpaQuestionnaire.create.lpaCostsAppliedFor, true);
+		assert.strictEqual(result.lpaQuestionnaire.create.isSiteInAreaOfSpecialControlAdverts, false);
+		assert.strictEqual(result.lpaQuestionnaire.create.wasApplicationRefusedDueToHighwayOrTraffic, true);
+		assert.strictEqual(result.lpaQuestionnaire.create.didAppellantSubmitCompletePhotosAndPlans, false);
+	});
+
+	test('maps infrastructure levy dates', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			infrastructureLevyAdoptedDate: '2023-06-01T00:00:00.000Z',
+			infrastructureLevyExpectedDate: '2025-01-01T00:00:00.000Z'
+		};
+
+		const result = mapSourceToSinkAppeal(source);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.strictEqual(
+			result.lpaQuestionnaire.create.lpaQuestionnaireSubmittedDate?.toISOString(),
+			'2024-02-10T10:00:00.000Z'
+		);
+		assert.strictEqual(
+			result.lpaQuestionnaire.create.infrastructureLevyAdoptedDate?.toISOString(),
+			'2023-06-01T00:00:00.000Z'
+		);
+		assert.strictEqual(
+			result.lpaQuestionnaire.create.infrastructureLevyExpectedDate?.toISOString(),
+			'2025-01-01T00:00:00.000Z'
+		);
+	});
+
+	test('maps costs and recovery dates', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			dateCostsReportDespatched: '2024-03-01T00:00:00.000Z',
+			dateNotRecoveredOrDerecovered: '2024-03-05T00:00:00.000Z',
+			dateRecovered: '2024-03-10T00:00:00.000Z',
+			originalCaseDecisionDate: '2023-12-01T00:00:00.000Z',
+			targetDate: '2024-06-01T00:00:00.000Z'
+		};
+
+		const result = mapSourceToSinkAppeal(source);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.ok(result.lpaQuestionnaire.create.dateCostsReportDespatched instanceof Date);
+		assert.ok(result.lpaQuestionnaire.create.dateNotRecoveredOrDerecovered instanceof Date);
+		assert.ok(result.lpaQuestionnaire.create.dateRecovered instanceof Date);
+		assert.ok(result.lpaQuestionnaire.create.originalCaseDecisionDate instanceof Date);
+		assert.ok(result.lpaQuestionnaire.create.targetDate instanceof Date);
+	});
+
+	test('maps string fields', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			lpaStatement: 'LPA statement text',
+			newConditionDetails: 'New condition details',
+			siteAccessDetails: 'Site access info',
+			siteSafetyDetails: 'Safety info',
+			lpaProcedurePreference: 'hearing',
+			lpaProcedurePreferenceDetails: 'Preference details',
+			reasonForNeighbourVisits: 'Reason text',
+			importantInformation: 'Important info'
+		};
+
+		const result = mapSourceToSinkAppeal(source);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.strictEqual(result.lpaQuestionnaire.create.lpaStatement, 'LPA statement text');
+		assert.strictEqual(result.lpaQuestionnaire.create.newConditionDetails, 'New condition details');
+		assert.strictEqual(result.lpaQuestionnaire.create.siteAccessDetails, 'Site access info');
+		assert.strictEqual(result.lpaQuestionnaire.create.siteSafetyDetails, 'Safety info');
+		assert.strictEqual(result.lpaQuestionnaire.create.lpaProcedurePreference, 'hearing');
+		assert.strictEqual(result.lpaQuestionnaire.create.lpaProcedurePreferenceDetails, 'Preference details');
+		assert.strictEqual(result.lpaQuestionnaire.create.reasonForNeighbourVisits, 'Reason text');
+		assert.strictEqual(result.lpaQuestionnaire.create.importantInformation, 'Important info');
+	});
+
+	test('creates lpaQuestionnaire when only a boolean field is set', () => {
+		const source = {
+			...mockAppealHasCase,
+			isCorrectAppealType: true
+		};
+
+		const result = mapSourceToSinkAppeal(source);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.strictEqual(result.lpaQuestionnaire.create.isCorrectAppealType, true);
+	});
+
+	test('maps redeterminedIndicator true as boolean and coerces to string', () => {
+		const source = { ...mockAppealHasCase, redeterminedIndicator: true };
+		const result = mapSourceToSinkAppeal(source);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.strictEqual(result.lpaQuestionnaire.create.redeterminedIndicator, 'true');
+	});
+
+	test('maps redeterminedIndicator false as boolean and does not drop it', () => {
+		const source = { ...mockAppealHasCase, redeterminedIndicator: false };
+		const result = mapSourceToSinkAppeal(source);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.strictEqual(result.lpaQuestionnaire.create.redeterminedIndicator, 'false');
+	});
+
+	test('omits redeterminedIndicator when null', () => {
+		const source = { ...mockAppealHasCase, redeterminedIndicator: null };
+		const result = mapSourceToSinkAppeal(source);
+
+		assert.strictEqual(result.lpaQuestionnaire, undefined);
+	});
+
+	test('maps affectedListedBuildingNumbers JSON array to listedBuildingDetails array', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			affectedListedBuildingNumbers: '["1234567","7654321"]'
+		};
+
+		const result = mapSourceToSinkAppeal(source);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.ok(result.lpaQuestionnaire.create.listedBuildingDetails);
+		assert.strictEqual(result.lpaQuestionnaire.create.listedBuildingDetails.create.length, 2);
+		assert.strictEqual(result.lpaQuestionnaire.create.listedBuildingDetails.create[0].listEntry, '1234567');
+		assert.strictEqual(result.lpaQuestionnaire.create.listedBuildingDetails.create[1].listEntry, '7654321');
+	});
+
+	test('omits listedBuildingDetails when affectedListedBuildingNumbers is null', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			affectedListedBuildingNumbers: null
+		};
+
+		const result = mapSourceToSinkAppeal(source);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.strictEqual(result.lpaQuestionnaire.create.listedBuildingDetails, undefined);
+	});
+
+	test('omits lpaCostsAppliedFor when null', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			lpaCostsAppliedFor: null
+		};
+
+		const result = mapSourceToSinkAppeal(source);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.strictEqual(result.lpaQuestionnaire.create.lpaCostsAppliedFor, undefined);
+	});
+
+	test('maps designatedSitesNames JSON array to designatedSiteNames relation', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			designatedSitesNames: '["site-a","site-b"]'
+		};
+
+		const result = mapSourceToSinkAppeal(source);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.ok(result.lpaQuestionnaire.create.designatedSiteNames);
+		assert.strictEqual(result.lpaQuestionnaire.create.designatedSiteNames.create.length, 2);
+		assert.strictEqual(
+			result.lpaQuestionnaire.create.designatedSiteNames.create[0].designatedSite.connect.key,
+			'site-a'
+		);
+		assert.strictEqual(
+			result.lpaQuestionnaire.create.designatedSiteNames.create[1].designatedSite.connect.key,
+			'site-b'
+		);
+	});
+
+	test('omits designatedSiteNames when designatedSitesNames is null', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			designatedSitesNames: null
+		};
+
+		const result = mapSourceToSinkAppeal(source);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.strictEqual(result.lpaQuestionnaire.create.designatedSiteNames, undefined);
 	});
 });
