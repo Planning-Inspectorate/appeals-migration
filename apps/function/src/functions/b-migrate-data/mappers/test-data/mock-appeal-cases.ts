@@ -1,5 +1,5 @@
 import type { AppealHas } from '@pins/odw-curated-database/src/client/client.ts';
-import { Decimal } from '@pins/odw-curated-database/src/client/internal/prismaNamespace.ts';
+import { Prisma } from '@pins/odw-curated-database/src/client/client.ts';
 import { mockAppealHasCase } from './mock-appeal-has-case.ts';
 
 // Simple mock cases for testing - minimal fields required
@@ -188,7 +188,7 @@ export const mockCaseWithEmptyJsonArrayAddresses: AppealHas = {
 export const mockCaseWithAllocation: AppealHas = {
 	...mockAppealHasCase,
 	allocationLevel: 'C',
-	allocationBand: new Decimal(2)
+	allocationBand: new Prisma.Decimal(2)
 };
 
 export const mockCaseWithLpaDate: AppealHas = {
@@ -223,7 +223,7 @@ export const mockCaseWithWithdrawn: AppealHas = {
 export const mockCaseWithNumberBand: AppealHas = {
 	...mockAppealHasCase,
 	allocationLevel: 'B',
-	allocationBand: new Decimal(3)
+	allocationBand: new Prisma.Decimal(3)
 };
 
 export const mockCaseWithDuplicateStatus: AppealHas = {
@@ -256,5 +256,5 @@ export const mockCaseWithSchemaAddresses: AppealHas = {
 export const mockCaseWithDecimalBand: AppealHas = {
 	...mockAppealHasCase,
 	allocationLevel: 'B',
-	allocationBand: new Decimal(2.5)
+	allocationBand: new Prisma.Decimal(2.5)
 };

@@ -27,6 +27,10 @@ export function formatDateToISO(value: Date | null | undefined): string | undefi
 	}
 }
 
+export function parseDateOrUndefined(value: string | Date | null | undefined): Date | undefined {
+	return parseDate(value) ?? undefined;
+}
+
 export function createDateRange(from?: Date | null, to?: Date | null): { gte?: string; lte?: string } | undefined {
 	if (!from && !to) {
 		return undefined;

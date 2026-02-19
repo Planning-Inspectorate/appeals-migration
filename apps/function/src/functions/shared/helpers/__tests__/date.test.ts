@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { describe, test } from 'node:test';
-import { createDateRange, formatDateToISO, parseDate } from '../date.ts';
+import { createDateRange, formatDateToISO, parseDate, parseDateOrUndefined } from '../date.ts';
 
 describe('parseDate', () => {
 	test('returns null for null input', () => {
@@ -34,6 +34,36 @@ describe('parseDate', () => {
 	test('returns null for invalid Date object', () => {
 		const invalidDate = new Date('invalid');
 		assert.strictEqual(parseDate(invalidDate), null);
+	});
+});
+
+describe('parseDateOrUndefined', () => {
+	test('returns undefined for null input', () => {
+		assert.strictEqual(parseDateOrUndefined(null), undefined);
+	});
+
+	test('returns undefined for undefined input', () => {
+		assert.strictEqual(parseDateOrUndefined(undefined), undefined);
+	});
+
+	test('returns undefined for empty string', () => {
+		assert.strictEqual(parseDateOrUndefined(''), undefined);
+	});
+
+	test('parses valid ISO date string', () => {
+		const result = parseDateOrUndefined('2024-01-15T10:00:00Z');
+		assert.ok(result instanceof Date);
+		assert.strictEqual(result?.toISOString(), '2024-01-15T10:00:00.000Z');
+	});
+
+	test('returns undefined for invalid date string', () => {
+		assert.strictEqual(parseDateOrUndefined('not-a-date'), undefined);
+	});
+
+	test('returns Date object unchanged if valid', () => {
+		const date = new Date('2024-01-15T10:00:00Z');
+		const result = parseDateOrUndefined(date);
+		assert.strictEqual(result, date);
 	});
 });
 

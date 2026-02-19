@@ -1,5 +1,5 @@
 import type { AppealHas } from '@pins/odw-curated-database/src/client/client.ts';
-import { Decimal } from '@pins/odw-curated-database/src/client/internal/prismaNamespace.ts';
+import { Prisma } from '@pins/odw-curated-database/src/client/client.ts';
 
 /**
  * Mock test case for Core Appeal Mapping
@@ -16,7 +16,7 @@ export const mockAppealHasCase: AppealHas = {
 	caseOfficerId: 'officer-123',
 	inspectorId: 'inspector-456',
 	allocationLevel: 'A',
-	allocationBand: new Decimal(1),
+	allocationBand: new Prisma.Decimal(1),
 	caseSpecialisms: '["Access", "Listed building"]',
 	caseSubmittedDate: '2024-01-15T10:00:00.000Z',
 	caseCreatedDate: '2024-01-10T09:00:00.000Z',

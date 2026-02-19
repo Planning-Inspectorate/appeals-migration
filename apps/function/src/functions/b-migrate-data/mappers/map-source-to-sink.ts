@@ -5,64 +5,11 @@ import type {
 	AppealS78,
 	AppealServiceUser
 } from '@pins/odw-curated-database/src/client/client.ts';
-import type { Decimal } from '@pins/odw-curated-database/src/client/internal/prismaNamespace.ts';
 import type { Schemas } from '@planning-inspectorate/data-model';
 import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
+import { parseDateOrUndefined, parseJsonArray, parseNumber, stringOrUndefined } from '../../shared/helpers/index.ts';
 import { mapEventToSink } from './map-event-to-sink.ts';
 import { mapServiceUsersToAppealRelations } from './map-service-user.ts';
-
-/**
- * Parse date string to Date object
- */
-function parseDate(dateString: string | null | undefined): Date | undefined {
-	if (!dateString) return undefined;
-	const date = new Date(dateString);
-	return isNaN(date.getTime()) ? undefined : date;
-}
-
-/**
- * Parse number value, handling Prisma Decimal type
- */
-function parseNumber(value: Decimal | number | string | null | undefined): number | undefined {
-	if (value === null || value === undefined) return undefined;
-
-	// Handle Decimal type
-	if (typeof value === 'object' && value !== null && 'toNumber' in value) {
-		return (value as Decimal).toNumber();
-	}
-
-	const num = Number(value);
-	return isNaN(num) ? undefined : num;
-}
-
-/**
- * Convert empty strings to undefined
- */
-function stringOrUndefined(value: string | null | undefined): string | undefined {
-	if (!value || value.trim() === '') return undefined;
-	return value;
-}
-
-/**
- * Generic JSON array parser with error handling
- * Parses a JSON string into an array, with validation
- */
-function parseJsonArray<T = unknown>(jsonString: string | null | undefined, fieldName: string): T[] {
-	if (!jsonString) return [];
-
-	try {
-		const parsed = JSON.parse(jsonString);
-		if (!Array.isArray(parsed)) {
-			throw new Error(`Expected JSON array for ${fieldName}, got: ${typeof parsed}`);
-		}
-		return parsed;
-	} catch (error) {
-		throw new Error(
-			`Invalid JSON for ${fieldName}: ${jsonString}. Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-			{ cause: error }
-		);
-	}
-}
 
 /**
  * Parse specialisms from JSON array string
@@ -134,7 +81,7 @@ function buildAppealStatus(source: AppealHas | AppealS78) {
 			status: source.caseStatus,
 			valid: true,
 			// Use caseUpdatedDate as best guess for when this status was set
-			createdAt: parseDate(source.caseUpdatedDate)
+			createdAt: parseDateOrUndefined(source.caseUpdatedDate)
 		}
 	];
 
@@ -154,7 +101,7 @@ function buildAppealStatus(source: AppealHas | AppealS78) {
 		statuses.push({
 			status,
 			valid,
-			createdAt: parseDate(date)
+			createdAt: parseDateOrUndefined(date)
 		});
 	};
 
@@ -212,7 +159,7 @@ function buildAddress(source: AppealHas | AppealS78) {
  * Only creates timetable if at least one date field has data
  */
 function buildAppealTimetable(source: AppealHas | AppealS78) {
-	const lpaQuestionnaireDueDate = parseDate(source.lpaQuestionnaireDueDate);
+	const lpaQuestionnaireDueDate = parseDateOrUndefined(source.lpaQuestionnaireDueDate);
 
 	// Only create timetable if at least one date exists
 	if (!lpaQuestionnaireDueDate) {
@@ -244,6 +191,104 @@ function buildAppealAllocation(source: AppealHas | AppealS78) {
 }
 
 /**
+ * Build LPA questionnaire validation outcome relation
+ */
+function buildLpaValidationOutcome(source: AppealHas | AppealS78) {
+	const validationOutcome = stringOrUndefined(source.lpaQuestionnaireValidationOutcome);
+	if (!validationOutcome) return undefined;
+	return { connect: { name: validationOutcome } };
+}
+
+/**
+ * Build LPA notification methods relation
+ */
+function buildLpaNotificationMethods(source: AppealHas | AppealS78) {
+	const notificationMethods = parseJsonArray<string>(source.notificationMethod, 'notificationMethod');
+	if (notificationMethods.length === 0) return undefined;
+	return {
+		create: notificationMethods.map((key) => ({
+			lpaNotificationMethod: { connect: { key } }
+		}))
+	};
+}
+
+/**
+ * Build listed building details relation
+ */
+function buildListedBuildingDetails(source: AppealHas | AppealS78) {
+	const listedBuildingNumbers = parseJsonArray<string>(
+		source.affectedListedBuildingNumbers,
+		'affectedListedBuildingNumbers'
+	);
+	if (listedBuildingNumbers.length === 0) return undefined;
+	return {
+		create: listedBuildingNumbers.map((listEntry) => ({ listEntry }))
+	};
+}
+
+/**
+ * Build designated sites relation
+ */
+function buildDesignatedSites(source: AppealHas | AppealS78) {
+	const sites = parseJsonArray<string>(
+		source.designatedSitesNames as string | null | undefined,
+		'designatedSitesNames'
+	);
+	if (sites.length === 0) return undefined;
+	return {
+		create: sites.map((key) => ({
+			designatedSite: { connect: { key } }
+		}))
+	};
+}
+
+/**
+ * Build LPA questionnaire object
+ */
+function buildLpaQuestionnaire(source: AppealHas | AppealS78) {
+	const create = {
+		lpaQuestionnaireSubmittedDate: parseDateOrUndefined(source.lpaQuestionnaireSubmittedDate),
+		lpaqCreatedDate: parseDateOrUndefined(source.lpaQuestionnaireCreatedDate),
+		lpaStatement: stringOrUndefined(source.lpaStatement),
+		newConditionDetails: stringOrUndefined(source.newConditionDetails),
+		siteAccessDetails: stringOrUndefined(source.siteAccessDetails),
+		siteSafetyDetails: stringOrUndefined(source.siteSafetyDetails),
+		isCorrectAppealType: source.isCorrectAppealType ?? undefined,
+		inConservationArea: source.inConservationArea ?? undefined,
+		affectsScheduledMonument: source.affectsScheduledMonument ?? undefined,
+		isAonbNationalLandscape: source.isAonbNationalLandscape ?? undefined,
+		hasProtectedSpecies: source.hasProtectedSpecies ?? undefined,
+		hasInfrastructureLevy: source.hasInfrastructureLevy ?? undefined,
+		isInfrastructureLevyFormallyAdopted: source.isInfrastructureLevyFormallyAdopted ?? undefined,
+		infrastructureLevyAdoptedDate: parseDateOrUndefined(source.infrastructureLevyAdoptedDate),
+		infrastructureLevyExpectedDate: parseDateOrUndefined(source.infrastructureLevyExpectedDate),
+		lpaProcedurePreference: stringOrUndefined(source.lpaProcedurePreference),
+		lpaProcedurePreferenceDetails: stringOrUndefined(source.lpaProcedurePreferenceDetails),
+		lpaProcedurePreferenceDuration: parseNumber(source.lpaProcedurePreferenceDuration),
+		reasonForNeighbourVisits: stringOrUndefined(source.reasonForNeighbourVisits),
+		lpaCostsAppliedFor: source.lpaCostsAppliedFor ?? undefined,
+		dateCostsReportDespatched: parseDateOrUndefined(source.dateCostsReportDespatched),
+		dateNotRecoveredOrDerecovered: parseDateOrUndefined(source.dateNotRecoveredOrDerecovered),
+		dateRecovered: parseDateOrUndefined(source.dateRecovered),
+		originalCaseDecisionDate: parseDateOrUndefined(source.originalCaseDecisionDate),
+		targetDate: parseDateOrUndefined(source.targetDate),
+		importantInformation: stringOrUndefined(source.importantInformation),
+		redeterminedIndicator: source.redeterminedIndicator == null ? undefined : String(source.redeterminedIndicator),
+		isSiteInAreaOfSpecialControlAdverts: source.isSiteInAreaOfSpecialControlAdverts ?? undefined,
+		wasApplicationRefusedDueToHighwayOrTraffic: source.wasApplicationRefusedDueToHighwayOrTraffic ?? undefined,
+		didAppellantSubmitCompletePhotosAndPlans: source.didAppellantSubmitCompletePhotosAndPlans ?? undefined,
+		lpaQuestionnaireValidationOutcome: buildLpaValidationOutcome(source),
+		lpaNotificationMethods: buildLpaNotificationMethods(source),
+		listedBuildingDetails: buildListedBuildingDetails(source),
+		designatedSiteNames: buildDesignatedSites(source)
+	};
+
+	if (!Object.values(create).some((v) => v !== undefined)) return undefined;
+
+	return { create };
+}
+
+/**
  * Build inspector decision object
  */
 function buildInspectorDecision(source: AppealHas | AppealS78) {
@@ -252,7 +297,7 @@ function buildInspectorDecision(source: AppealHas | AppealS78) {
 	return {
 		create: {
 			outcome: source.caseDecisionOutcome,
-			caseDecisionOutcomeDate: parseDate(source.caseDecisionOutcomeDate)
+			caseDecisionOutcomeDate: parseDateOrUndefined(source.caseDecisionOutcomeDate)
 		}
 	};
 }
@@ -325,12 +370,12 @@ export function mapSourceToSinkAppeal(
 		padsInspector: buildPadsInspector(sourceCase.padsSapId),
 
 		applicationReference: stringOrUndefined(sourceCase.applicationReference),
-		caseCreatedDate: parseDate(sourceCase.caseCreatedDate),
-		caseUpdatedDate: parseDate(sourceCase.caseUpdatedDate),
-		caseValidDate: parseDate(sourceCase.caseValidDate),
-		caseExtensionDate: parseDate(sourceCase.caseExtensionDate),
-		caseStartedDate: parseDate(sourceCase.caseStartedDate),
-		casePublishedDate: parseDate(sourceCase.casePublishedDate),
+		caseCreatedDate: parseDateOrUndefined(sourceCase.caseCreatedDate),
+		caseUpdatedDate: parseDateOrUndefined(sourceCase.caseUpdatedDate),
+		caseValidDate: parseDateOrUndefined(sourceCase.caseValidDate),
+		caseExtensionDate: parseDateOrUndefined(sourceCase.caseExtensionDate),
+		caseStartedDate: parseDateOrUndefined(sourceCase.caseStartedDate),
+		casePublishedDate: parseDateOrUndefined(sourceCase.casePublishedDate),
 
 		lpa: {
 			connect: { lpaCode: sourceCase.lpaCode }
@@ -343,7 +388,8 @@ export function mapSourceToSinkAppeal(
 		address: buildAddress(sourceCase),
 		inspectorDecision: buildInspectorDecision(sourceCase),
 		childAppeals: parseNearbyCaseReferences(sourceCase.caseReference, sourceCase.nearbyCaseReferences),
-		neighbouringSites: parseNeighbouringSiteAddresses(sourceCase.neighbouringSiteAddresses)
+		neighbouringSites: parseNeighbouringSiteAddresses(sourceCase.neighbouringSiteAddresses),
+		lpaQuestionnaire: buildLpaQuestionnaire(sourceCase)
 	};
 
 	// Helper function to add event if not duplicate
