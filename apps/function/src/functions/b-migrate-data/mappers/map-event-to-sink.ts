@@ -1,7 +1,7 @@
 import type { Prisma } from '@pins/manage-appeals-database/src/client/client.d.ts';
 import type { AppealEvent } from '@pins/odw-curated-database/src/client/client.ts';
 import { APPEAL_EVENT_TYPE } from '@planning-inspectorate/data-model';
-import { nullToUndefined, parseDate, trimAndLowercase } from '../../shared/helpers/index.ts';
+import { parseDateOrUndefined, stringOrUndefined, trimAndLowercase } from '../../shared/helpers/index.ts';
 
 function getEventCategory(eventType: string | null | undefined): 'hearing' | 'inquiry' | 'site_visit' | null {
 	const normalizedType = trimAndLowercase(eventType);
@@ -48,11 +48,11 @@ function mapEventAddress(
 	}
 
 	return {
-		addressLine1: nullToUndefined(event.addressLine1),
-		addressLine2: nullToUndefined(event.addressLine2),
-		addressTown: nullToUndefined(event.addressTown),
-		addressCounty: nullToUndefined(event.addressCounty),
-		postcode: nullToUndefined(event.addressPostcode)
+		addressLine1: stringOrUndefined(event.addressLine1),
+		addressLine2: stringOrUndefined(event.addressLine2),
+		addressTown: stringOrUndefined(event.addressTown),
+		addressCounty: stringOrUndefined(event.addressCounty),
+		postcode: stringOrUndefined(event.addressPostcode)
 	};
 }
 
@@ -63,14 +63,14 @@ type EventBaseData = {
 };
 
 function mapEventBaseData(event: AppealEvent): EventBaseData | null {
-	const startTime = parseDate(event.eventStartDateTime);
+	const startTime = parseDateOrUndefined(event.eventStartDateTime);
 
 	if (!startTime) {
 		return null;
 	}
 
 	const address = mapEventAddress(event);
-	const endTime = nullToUndefined(parseDate(event.eventEndDateTime));
+	const endTime = parseDateOrUndefined(event.eventEndDateTime);
 
 	return { startTime, endTime, address };
 }

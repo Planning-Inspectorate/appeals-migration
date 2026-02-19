@@ -1,7 +1,7 @@
 import type { Prisma } from '@pins/manage-appeals-database/src/client/client.d.ts';
 import type { AppealServiceUser } from '@pins/odw-curated-database/src/client/client.ts';
 import { SERVICE_USER_TYPE } from '@planning-inspectorate/data-model';
-import { hasAnyValue, nullToUndefined, trimAndLowercase } from '../../shared/helpers/index.ts';
+import { hasAnyValue, stringOrUndefined, trimAndLowercase } from '../../shared/helpers/index.ts';
 
 function mapServiceUserAddress(
 	sourceServiceUser: AppealServiceUser
@@ -20,24 +20,24 @@ function mapServiceUserAddress(
 	}
 
 	return {
-		addressLine1: nullToUndefined(sourceServiceUser.addressLine1),
-		addressLine2: nullToUndefined(sourceServiceUser.addressLine2),
-		addressTown: nullToUndefined(sourceServiceUser.addressTown),
-		addressCounty: nullToUndefined(sourceServiceUser.addressCounty),
-		postcode: nullToUndefined(sourceServiceUser.postcode),
+		addressLine1: stringOrUndefined(sourceServiceUser.addressLine1),
+		addressLine2: stringOrUndefined(sourceServiceUser.addressLine2),
+		addressTown: stringOrUndefined(sourceServiceUser.addressTown),
+		addressCounty: stringOrUndefined(sourceServiceUser.addressCounty),
+		postcode: stringOrUndefined(sourceServiceUser.postcode),
 		addressCountry: sourceServiceUser.addressCountry ?? 'United Kingdom'
 	};
 }
 
 function mapServiceUserBaseData(sourceServiceUser: AppealServiceUser): Omit<Prisma.ServiceUserCreateInput, 'address'> {
 	return {
-		organisationName: nullToUndefined(sourceServiceUser.organisation),
-		salutation: nullToUndefined(sourceServiceUser.salutation),
-		firstName: nullToUndefined(sourceServiceUser.firstName),
-		lastName: nullToUndefined(sourceServiceUser.lastName),
-		email: nullToUndefined(sourceServiceUser.emailAddress),
-		website: nullToUndefined(sourceServiceUser.webAddress),
-		phoneNumber: nullToUndefined(sourceServiceUser.telephoneNumber)
+		organisationName: stringOrUndefined(sourceServiceUser.organisation),
+		salutation: stringOrUndefined(sourceServiceUser.salutation),
+		firstName: stringOrUndefined(sourceServiceUser.firstName),
+		lastName: stringOrUndefined(sourceServiceUser.lastName),
+		email: stringOrUndefined(sourceServiceUser.emailAddress),
+		website: stringOrUndefined(sourceServiceUser.webAddress),
+		phoneNumber: stringOrUndefined(sourceServiceUser.telephoneNumber)
 	};
 }
 
