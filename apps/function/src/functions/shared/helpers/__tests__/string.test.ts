@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { describe, test } from 'node:test';
-import { isNullOrEmpty, normalizeString, trimAndLowercase } from '../string.ts';
+import { isNullOrEmpty, normalizeString, stringOrUndefined, trimAndLowercase } from '../string.ts';
 
 describe('normalizeString', () => {
 	test('returns null for null input', () => {
@@ -51,6 +51,32 @@ describe('trimAndLowercase', () => {
 
 	test('handles mixed case', () => {
 		assert.strictEqual(trimAndLowercase('HeLLo WoRLd'), 'hello world');
+	});
+});
+
+describe('stringOrUndefined', () => {
+	test('returns undefined for null input', () => {
+		assert.strictEqual(stringOrUndefined(null), undefined);
+	});
+
+	test('returns undefined for undefined input', () => {
+		assert.strictEqual(stringOrUndefined(undefined), undefined);
+	});
+
+	test('returns undefined for empty string', () => {
+		assert.strictEqual(stringOrUndefined(''), undefined);
+	});
+
+	test('returns undefined for whitespace-only string', () => {
+		assert.strictEqual(stringOrUndefined('   '), undefined);
+	});
+
+	test('trims and returns string', () => {
+		assert.strictEqual(stringOrUndefined('  hello  '), 'hello');
+	});
+
+	test('preserves case', () => {
+		assert.strictEqual(stringOrUndefined('Hello World'), 'Hello World');
 	});
 });
 
