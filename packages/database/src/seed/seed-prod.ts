@@ -1,6 +1,6 @@
+import { loadConfig } from '../configuration/config.ts';
 import { newDatabaseClient } from '../index.ts';
 import { seedStaticData } from './data-static.ts';
-import { loadConfig } from '../configuration/config.ts';
 
 async function run() {
 	const config = loadConfig();

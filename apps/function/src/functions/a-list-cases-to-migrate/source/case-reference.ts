@@ -1,4 +1,4 @@
-import type { PrismaClient as SourcePrismaClient, Prisma } from '@pins/odw-curated-database/src/client/client.ts';
+import type { Prisma, PrismaClient as SourcePrismaClient } from '@pins/odw-curated-database/src/client/client.ts';
 
 function isValidCaseReference(ref: string | null | undefined): ref is string {
 	return ref !== null && ref !== undefined && ref !== '';

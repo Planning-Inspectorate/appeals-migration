@@ -1,7 +1,7 @@
-import type { AppealServiceUser } from '@pins/odw-curated-database/src/client/client.ts';
 import type { Prisma } from '@pins/manage-appeals-database/src/client/client.d.ts';
+import type { AppealServiceUser } from '@pins/odw-curated-database/src/client/client.ts';
 import { SERVICE_USER_TYPE } from '@planning-inspectorate/data-model';
-import { trimAndLowercase, hasAnyValue, nullToUndefined } from '../../shared/helpers/index.ts';
+import { hasAnyValue, nullToUndefined, trimAndLowercase } from '../../shared/helpers/index.ts';
 
 function mapServiceUserAddress(
 	sourceServiceUser: AppealServiceUser

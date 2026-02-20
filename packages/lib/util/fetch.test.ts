@@ -1,8 +1,8 @@
+import type http from 'http';
+import assert from 'node:assert/strict';
 import { describe, it, type TestContext } from 'node:test';
 import { TestServer } from '../testing/test-server.ts';
-import type http from 'http';
 import { fetchWithTimeout, TimeoutError } from './fetch.ts';
-import assert from 'node:assert/strict';
 import { sleep } from './sleep.ts';
 
 describe('fetch', () => {

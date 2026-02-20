@@ -1,8 +1,8 @@
+import http from 'http';
 import assert from 'node:assert/strict';
+import type { TestContext } from 'node:test';
 import { describe, it } from 'node:test';
 import { TestServer } from './test-server.ts';
-import http from 'http';
-import type { TestContext } from 'node:test';
 
 // Basic express app for testing
 function createApp(): http.RequestListener {

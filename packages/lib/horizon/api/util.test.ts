@@ -1,7 +1,7 @@
-import { cleanHorizonResponse, prefixAllKeys } from './util.ts';
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import { readTestFile, snapshotOptions, snapshotPath } from './util-testing.ts';
+import { cleanHorizonResponse, prefixAllKeys } from './util.ts';
 
 describe('util', () => {
 	describe('prefixAllKeys', () => {

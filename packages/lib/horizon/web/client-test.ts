@@ -1,6 +1,6 @@
-import { HorizonWebClient } from './horizon-web-client.ts';
-import type { Readable } from 'node:stream';
 import fs from 'fs';
+import type { Readable } from 'node:stream';
+import { HorizonWebClient } from './horizon-web-client.ts';
 
 /**
  * Basic code to test out the web client

@@ -1,6 +1,6 @@
+import type { Prisma } from '@pins/odw-curated-database/src/client/client.d.ts';
 import { PrismaClient } from '@pins/odw-curated-database/src/client/client.ts';
 import { PrismaMssql } from '@prisma/adapter-mssql';
-import type { Prisma } from '@pins/odw-curated-database/src/client/client.d.ts';
 import type { Logger } from 'pino';
 
 export type { PrismaClient };

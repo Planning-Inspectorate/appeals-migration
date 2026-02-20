@@ -1,5 +1,5 @@
-import type { PrismaClient as SinkPrismaClient } from '@pins/manage-appeals-database/src/client/client.ts';
 import type { Prisma } from '@pins/manage-appeals-database/src/client/client.d.ts';
+import type { PrismaClient as SinkPrismaClient } from '@pins/manage-appeals-database/src/client/client.ts';
 
 export async function upsertAppeal(sinkDatabase: SinkPrismaClient, appeal: Prisma.AppealCreateInput) {
 	if (!appeal.reference) {
