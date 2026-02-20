@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { describe, test } from 'node:test';
 import assert from 'node:assert';
-import { mapEventToSink, mapEventToHearing, mapEventToInquiry, mapEventToSiteVisit } from './map-event-to-sink.ts';
+import { describe, test } from 'node:test';
+import { mapEventToHearing, mapEventToInquiry, mapEventToSink, mapEventToSiteVisit } from './map-event-to-sink.ts';
 
 describe('mapEventToHearing', () => {
 	test('maps event with all fields including address', () => {

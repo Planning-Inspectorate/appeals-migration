@@ -1,5 +1,5 @@
-import type { Prisma } from '@pins/odw-curated-database/src/client/client.ts';
 import type { ToMigrateParameter } from '@pins/appeals-migration-database/src/client/client.ts';
+import type { Prisma } from '@pins/odw-curated-database/src/client/client.ts';
 import { createDateRange } from '../../shared/helpers/index.ts';
 
 function addIfPresent(where: Record<string, unknown>, key: string, value: string | null | undefined): void {

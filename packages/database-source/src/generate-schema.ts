@@ -1,10 +1,10 @@
-import { initOdwDatabaseClient } from './index.ts';
-import pino from 'pino';
-import { loadEnvFile } from 'node:process';
+import { exec } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { exec } from 'node:child_process';
+import { loadEnvFile } from 'node:process';
+import pino from 'pino';
 import { Prisma } from './client/client.ts';
+import { initOdwDatabaseClient } from './index.ts';
 
 /**
  * Connects to the ODW test instance to read the database schema

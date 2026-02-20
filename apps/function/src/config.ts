@@ -1,5 +1,5 @@
-import { loadEnvFile } from 'node:process';
 import type { HorizonWebClientOptions } from '@pins/appeals-migration-lib/horizon/web/horizon-web-client.ts';
+import { loadEnvFile } from 'node:process';
 
 export interface Config {
 	database: string;

@@ -1,3 +1,4 @@
+import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import {
 	caseSearchRequest,
@@ -5,7 +6,6 @@ import {
 	cleanCaseSearchSummaryResponse,
 	deleteCaseSearchSummaryUnusedKeys
 } from './case-search.ts';
-import assert from 'node:assert';
 import { readTestFile, snapshotOptions, snapshotPath } from './util-testing.ts';
 
 describe('case-search', () => {

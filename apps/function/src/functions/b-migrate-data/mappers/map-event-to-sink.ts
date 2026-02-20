@@ -1,7 +1,7 @@
-import type { AppealEvent } from '@pins/odw-curated-database/src/client/client.ts';
 import type { Prisma } from '@pins/manage-appeals-database/src/client/client.d.ts';
+import type { AppealEvent } from '@pins/odw-curated-database/src/client/client.ts';
 import { APPEAL_EVENT_TYPE } from '@planning-inspectorate/data-model';
-import { parseDate, trimAndLowercase, nullToUndefined } from '../../shared/helpers/index.ts';
+import { nullToUndefined, parseDate, trimAndLowercase } from '../../shared/helpers/index.ts';
 
 function getEventCategory(eventType: string | null | undefined): 'hearing' | 'inquiry' | 'site_visit' | null {
 	const normalizedType = trimAndLowercase(eventType);

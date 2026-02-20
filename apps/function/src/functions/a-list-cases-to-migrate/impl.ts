@@ -1,13 +1,13 @@
 import { mapToMigrateParameterToWhere } from './mappers/map-to-migrate-parameter.ts';
-import { fetchCaseReferences } from './source/case-reference.ts';
 import { upsertCaseReferences } from './migration/case-to-migrate.ts';
+import { fetchCaseReferences } from './source/case-reference.ts';
 
-import type { FunctionService } from '../../service.ts';
 import type { TimerHandler } from '@azure/functions';
 import type {
 	PrismaClient as MigrationPrismaClient,
 	ToMigrateParameter
 } from '@pins/appeals-migration-database/src/client/client.ts';
+import type { FunctionService } from '../../service.ts';
 
 type Migration = {
 	readToMigrateParameters: (migrationDatabase: MigrationPrismaClient) => Promise<ToMigrateParameter[]>;

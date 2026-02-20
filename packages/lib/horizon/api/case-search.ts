@@ -1,5 +1,5 @@
 import type { StringValue } from './horizon.d.ts';
-import { cleanHorizonResponse, prefixAllKeys, XMLSNS_PROPS, SOAP_OP_PREFIX, XMLSNS } from './util.ts';
+import { cleanHorizonResponse, prefixAllKeys, SOAP_OP_PREFIX, XMLSNS, XMLSNS_PROPS } from './util.ts';
 
 /**
  * the JSON returned has duplicate HorizonSearchResult keys within CaseSearchResult,

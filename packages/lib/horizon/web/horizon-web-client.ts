@@ -1,7 +1,7 @@
-import type http from 'node:http';
-import https from 'node:https';
 import httpntlm from 'httpntlm';
 import type { WriteStream } from 'node:fs';
+import type http from 'node:http';
+import https from 'node:https';
 import type { LookupFunction } from 'node:net';
 const ntlm = httpntlm.ntlm;
 

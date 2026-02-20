@@ -1,8 +1,8 @@
 // @ts-nocheck
-import { describe, test } from 'node:test';
-import assert from 'node:assert';
 import { SERVICE_USER_TYPE } from '@planning-inspectorate/data-model';
-import { mapServiceUser, getServiceUserRole, mapServiceUsersToAppealRelations } from './map-service-user.ts';
+import assert from 'node:assert';
+import { describe, test } from 'node:test';
+import { getServiceUserRole, mapServiceUser, mapServiceUsersToAppealRelations } from './map-service-user.ts';
 
 describe('mapServiceUser', () => {
 	test('maps all service user fields correctly', () => {

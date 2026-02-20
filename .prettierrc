@@ -7,5 +7,5 @@
 	"trailingComma": "none",
 	"bracketSpacing": true,
 	"arrowParens": "always",
-	"plugins": ["prettier-plugin-prisma"]
+	"plugins": ["prettier-plugin-organize-imports", "prettier-plugin-prisma"]
 }

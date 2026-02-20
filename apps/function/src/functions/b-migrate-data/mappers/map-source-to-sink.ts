@@ -1,10 +1,10 @@
+import type { Prisma } from '@pins/manage-appeals-database/src/client/client.d.ts';
 import type {
+	AppealEvent,
 	AppealHas,
 	AppealS78,
-	AppealEvent,
 	AppealServiceUser
 } from '@pins/odw-curated-database/src/client/client.ts';
-import type { Prisma } from '@pins/manage-appeals-database/src/client/client.d.ts';
 import { mapEventToSink } from './map-event-to-sink.ts';
 import { mapServiceUsersToAppealRelations } from './map-service-user.ts';
 

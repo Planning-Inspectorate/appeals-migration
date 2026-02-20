@@ -1,7 +1,6 @@
 // @ts-nocheck
-import { describe, it, mock } from 'node:test';
 import assert from 'node:assert';
-import { Writable } from 'node:stream';
+import { describe, it, mock } from 'node:test';
 import { HorizonWebClient } from './horizon-web-client.ts';
 
 describe('horizon-web-client', () => {

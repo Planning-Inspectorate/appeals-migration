@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { describe, test, mock } from 'node:test';
 import assert from 'node:assert';
+import { describe, mock, test } from 'node:test';
 import { upsertAppeal } from './appeal.ts';
 
 describe('upsertAppeal', () => {

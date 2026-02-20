@@ -1,6 +1,6 @@
-import { describe, test } from 'node:test';
 import assert from 'node:assert';
-import { nullToUndefined, hasAnyValue } from '../null-safety.ts';
+import { describe, test } from 'node:test';
+import { hasAnyValue, nullToUndefined } from '../null-safety.ts';
 
 describe('nullToUndefined', () => {
 	test('converts null to undefined', () => {

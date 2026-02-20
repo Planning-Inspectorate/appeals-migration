@@ -1,4 +1,3 @@
-import type { IHorizonApi } from './horizon.d.ts';
 import { fetchWithTimeout } from '../../util/fetch.ts';
 import {
 	caseSearchRequest,
@@ -7,10 +6,11 @@ import {
 	caseSearchSummaryRequest,
 	type CaseSearchSummaryResponse,
 	cleanCaseSearchResponse,
-	deleteCaseSearchSummaryUnusedKeys,
-	cleanCaseSearchSummaryResponse
+	cleanCaseSearchSummaryResponse,
+	deleteCaseSearchSummaryUnusedKeys
 } from './case-search.ts';
-import { getCaseRequest, cleanGetCaseResponse, type GetCaseResponse } from './get-case.ts';
+import { cleanGetCaseResponse, getCaseRequest, type GetCaseResponse } from './get-case.ts';
+import type { IHorizonApi } from './horizon.d.ts';
 
 /**
  * A client for the Horizon REST API Wrapper

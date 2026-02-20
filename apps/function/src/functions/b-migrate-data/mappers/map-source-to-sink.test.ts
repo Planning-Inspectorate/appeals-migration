@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { describe, test } from 'node:test';
-import assert from 'node:assert';
 import { SERVICE_USER_TYPE } from '@planning-inspectorate/data-model';
+import assert from 'node:assert';
+import { describe, test } from 'node:test';
 import { mapSourceToSinkAppeal } from './map-source-to-sink.ts';
 
 describe('mapSourceToSinkAppeal', () => {

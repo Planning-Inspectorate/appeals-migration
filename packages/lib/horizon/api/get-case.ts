@@ -1,5 +1,5 @@
-import { cleanHorizonResponse, SOAP_OP_PREFIX, XMLSNS } from './util.ts';
 import type { StringValue } from './horizon.d.ts';
+import { cleanHorizonResponse, SOAP_OP_PREFIX, XMLSNS } from './util.ts';
 
 /**
  * Create a GetCase request payload
