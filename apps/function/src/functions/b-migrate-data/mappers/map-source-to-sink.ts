@@ -213,17 +213,15 @@ function buildAddress(source: AppealHas | AppealS78) {
  */
 function buildAppealTimetable(source: AppealHas | AppealS78) {
 	const lpaQuestionnaireDueDate = parseDate(source.lpaQuestionnaireDueDate);
-	const caseResubmissionDueDate = parseDate(source.caseSubmissionDueDate);
 
 	// Only create timetable if at least one date exists
-	if (!lpaQuestionnaireDueDate && !caseResubmissionDueDate) {
+	if (!lpaQuestionnaireDueDate) {
 		return undefined;
 	}
 
 	return {
 		create: {
-			lpaQuestionnaireDueDate,
-			caseResubmissionDueDate
+			lpaQuestionnaireDueDate
 		}
 	};
 }
