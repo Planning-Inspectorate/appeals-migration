@@ -18,7 +18,7 @@ import { initOdwDatabaseClient } from './index.ts';
  * The first column name with 'id' at the end is marked as the model ID, and not nullable.
  */
 async function run() {
-	loadEnvFile('../.env');
+	loadEnvFile(path.join(import.meta.dirname, '..', '.env'));
 	const logger = pino();
 	const dbStr = process.env.ODW_CURATED_SQL_CONNECTION_STRING;
 	if (!dbStr) {
