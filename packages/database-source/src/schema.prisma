@@ -386,6 +386,9 @@ model AppealS78 {
   isSiteSubjectToArticle4Direction              Boolean?
   article4AffectedDevelopmentRights             String?  @db.NVarChar(MAX)
   pcnRestrictedDevelopmentRights                Boolean?
+  enforcementNoticeReference                    String?  @db.NVarChar(MAX)
+  descriptionOfAllegedBreach                    String?  @db.NVarChar(MAX)
+  dateAppellantContactedPins                    String?  @db.NVarChar(MAX)
 
   @@map("appeal_s78")
 }
