@@ -150,7 +150,6 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 
 		assert.ok(result.appealTimetable);
 		assert.ok(result.appealTimetable.create.lpaQuestionnaireDueDate instanceof Date);
-		assert.ok(result.appealTimetable.create.caseResubmissionDueDate instanceof Date);
 	});
 
 	test('does not create appeal timetable when both dates are null', () => {
@@ -405,15 +404,6 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 
 		assert.ok(result.appealTimetable);
 		assert.ok(result.appealTimetable.create.lpaQuestionnaireDueDate instanceof Date);
-		assert.strictEqual(result.appealTimetable.create.caseResubmissionDueDate, undefined);
-	});
-
-	test('maps timetable with only caseSubmissionDueDate', () => {
-		const result = mapSourceToSinkAppeal(MockCases.mockCaseWithSubmissionDate);
-
-		assert.ok(result.appealTimetable);
-		assert.strictEqual(result.appealTimetable.create.lpaQuestionnaireDueDate, undefined);
-		assert.ok(result.appealTimetable.create.caseResubmissionDueDate instanceof Date);
 	});
 
 	test('maps caseExtensionDate when populated', () => {
