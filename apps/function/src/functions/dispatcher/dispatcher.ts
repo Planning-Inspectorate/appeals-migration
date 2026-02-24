@@ -2,9 +2,9 @@ import type { InvocationContext, Timer, TimerHandler } from '@azure/functions';
 import type { Prisma } from '@pins/appeals-migration-database/src/client/client.ts';
 import chunk from 'lodash.chunk';
 import type { FunctionService } from '../../service.ts';
+import type { StepIdField } from '../../types.ts';
 import { stepStatus, type ItemToMigrate } from '../../types.ts';
 import { getStepId } from './common.ts';
-import type { StepIdField } from './types.ts';
 
 type DispatchConfig = {
 	queueItemType: 'case' | 'document';
