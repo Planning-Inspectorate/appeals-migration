@@ -3,7 +3,7 @@ import { app } from '@azure/functions';
 import type { Prisma } from '@pins/appeals-migration-database/src/client/client.ts';
 import type { FunctionService } from '../../service.ts';
 import { stepStatus, type ItemToMigrate, type MigrationFunction, type StepIdField } from '../../types.ts';
-import { getStepId } from '../dispatcher/common.ts';
+import { getStepId } from './step-id.ts';
 
 async function startCaseDocumentsStepIfWaiting(
 	transaction: Prisma.TransactionClient,

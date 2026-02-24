@@ -4,7 +4,7 @@ import chunk from 'lodash.chunk';
 import type { FunctionService } from '../../service.ts';
 import type { StepIdField } from '../../types.ts';
 import { stepStatus, type ItemToMigrate } from '../../types.ts';
-import { getStepId } from './common.ts';
+import { getStepId } from '../shared/step-id.ts';
 
 type DispatchConfig = {
 	queueItemType: 'case' | 'document';
@@ -29,7 +29,7 @@ async function getItemsToMigrate(
 	service: FunctionService,
 	dispatchCount: number
 ): Promise<ItemToMigrate[]> {
-	return await service.databaseClient.$transaction(async (transaction) => {
+	return service.databaseClient.$transaction(async (transaction) => {
 		const selected: ItemToMigrate[] =
 			config.queueItemType === 'case'
 				? await transaction.caseToMigrate.findMany({
