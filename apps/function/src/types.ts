@@ -14,3 +14,9 @@ export const stepStatus = {
 } as const;
 
 export type StepStatus = (typeof stepStatus)[keyof typeof stepStatus];
+
+type NumericFieldNames<Type> = {
+	[Key in keyof Type]: Type[Key] extends number ? Key : never;
+}[keyof Type];
+
+export type StepIdField = NumericFieldNames<CaseToMigrate> | NumericFieldNames<DocumentToMigrate>;
