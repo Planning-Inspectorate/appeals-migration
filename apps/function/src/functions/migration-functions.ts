@@ -5,8 +5,8 @@ import { buildMigrateData } from './b-migrate-data/impl.ts';
 import { buildListDocumentsToMigrate } from './c-list-documents-to-migrate/impl.ts';
 import { buildMigrateDocuments } from './d-migrate-documents/impl.ts';
 import { buildDispatcher } from './dispatcher/dispatcher.ts';
-import { createWorker } from './dispatcher/worker.ts';
 import { buildValidateMigratedCases } from './e-validate-migrated-cases/impl.ts';
+import { createWorker } from './shared/worker.ts';
 
 const service = initialiseService();
 
