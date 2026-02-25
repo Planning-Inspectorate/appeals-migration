@@ -82,10 +82,10 @@ describe('getServiceUserRole', () => {
 		assert.strictEqual(result.serviceUserType, SERVICE_USER_TYPE.APPELLANT);
 	});
 
-	test('identifies applicant as appellant', () => {
+	test('applicant is not appellant or agent', () => {
 		const result = getServiceUserRole({ serviceUserType: SERVICE_USER_TYPE.APPLICANT });
 
-		assert.strictEqual(result.isAppellant, true);
+		assert.strictEqual(result.isAppellant, false);
 		assert.strictEqual(result.isAgent, false);
 		assert.strictEqual(result.serviceUserType, SERVICE_USER_TYPE.APPLICANT);
 	});
