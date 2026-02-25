@@ -49,7 +49,7 @@ export const mockAppealHasCase: AppealHas = {
 	enforcementNotice: null,
 	applicationReference: 'APP-2024-001',
 	applicationDate: null,
-	applicationDecision: null,
+	applicationDecision: 'refused',
 	applicationDecisionDate: null,
 	caseSubmissionDueDate: '2024-02-01T23:59:59.000Z',
 	siteAccessDetails: null,
