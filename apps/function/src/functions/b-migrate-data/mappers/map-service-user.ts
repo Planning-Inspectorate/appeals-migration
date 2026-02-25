@@ -64,10 +64,7 @@ function getServiceUserCategory(serviceUserType: string | null | undefined): Ser
 		return null;
 	}
 
-	if (
-		normalizedType === SERVICE_USER_TYPE.APPELLANT.toLowerCase() ||
-		normalizedType === SERVICE_USER_TYPE.APPLICANT.toLowerCase()
-	) {
+	if (normalizedType === SERVICE_USER_TYPE.APPELLANT.toLowerCase()) {
 		return SERVICE_USER_TYPE.APPELLANT;
 	}
 
