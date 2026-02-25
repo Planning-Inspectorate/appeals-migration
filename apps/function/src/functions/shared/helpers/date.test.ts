@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { describe, test } from 'node:test';
-import { createDateRange, formatDateToISO, parseDate, parseDateOrUndefined } from '../date.ts';
+import { createDateRange, formatDateToISO, parseDate, parseDateOrUndefined } from './date.ts';
 
 describe('parseDate', () => {
 	test('returns null for null input', () => {
