@@ -6,10 +6,20 @@ import type {
 	AppealServiceUser
 } from '@pins/odw-curated-database/src/client/client.ts';
 import type { Schemas } from '@planning-inspectorate/data-model';
-import { APPEAL_CASE_STATUS, APPEAL_REPRESENTATION_TYPE } from '@planning-inspectorate/data-model';
+import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
 import { parseDateOrUndefined, parseJsonArray, parseNumber, stringOrUndefined } from '../../shared/helpers/index.ts';
 import { mapEventToSink } from './map-event-to-sink.ts';
 import { mapServiceUsersToAppealRelations } from './map-service-user.ts';
+
+const APPEAL_REPRESENTATION_TYPE = Object.freeze({
+	LPA_STATEMENT: 'lpa_statement',
+	APPELLANT_STATEMENT: 'appellant_statement',
+	COMMENT: 'comment',
+	LPA_FINAL_COMMENT: 'lpa_final_comment',
+	APPELLANT_FINAL_COMMENT: 'appellant_final_comment',
+	LPA_PROOFS_EVIDENCE: 'lpa_proofs_evidence',
+	APPELLANT_PROOFS_EVIDENCE: 'appellant_proofs_evidence'
+});
 
 /**
  * Parse specialisms from JSON array string
@@ -163,45 +173,19 @@ function buildAddress(source: AppealHas | AppealS78) {
  * Only creates timetable if at least one date field has data
  */
 function buildAppealTimetable(source: AppealHas | AppealS78) {
-	const lpaQuestionnaireDueDate = parseDateOrUndefined(source.lpaQuestionnaireDueDate);
-	const planningObligationDueDate =
-		'planningObligationDueDate' in source ? parseDateOrUndefined(source.planningObligationDueDate) : undefined;
-	const finalCommentsDueDate =
-		'finalCommentsDueDate' in source ? parseDateOrUndefined(source.finalCommentsDueDate) : undefined;
-	const ipCommentsDueDate =
-		'interestedPartyRepsDueDate' in source ? parseDateOrUndefined(source.interestedPartyRepsDueDate) : undefined;
-	const proofOfEvidenceAndWitnessesDueDate =
-		'proofsOfEvidenceDueDate' in source ? parseDateOrUndefined(source.proofsOfEvidenceDueDate) : undefined;
-	const lpaStatementDueDate = 'statementDueDate' in source ? parseDateOrUndefined(source.statementDueDate) : undefined;
-	const statementOfCommonGroundDueDate =
-		'statementOfCommonGroundDueDate' in source
-			? parseDateOrUndefined(source.statementOfCommonGroundDueDate)
-			: undefined;
-
-	// Only create timetable if at least one date exists
-	if (
-		!lpaQuestionnaireDueDate &&
-		!planningObligationDueDate &&
-		!finalCommentsDueDate &&
-		!ipCommentsDueDate &&
-		!proofOfEvidenceAndWitnessesDueDate &&
-		!lpaStatementDueDate &&
-		!statementOfCommonGroundDueDate
-	) {
-		return undefined;
-	}
-
-	return {
-		create: {
-			lpaQuestionnaireDueDate,
-			planningObligationDueDate,
-			finalCommentsDueDate,
-			ipCommentsDueDate,
-			proofOfEvidenceAndWitnessesDueDate,
-			lpaStatementDueDate,
-			statementOfCommonGroundDueDate
-		}
+	const create = {
+		lpaQuestionnaireDueDate: parseDateOrUndefined(source.lpaQuestionnaireDueDate),
+		planningObligationDueDate: parseDateOrUndefined((source as AppealS78).planningObligationDueDate),
+		finalCommentsDueDate: parseDateOrUndefined((source as AppealS78).finalCommentsDueDate),
+		ipCommentsDueDate: parseDateOrUndefined((source as AppealS78).interestedPartyRepsDueDate),
+		proofOfEvidenceAndWitnessesDueDate: parseDateOrUndefined((source as AppealS78).proofsOfEvidenceDueDate),
+		lpaStatementDueDate: parseDateOrUndefined((source as AppealS78).statementDueDate),
+		statementOfCommonGroundDueDate: parseDateOrUndefined((source as AppealS78).statementOfCommonGroundDueDate)
 	};
+
+	if (!Object.values(create).some((v) => v !== undefined)) return undefined;
+
+	return { create };
 }
 
 /**
@@ -248,10 +232,10 @@ function buildLpaNotificationMethods(source: AppealHas | AppealS78) {
  */
 function buildListedBuildingDetails(source: AppealHas | AppealS78) {
 	const affectedNumbers = parseJsonArray<string>(source.affectedListedBuildingNumbers, 'affectedListedBuildingNumbers');
-	const changedNumbers =
-		'changedListedBuildingNumbers' in source
-			? parseJsonArray<string>(source.changedListedBuildingNumbers, 'changedListedBuildingNumbers')
-			: [];
+	const changedNumbers = parseJsonArray<string>(
+		(source as AppealS78).changedListedBuildingNumbers,
+		'changedListedBuildingNumbers'
+	);
 
 	const entries = [
 		...affectedNumbers.map((listEntry) => ({ listEntry })),
@@ -273,24 +257,13 @@ function buildRepresentations(source: AppealHas | AppealS78) {
 		if (date) entries.push({ representationType: type, dateCreated: date });
 	};
 
-	if ('appellantCommentsSubmittedDate' in source) {
-		addEntry(APPEAL_REPRESENTATION_TYPE.FINAL_COMMENT, source.appellantCommentsSubmittedDate);
-	}
-	if ('appellantStatementSubmittedDate' in source) {
-		addEntry(APPEAL_REPRESENTATION_TYPE.STATEMENT, source.appellantStatementSubmittedDate);
-	}
-	if ('appellantProofsSubmittedDate' in source) {
-		addEntry(APPEAL_REPRESENTATION_TYPE.PROOFS_EVIDENCE, source.appellantProofsSubmittedDate);
-	}
-	if ('lpaCommentsSubmittedDate' in source) {
-		addEntry(APPEAL_REPRESENTATION_TYPE.FINAL_COMMENT, source.lpaCommentsSubmittedDate);
-	}
-	if ('lpaProofsSubmittedDate' in source) {
-		addEntry(APPEAL_REPRESENTATION_TYPE.PROOFS_EVIDENCE, source.lpaProofsSubmittedDate);
-	}
-	if ('lpaStatementSubmittedDate' in source) {
-		addEntry(APPEAL_REPRESENTATION_TYPE.STATEMENT, source.lpaStatementSubmittedDate);
-	}
+	const s78 = source as AppealS78;
+	addEntry(APPEAL_REPRESENTATION_TYPE.APPELLANT_FINAL_COMMENT, s78.appellantCommentsSubmittedDate);
+	addEntry(APPEAL_REPRESENTATION_TYPE.APPELLANT_STATEMENT, s78.appellantStatementSubmittedDate);
+	addEntry(APPEAL_REPRESENTATION_TYPE.APPELLANT_PROOFS_EVIDENCE, s78.appellantProofsSubmittedDate);
+	addEntry(APPEAL_REPRESENTATION_TYPE.LPA_FINAL_COMMENT, s78.lpaCommentsSubmittedDate);
+	addEntry(APPEAL_REPRESENTATION_TYPE.LPA_PROOFS_EVIDENCE, s78.lpaProofsSubmittedDate);
+	addEntry(APPEAL_REPRESENTATION_TYPE.LPA_STATEMENT, s78.lpaStatementSubmittedDate);
 
 	if (entries.length === 0) return undefined;
 	return { create: entries };

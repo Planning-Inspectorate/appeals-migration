@@ -1353,3 +1353,162 @@ describe('mapSourceToSinkAppeal - LPA Questionnaire Mapping', () => {
 		assert.strictEqual(result.lpaQuestionnaire.create.designatedSiteNames, undefined);
 	});
 });
+
+describe('mapSourceToSinkAppeal - S78 Additional Field Mappings', () => {
+	test('maps S78 timetable fields to AppealTimetable', () => {
+		const source = {
+			...mockAppealHasCase,
+			planningObligationDueDate: '2024-03-01T09:00:00.000Z',
+			finalCommentsDueDate: '2024-03-05T17:00:00.000Z',
+			interestedPartyRepsDueDate: '2024-03-10T17:00:00.000Z',
+			proofsOfEvidenceDueDate: '2024-03-15T17:00:00.000Z',
+			statementDueDate: '2024-03-20T17:00:00.000Z',
+			statementOfCommonGroundDueDate: '2024-03-25T17:00:00.000Z'
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.ok(result.appealTimetable);
+		const timetable = result.appealTimetable.create;
+		assert.strictEqual(timetable.planningObligationDueDate?.toISOString(), '2024-03-01T09:00:00.000Z');
+		assert.strictEqual(timetable.finalCommentsDueDate?.toISOString(), '2024-03-05T17:00:00.000Z');
+		assert.strictEqual(timetable.ipCommentsDueDate?.toISOString(), '2024-03-10T17:00:00.000Z');
+		assert.strictEqual(timetable.proofOfEvidenceAndWitnessesDueDate?.toISOString(), '2024-03-15T17:00:00.000Z');
+		assert.strictEqual(timetable.lpaStatementDueDate?.toISOString(), '2024-03-20T17:00:00.000Z');
+		assert.strictEqual(timetable.statementOfCommonGroundDueDate?.toISOString(), '2024-03-25T17:00:00.000Z');
+	});
+
+	test('omits AppealTimetable when no timetable dates exist', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireDueDate: null,
+			planningObligationDueDate: null,
+			finalCommentsDueDate: null,
+			interestedPartyRepsDueDate: null,
+			proofsOfEvidenceDueDate: null,
+			statementDueDate: null,
+			statementOfCommonGroundDueDate: null
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.strictEqual(result.appealTimetable, undefined);
+	});
+
+	test('maps changedListedBuildingNumbers to listedBuildingDetails with affectsListedBuilding true', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			affectedListedBuildingNumbers: '["1234567"]',
+			changedListedBuildingNumbers: '["7654321","9876543"]'
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.ok(result.lpaQuestionnaire.create.listedBuildingDetails);
+		assert.strictEqual(result.lpaQuestionnaire.create.listedBuildingDetails.create.length, 3);
+
+		// affected building (relies on database default affectsListedBuilding: true)
+		assert.strictEqual(result.lpaQuestionnaire.create.listedBuildingDetails.create[0].listEntry, '1234567');
+
+		// changed buildings (explicit affectsListedBuilding: true)
+		assert.strictEqual(result.lpaQuestionnaire.create.listedBuildingDetails.create[1].listEntry, '7654321');
+		assert.strictEqual(result.lpaQuestionnaire.create.listedBuildingDetails.create[1].affectsListedBuilding, true);
+		assert.strictEqual(result.lpaQuestionnaire.create.listedBuildingDetails.create[2].listEntry, '9876543');
+		assert.strictEqual(result.lpaQuestionnaire.create.listedBuildingDetails.create[2].affectsListedBuilding, true);
+	});
+
+	test('maps representation dates to Representation records', () => {
+		const source = {
+			...mockAppealHasCase,
+			appellantCommentsSubmittedDate: '2024-02-01T10:00:00.000Z',
+			appellantStatementSubmittedDate: '2024-02-02T11:00:00.000Z',
+			appellantProofsSubmittedDate: '2024-02-03T12:00:00.000Z',
+			lpaCommentsSubmittedDate: '2024-02-04T13:00:00.000Z',
+			lpaProofsSubmittedDate: '2024-02-05T14:00:00.000Z',
+			lpaStatementSubmittedDate: '2024-02-06T15:00:00.000Z'
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.ok(result.representations);
+		assert.strictEqual(result.representations.create.length, 6);
+
+		const [appellantFinalComment, appellantStatement, appellantProofs, lpaFinalComment, lpaProofs, lpaStatement] =
+			result.representations.create;
+
+		assert.strictEqual(appellantFinalComment.representationType, 'appellant_final_comment');
+		assert.strictEqual(appellantFinalComment.dateCreated.toISOString(), '2024-02-01T10:00:00.000Z');
+
+		assert.strictEqual(appellantStatement.representationType, 'appellant_statement');
+		assert.strictEqual(appellantStatement.dateCreated.toISOString(), '2024-02-02T11:00:00.000Z');
+
+		assert.strictEqual(appellantProofs.representationType, 'appellant_proofs_evidence');
+		assert.strictEqual(appellantProofs.dateCreated.toISOString(), '2024-02-03T12:00:00.000Z');
+
+		assert.strictEqual(lpaFinalComment.representationType, 'lpa_final_comment');
+		assert.strictEqual(lpaFinalComment.dateCreated.toISOString(), '2024-02-04T13:00:00.000Z');
+
+		assert.strictEqual(lpaProofs.representationType, 'lpa_proofs_evidence');
+		assert.strictEqual(lpaProofs.dateCreated.toISOString(), '2024-02-05T14:00:00.000Z');
+
+		assert.strictEqual(lpaStatement.representationType, 'lpa_statement');
+		assert.strictEqual(lpaStatement.dateCreated.toISOString(), '2024-02-06T15:00:00.000Z');
+	});
+
+	test('omits representations when no representation dates exist', () => {
+		const source = {
+			...mockAppealHasCase,
+			appellantCommentsSubmittedDate: null,
+			appellantStatementSubmittedDate: null,
+			appellantProofsSubmittedDate: null,
+			lpaCommentsSubmittedDate: null,
+			lpaProofsSubmittedDate: null,
+			lpaStatementSubmittedDate: null
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.strictEqual(result.representations, undefined);
+	});
+
+	test('maps enforcementAppealGroundsDetails to AppealGround records', () => {
+		const source = {
+			...mockAppealHasCase,
+			enforcementAppealGroundsDetails:
+				'[{"appealGroundLetter":"a","groundFacts":"Ground A facts"},{"appealGroundLetter":"b","groundFacts":"Ground B facts"},{"appealGroundLetter":null,"groundFacts":"No letter"}]'
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.ok(result.appealGrounds);
+		assert.strictEqual(result.appealGrounds.create.length, 2);
+
+		const groundA = result.appealGrounds.create.find((g) => g.ground.connect.groundRef === 'a');
+		const groundB = result.appealGrounds.create.find((g) => g.ground.connect.groundRef === 'b');
+
+		assert.ok(groundA);
+		assert.strictEqual(groundA.factsForGround, 'Ground A facts');
+		assert.ok(groundB);
+		assert.strictEqual(groundB.factsForGround, 'Ground B facts');
+	});
+
+	test('omits appealGrounds when enforcementAppealGroundsDetails is null or empty', () => {
+		const sourceNull = {
+			...mockAppealHasCase,
+			enforcementAppealGroundsDetails: null
+		};
+
+		const sourceEmpty = {
+			...mockAppealHasCase,
+			enforcementAppealGroundsDetails: '[]'
+		};
+
+		const resultNull = mapSourceToSinkAppeal(sourceNull, mockValidationReasonLookups);
+		const resultEmpty = mapSourceToSinkAppeal(sourceEmpty, mockValidationReasonLookups);
+
+		assert.strictEqual(resultNull.appealGrounds, undefined);
+		assert.strictEqual(resultEmpty.appealGrounds, undefined);
+	});
+});
