@@ -21,6 +21,12 @@ module "function_main" {
   # networking
   integration_subnet_id      = azurerm_subnet.apps.id
   outbound_vnet_connectivity = true
+  inbound_vnet_connectivity  = true
+  private_endpoint = {
+    private_dns_zone_id = data.azurerm_private_dns_zone.app_service.id
+    subnet_id           = azurerm_subnet.main.id
+  }
+
 
   # monitoring
   action_group_ids            = local.action_group_ids
