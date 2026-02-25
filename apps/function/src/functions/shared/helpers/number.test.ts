@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { describe, test } from 'node:test';
-import { parseNumber } from '../number.ts';
+import { parseNumber } from './number.ts';
 
 describe('parseNumber', () => {
 	test('returns undefined for null', () => {

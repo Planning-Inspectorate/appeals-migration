@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { describe, test } from 'node:test';
-import { isNullOrEmpty, normalizeString, stringOrUndefined, trimAndLowercase } from '../string.ts';
+import { isNullOrEmpty, normalizeString, stringOrUndefined, trimAndLowercase } from './string.ts';
 
 describe('normalizeString', () => {
 	test('returns null for null input', () => {
