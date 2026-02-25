@@ -46,6 +46,16 @@ export function buildMigrateData(
 		const caseReference = caseToMigrate.caseReference;
 		context.log(`Processing case: ${caseReference}`);
 
+		const [incompleteReasons, invalidReasons] = await Promise.all([
+			sinkDatabase.appellantCaseIncompleteReason.findMany(),
+			sinkDatabase.appellantCaseInvalidReason.findMany()
+		]);
+
+		const validationReasonLookups = {
+			incomplete: new Map(incompleteReasons.map((reason) => [reason.name, reason.id])),
+			invalid: new Map(invalidReasons.map((reason) => [reason.name, reason.id]))
+		};
+
 		const caseDetails = await source.fetchCaseDetails(sourceDatabase, caseReference);
 
 		if (!caseDetails) {
@@ -55,7 +65,7 @@ export function buildMigrateData(
 		const events = await source.fetchEventDetails(sourceDatabase, caseReference);
 		const serviceUsers = await source.fetchServiceUsers(sourceDatabase, caseReference);
 
-		const mappedAppeal = mappers.mapSourceToSinkAppeal(caseDetails.data, events, serviceUsers);
+		const mappedAppeal = mappers.mapSourceToSinkAppeal(caseDetails.data, validationReasonLookups, events, serviceUsers);
 
 		const result = await sink.upsertAppeal(sinkDatabase, mappedAppeal);
 

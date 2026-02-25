@@ -7,7 +7,11 @@ describe('buildMigrateData', () => {
 	const newService = () => ({
 		databaseClient: { db: 'migration' },
 		sourceDatabaseClient: { db: 'source' },
-		sinkDatabaseClient: { db: 'sink' }
+		sinkDatabaseClient: {
+			db: 'sink',
+			appellantCaseIncompleteReason: { findMany: mock.fn(() => []) },
+			appellantCaseInvalidReason: { findMany: mock.fn(() => []) }
+		}
 	});
 
 	const newSource = () => ({
@@ -110,6 +114,7 @@ describe('buildMigrateData', () => {
 
 		const caseToMigrate = { caseReference: 'CASE-ERR', dataStepId: 99 };
 		const error = new Error('Database connection failed');
+
 		source.fetchCaseDetails.mock.mockImplementationOnce(() => {
 			throw error;
 		});
