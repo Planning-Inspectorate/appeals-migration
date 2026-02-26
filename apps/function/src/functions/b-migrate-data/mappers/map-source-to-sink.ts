@@ -479,6 +479,21 @@ function buildAdvertDetails(
 /**
  * Build appellant case object with all appellant-submitted information
  */
+/**
+ * Converts occupancy conditions met boolean to permission string.
+ *
+ * @param occupancyConditionsMet - Whether occupancy conditions were met
+ * @returns 'yes', 'no', or undefined
+ */
+function convertOccupancyConditionsToPermission(
+	occupancyConditionsMet: boolean | null | undefined
+): 'yes' | 'no' | undefined {
+	if (occupancyConditionsMet === null || occupancyConditionsMet === undefined) {
+		return undefined;
+	}
+	return occupancyConditionsMet ? 'yes' : 'no';
+}
+
 function buildAppellantCase(
 	source: AppealHas | AppealS78,
 	validationReasonLookups: ValidationReasonLookups
@@ -511,6 +526,9 @@ function buildAppellantCase(
 			`Missing required field applicationDecision for case ${source.caseReference}. Cannot create appellant case without application decision.`
 		);
 	}
+
+	const s78 = source as AppealS78;
+
 	return {
 		create: {
 			// Submission dates
@@ -566,7 +584,32 @@ function buildAppellantCase(
 
 			// Advert details relation. This follows the Prisma convention where
 			// the relation name in the create input matches the field name in the model.
-			appellantCaseAdvertDetails: buildAdvertDetails(source)
+			appellantCaseAdvertDetails: buildAdvertDetails(source),
+
+			// AppealS78-specific fields
+			enforcementIssueDate: parseDateOrUndefined(s78.issueDateOfEnforcementNotice),
+			enforcementEffectiveDate: parseDateOrUndefined(s78.effectiveDateOfEnforcementNotice),
+			interestInLand: stringOrUndefined(s78.ownerOccupancyStatus),
+			writtenOrVerbalPermission: convertOccupancyConditionsToPermission(s78.occupancyConditionsMet),
+			appellantProcedurePreference: stringOrUndefined(s78.appellantProcedurePreference),
+			appellantProcedurePreferenceDetails: stringOrUndefined(s78.appellantProcedurePreferenceDetails),
+			appellantProcedurePreferenceDuration: parseNumber(s78.appellantProcedurePreferenceDuration),
+			appellantProcedurePreferenceWitnessCount: parseNumber(s78.appellantProcedurePreferenceWitnessCount),
+			statusPlanningObligation: stringOrUndefined(s78.statusPlanningObligation),
+			agriculturalHolding: s78.agriculturalHolding,
+			tenantAgriculturalHolding: s78.tenantAgriculturalHolding,
+			otherTenantsAgriculturalHolding: s78.otherTenantsAgriculturalHolding,
+			informedTenantsAgriculturalHolding: s78.informedTenantsAgriculturalHolding,
+			applicationDecisionAppealed: s78.didAppellantAppealLpaDecision,
+			enforcementReference: stringOrUndefined(s78.enforcementNoticeReference),
+			descriptionOfAllegedBreach: stringOrUndefined(s78.descriptionOfAllegedBreach),
+			contactPlanningInspectorateDate: parseDateOrUndefined(s78.dateAppellantContactedPins),
+			applicationMadeAndFeePaid: s78.applicationMadeAndFeePaid,
+			applicationDevelopmentAllOrPart: stringOrUndefined(s78.applicationPartOrWholeDevelopment),
+			developmentType: stringOrUndefined(s78.developmentType),
+			numberOfResidencesNetChange: parseNumber(s78.numberOfResidencesNetChange),
+			siteViewableFromRoad: s78.siteViewableFromRoad,
+			appealDecisionDate: parseDateOrUndefined(s78.dateLpaDecisionReceived)
 		}
 	};
 }

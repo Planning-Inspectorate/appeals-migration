@@ -1354,6 +1354,206 @@ describe('mapSourceToSinkAppeal - LPA Questionnaire Mapping', () => {
 	});
 });
 
+describe('mapSourceToSinkAppeal - AppealS78 Appellant Case Fields', () => {
+	test('maps S78 enforcement fields', () => {
+		const source = {
+			...mockAppealHasCase,
+			issueDateOfEnforcementNotice: '2024-01-10T00:00:00.000Z',
+			effectiveDateOfEnforcementNotice: '2024-01-20T00:00:00.000Z',
+			enforcementNoticeReference: 'ENF/2024/001',
+			descriptionOfAllegedBreach: 'Unauthorized building works',
+			dateAppellantContactedPins: '2024-01-15T00:00:00.000Z'
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.ok(result.appellantCase);
+		const appellantCase = result.appellantCase.create;
+		assert.strictEqual(appellantCase.enforcementIssueDate?.toISOString(), '2024-01-10T00:00:00.000Z');
+		assert.strictEqual(appellantCase.enforcementEffectiveDate?.toISOString(), '2024-01-20T00:00:00.000Z');
+		assert.strictEqual(appellantCase.enforcementReference, 'ENF/2024/001');
+		assert.strictEqual(appellantCase.descriptionOfAllegedBreach, 'Unauthorized building works');
+		assert.strictEqual(appellantCase.contactPlanningInspectorateDate?.toISOString(), '2024-01-15T00:00:00.000Z');
+	});
+
+	test('maps S78 appeal decision date', () => {
+		const source = {
+			...mockAppealHasCase,
+			dateLpaDecisionReceived: '2024-02-15T00:00:00.000Z'
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.ok(result.appellantCase);
+		const appellantCase = result.appellantCase.create;
+		assert.strictEqual(appellantCase.appealDecisionDate?.toISOString(), '2024-02-15T00:00:00.000Z');
+	});
+
+	test('maps S78 didAppellantAppealLpaDecision', () => {
+		const source = {
+			...mockAppealHasCase,
+			didAppellantAppealLpaDecision: true
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.ok(result.appellantCase);
+		const appellantCase = result.appellantCase.create;
+		assert.strictEqual(appellantCase.applicationDecisionAppealed, true);
+	});
+
+	test('maps S78 land ownership and permission fields', () => {
+		const source = {
+			...mockAppealHasCase,
+			ownerOccupancyStatus: 'Owner',
+			occupancyConditionsMet: true
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.ok(result.appellantCase);
+		const appellantCase = result.appellantCase.create;
+		assert.strictEqual(appellantCase.interestInLand, 'Owner');
+		assert.strictEqual(appellantCase.writtenOrVerbalPermission, 'yes');
+	});
+
+	test('converts occupancyConditionsMet false to no', () => {
+		const source = {
+			...mockAppealHasCase,
+			occupancyConditionsMet: false
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.ok(result.appellantCase);
+		assert.strictEqual(result.appellantCase.create.writtenOrVerbalPermission, 'no');
+	});
+
+	test('preserves null for occupancyConditionsMet', () => {
+		const source = {
+			...mockAppealHasCase,
+			occupancyConditionsMet: null
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.ok(result.appellantCase);
+		assert.strictEqual(result.appellantCase.create.writtenOrVerbalPermission, undefined);
+	});
+
+	test('maps S78 procedure preference fields', () => {
+		const source = {
+			...mockAppealHasCase,
+			appellantProcedurePreference: 'hearing',
+			appellantProcedurePreferenceDetails: 'Prefer hearing due to complexity',
+			appellantProcedurePreferenceDuration: new Prisma.Decimal(5),
+			appellantProcedurePreferenceWitnessCount: new Prisma.Decimal(3)
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.ok(result.appellantCase);
+		const appellantCase = result.appellantCase.create;
+		assert.strictEqual(appellantCase.appellantProcedurePreference, 'hearing');
+		assert.strictEqual(appellantCase.appellantProcedurePreferenceDetails, 'Prefer hearing due to complexity');
+		assert.strictEqual(appellantCase.appellantProcedurePreferenceDuration, 5);
+		assert.strictEqual(appellantCase.appellantProcedurePreferenceWitnessCount, 3);
+	});
+
+	test('maps S78 agricultural holding fields', () => {
+		const source = {
+			...mockAppealHasCase,
+			agriculturalHolding: true,
+			tenantAgriculturalHolding: true,
+			otherTenantsAgriculturalHolding: false,
+			informedTenantsAgriculturalHolding: true
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.ok(result.appellantCase);
+		const appellantCase = result.appellantCase.create;
+		assert.strictEqual(appellantCase.agriculturalHolding, true);
+		assert.strictEqual(appellantCase.tenantAgriculturalHolding, true);
+		assert.strictEqual(appellantCase.otherTenantsAgriculturalHolding, false);
+		assert.strictEqual(appellantCase.informedTenantsAgriculturalHolding, true);
+	});
+
+	test('maps S78 planning and development fields', () => {
+		const source = {
+			...mockAppealHasCase,
+			statusPlanningObligation: 'Completed',
+			applicationMadeAndFeePaid: true,
+			applicationPartOrWholeDevelopment: 'whole',
+			developmentType: 'residential',
+			numberOfResidencesNetChange: new Prisma.Decimal(5),
+			siteViewableFromRoad: true
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.ok(result.appellantCase);
+		const appellantCase = result.appellantCase.create;
+		assert.strictEqual(appellantCase.statusPlanningObligation, 'Completed');
+		assert.strictEqual(appellantCase.applicationMadeAndFeePaid, true);
+		assert.strictEqual(appellantCase.applicationDevelopmentAllOrPart, 'whole');
+		assert.strictEqual(appellantCase.developmentType, 'residential');
+		assert.strictEqual(appellantCase.numberOfResidencesNetChange, 5);
+		assert.strictEqual(appellantCase.siteViewableFromRoad, true);
+	});
+
+	test('handles null S78 fields gracefully', () => {
+		const source = {
+			...mockAppealHasCase,
+			issueDateOfEnforcementNotice: null,
+			effectiveDateOfEnforcementNotice: null,
+			ownerOccupancyStatus: null,
+			occupancyConditionsMet: null,
+			appellantProcedurePreference: null,
+			appellantProcedurePreferenceDetails: null,
+			appellantProcedurePreferenceDuration: null,
+			appellantProcedurePreferenceWitnessCount: null,
+			statusPlanningObligation: null,
+			agriculturalHolding: null,
+			tenantAgriculturalHolding: null,
+			otherTenantsAgriculturalHolding: null,
+			informedTenantsAgriculturalHolding: null,
+			didAppellantAppealLpaDecision: null,
+			enforcementNoticeReference: null,
+			descriptionOfAllegedBreach: null,
+			dateAppellantContactedPins: null,
+			applicationMadeAndFeePaid: null,
+			applicationPartOrWholeDevelopment: null,
+			developmentType: null,
+			numberOfResidencesNetChange: null,
+			siteViewableFromRoad: null,
+			dateLpaDecisionReceived: null
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.ok(result.appellantCase);
+		const appellantCase = result.appellantCase.create;
+		assert.strictEqual(appellantCase.enforcementIssueDate, undefined);
+		assert.strictEqual(appellantCase.enforcementEffectiveDate, undefined);
+		assert.strictEqual(appellantCase.interestInLand, undefined);
+		assert.strictEqual(appellantCase.writtenOrVerbalPermission, undefined);
+		assert.strictEqual(appellantCase.appellantProcedurePreference, undefined);
+		assert.strictEqual(appellantCase.agriculturalHolding, null);
+		assert.strictEqual(appellantCase.tenantAgriculturalHolding, null);
+		assert.strictEqual(appellantCase.otherTenantsAgriculturalHolding, null);
+		assert.strictEqual(appellantCase.informedTenantsAgriculturalHolding, null);
+		assert.strictEqual(appellantCase.applicationDecisionAppealed, null);
+		assert.strictEqual(appellantCase.applicationMadeAndFeePaid, null);
+		assert.strictEqual(appellantCase.enforcementReference, undefined);
+		assert.strictEqual(appellantCase.descriptionOfAllegedBreach, undefined);
+		assert.strictEqual(appellantCase.contactPlanningInspectorateDate, undefined);
+		assert.strictEqual(appellantCase.applicationDevelopmentAllOrPart, undefined);
+		assert.strictEqual(appellantCase.developmentType, undefined);
+		assert.strictEqual(appellantCase.siteViewableFromRoad, null);
+		assert.strictEqual(appellantCase.appealDecisionDate, undefined);
+	});
+});
 describe('mapSourceToSinkAppeal - S78 Additional Field Mappings', () => {
 	test('maps S78 timetable fields to AppealTimetable', () => {
 		const source = {
