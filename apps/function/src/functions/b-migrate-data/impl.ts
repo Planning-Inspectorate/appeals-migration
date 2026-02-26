@@ -46,14 +46,16 @@ export function buildMigrateData(
 		const caseReference = caseToMigrate.caseReference;
 		context.log(`Processing case: ${caseReference}`);
 
-		const [incompleteReasons, invalidReasons] = await Promise.all([
+		const [incompleteReasons, invalidReasons, lpaIncompleteReasons] = await Promise.all([
 			sinkDatabase.appellantCaseIncompleteReason.findMany(),
-			sinkDatabase.appellantCaseInvalidReason.findMany()
+			sinkDatabase.appellantCaseInvalidReason.findMany(),
+			sinkDatabase.lPAQuestionnaireIncompleteReason.findMany()
 		]);
 
 		const validationReasonLookups = {
 			incomplete: new Map(incompleteReasons.map((reason) => [reason.name, reason.id])),
-			invalid: new Map(invalidReasons.map((reason) => [reason.name, reason.id]))
+			invalid: new Map(invalidReasons.map((reason) => [reason.name, reason.id])),
+			lpaIncomplete: new Map(lpaIncompleteReasons.map((reason) => [reason.name, reason.id]))
 		};
 
 		const caseDetails = await source.fetchCaseDetails(sourceDatabase, caseReference);

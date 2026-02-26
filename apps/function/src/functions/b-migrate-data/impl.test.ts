@@ -10,7 +10,8 @@ describe('buildMigrateData', () => {
 		sinkDatabaseClient: {
 			db: 'sink',
 			appellantCaseIncompleteReason: { findMany: mock.fn(() => []) },
-			appellantCaseInvalidReason: { findMany: mock.fn(() => []) }
+			appellantCaseInvalidReason: { findMany: mock.fn(() => []) },
+			lPAQuestionnaireIncompleteReason: { findMany: mock.fn(() => []) }
 		}
 	});
 

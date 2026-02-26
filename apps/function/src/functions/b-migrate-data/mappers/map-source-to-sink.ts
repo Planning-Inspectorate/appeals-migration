@@ -120,6 +120,7 @@ function buildAppealStatus(source: AppealHas | AppealS78) {
 	addUniqueStatus(APPEAL_CASE_STATUS.EVENT, source.lpaQuestionnairePublishedDate, false);
 	addUniqueStatus(APPEAL_CASE_STATUS.WITHDRAWN, source.caseWithdrawnDate, false);
 	addUniqueStatus(APPEAL_CASE_STATUS.TRANSFERRED, source.caseTransferredDate, false);
+	addUniqueStatus(APPEAL_CASE_STATUS.CLOSED, source.transferredCaseClosedDate, false);
 	addUniqueStatus(APPEAL_CASE_STATUS.COMPLETE, source.caseCompletedDate, false);
 
 	return { create: statuses };
@@ -238,7 +239,7 @@ function buildListedBuildingDetails(source: AppealHas | AppealS78) {
 	);
 
 	const entries = [
-		...affectedNumbers.map((listEntry) => ({ listEntry })),
+		...affectedNumbers.map((listEntry) => ({ listEntry, affectsListedBuilding: true })),
 		...changedNumbers.map((listEntry) => ({ listEntry, affectsListedBuilding: true }))
 	];
 
@@ -311,7 +312,7 @@ function buildDesignatedSites(source: AppealHas | AppealS78) {
 /**
  * Build LPA questionnaire object
  */
-function buildLpaQuestionnaire(source: AppealHas | AppealS78) {
+function buildLpaQuestionnaire(source: AppealHas | AppealS78, validationReasonLookups: ValidationReasonLookups) {
 	const create = {
 		lpaQuestionnaireSubmittedDate: parseDateOrUndefined(source.lpaQuestionnaireSubmittedDate),
 		lpaqCreatedDate: parseDateOrUndefined(source.lpaQuestionnaireCreatedDate),
@@ -344,6 +345,12 @@ function buildLpaQuestionnaire(source: AppealHas | AppealS78) {
 		wasApplicationRefusedDueToHighwayOrTraffic: source.wasApplicationRefusedDueToHighwayOrTraffic ?? undefined,
 		didAppellantSubmitCompletePhotosAndPlans: source.didAppellantSubmitCompletePhotosAndPlans ?? undefined,
 		lpaQuestionnaireValidationOutcome: buildLpaValidationOutcome(source),
+		lpaQuestionnaireIncompleteReasonsSelected:
+			buildValidationReasons<Prisma.LPAQuestionnaireIncompleteReasonsSelectedCreateWithoutLpaQuestionnaireInput>(
+				source.lpaQuestionnaireValidationDetails,
+				validationReasonLookups.lpaIncomplete,
+				VALIDATION_REASON_CONFIGS.lpaIncomplete
+			),
 		lpaNotificationMethods: buildLpaNotificationMethods(source),
 		listedBuildingDetails: buildListedBuildingDetails(source),
 		designatedSiteNames: buildDesignatedSites(source)
@@ -388,22 +395,37 @@ const buildAppealType = connectLookupByKey;
 const buildProcedureType = connectLookupByKey;
 
 /**
+ * Type for validation reason configuration
+ */
+type ValidationReasonConfig = {
+	fieldName: string;
+	reasonField: 'appellantCaseIncompleteReason' | 'appellantCaseInvalidReason' | 'lpaQuestionnaireIncompleteReason';
+	textField:
+		| 'appellantCaseIncompleteReasonText'
+		| 'appellantCaseInvalidReasonText'
+		| 'lpaQuestionnaireIncompleteReasonText';
+};
+
+/**
  * Configuration constants for validation reason mapping
  */
-const VALIDATION_REASON_CONFIGS = {
+const VALIDATION_REASON_CONFIGS: Record<string, ValidationReasonConfig> = {
 	incomplete: {
 		fieldName: 'caseValidationIncompleteDetails',
-		tableName: 'appellantCaseIncompleteReason',
 		reasonField: 'appellantCaseIncompleteReason',
 		textField: 'appellantCaseIncompleteReasonText'
 	},
 	invalid: {
 		fieldName: 'caseValidationInvalidDetails',
-		tableName: 'appellantCaseInvalidReason',
 		reasonField: 'appellantCaseInvalidReason',
 		textField: 'appellantCaseInvalidReasonText'
+	},
+	lpaIncomplete: {
+		fieldName: 'lpaQuestionnaireValidationDetails',
+		reasonField: 'lpaQuestionnaireIncompleteReason',
+		textField: 'lpaQuestionnaireIncompleteReasonText'
 	}
-} as const;
+};
 
 /**
  * Generic helper to build validation reasons (incomplete or invalid)
@@ -421,11 +443,7 @@ const VALIDATION_REASON_CONFIGS = {
 function buildValidationReasons<ValidationInput>(
 	details: string | null | undefined,
 	reasonLookupMap: Map<string, number>,
-	config: {
-		fieldName: string;
-		reasonField: 'appellantCaseIncompleteReason' | 'appellantCaseInvalidReason';
-		textField: 'appellantCaseIncompleteReasonText' | 'appellantCaseInvalidReasonText';
-	}
+	config: ValidationReasonConfig
 ): { create: ValidationInput[] } | undefined {
 	const parsedDetails = parseJsonArray<string>(details, config.fieldName);
 
@@ -627,6 +645,31 @@ function buildUserConnection(userId: string | null | undefined) {
 	};
 }
 
+/**
+ * Build parent appeal relation for linked cases where this case is the child
+ */
+function buildParentAppealRelation(source: AppealHas | AppealS78) {
+	if (source.linkedCaseStatus !== 'child') return undefined;
+
+	if (!source.leadCaseReference) {
+		throw new Error(
+			`Case ${source.caseReference} has linkedCaseStatus='child' but is missing leadCaseReference. Data integrity issue.`
+		);
+	}
+
+	if (!source.caseReference) return undefined;
+
+	return {
+		create: [
+			{
+				type: 'linked',
+				parentRef: source.leadCaseReference,
+				childRef: source.caseReference
+			}
+		]
+	};
+}
+
 function buildPadsInspector(padsSapId: string | null | undefined) {
 	if (!padsSapId) return;
 	return {
@@ -643,6 +686,7 @@ function buildPadsInspector(padsSapId: string | null | undefined) {
 export type ValidationReasonLookups = {
 	incomplete: Map<string, number>;
 	invalid: Map<string, number>;
+	lpaIncomplete: Map<string, number>;
 };
 
 /**
@@ -694,8 +738,9 @@ export function mapSourceToSinkAppeal(
 		inspectorDecision: buildInspectorDecision(sourceCase),
 		appellantCase: buildAppellantCase(sourceCase, validationReasonLookups),
 		childAppeals: parseNearbyCaseReferences(sourceCase.caseReference, sourceCase.nearbyCaseReferences),
+		parentAppeals: buildParentAppealRelation(sourceCase),
 		neighbouringSites: parseNeighbouringSiteAddresses(sourceCase),
-		lpaQuestionnaire: buildLpaQuestionnaire(sourceCase),
+		lpaQuestionnaire: buildLpaQuestionnaire(sourceCase, validationReasonLookups),
 		representations: buildRepresentations(sourceCase),
 		appealGrounds: buildAppealGrounds(sourceCase)
 	};

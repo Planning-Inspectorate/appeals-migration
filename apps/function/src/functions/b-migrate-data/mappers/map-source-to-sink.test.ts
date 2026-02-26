@@ -96,7 +96,7 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 		const currentStatus = result.appealStatus.create.find((s) => s.valid === true);
 		assert.ok(currentStatus);
 		assert.strictEqual(currentStatus.status, 'ready_to_start');
-		assert.ok(currentStatus.createdAt instanceof Date);
+		assert.strictEqual(currentStatus.createdAt?.toISOString(), '2024-01-20T14:30:00.000Z');
 	});
 
 	test('creates multiple appeal statuses based on available dates', () => {
@@ -157,7 +157,10 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 		const result = mapSourceToSinkAppeal(mockAppealHasCase, mockValidationReasonLookups);
 
 		assert.ok(result.appealTimetable);
-		assert.ok(result.appealTimetable.create.lpaQuestionnaireDueDate instanceof Date);
+		assert.strictEqual(
+			result.appealTimetable.create.lpaQuestionnaireDueDate?.toISOString(),
+			'2024-02-15T23:59:59.000Z'
+		);
 	});
 
 	test('does not create appeal timetable when both dates are null', () => {
@@ -171,7 +174,10 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 
 		assert.ok(result.inspectorDecision);
 		assert.strictEqual(result.inspectorDecision.create.outcome, 'allowed');
-		assert.ok(result.inspectorDecision.create.caseDecisionOutcomeDate instanceof Date);
+		assert.strictEqual(
+			result.inspectorDecision.create.caseDecisionOutcomeDate?.toISOString(),
+			'2024-03-01T10:00:00.000Z'
+		);
 	});
 
 	test('handles nearby case references', () => {
@@ -182,6 +188,50 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 		assert.strictEqual(result.childAppeals.create[0].type, 'related');
 		assert.strictEqual(result.childAppeals.create[0].parentRef, 'APP/HAS/2024/001');
 		assert.strictEqual(result.childAppeals.create[0].childRef, 'APP/2024/100');
+	});
+
+	test('builds parentAppeals relation when linkedCaseStatus is child', () => {
+		const source = {
+			...mockAppealHasCase,
+			linkedCaseStatus: 'child',
+			leadCaseReference: 'APP/HAS/2024/LEAD'
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.ok(result.parentAppeals);
+		assert.strictEqual(result.parentAppeals.create.length, 1);
+		assert.strictEqual(result.parentAppeals.create[0].type, 'linked');
+		assert.strictEqual(result.parentAppeals.create[0].parentRef, 'APP/HAS/2024/LEAD');
+		assert.strictEqual(result.parentAppeals.create[0].childRef, 'APP/HAS/2024/001');
+	});
+
+	test('omits parentAppeals when linkedCaseStatus is not child', () => {
+		const source = {
+			...mockAppealHasCase,
+			linkedCaseStatus: 'lead',
+			leadCaseReference: 'APP/HAS/2024/LEAD'
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.strictEqual(result.parentAppeals, undefined);
+	});
+
+	test('throws error when linkedCaseStatus is child but leadCaseReference is missing', () => {
+		const source = {
+			...mockAppealHasCase,
+			linkedCaseStatus: 'child',
+			leadCaseReference: null
+		};
+
+		assert.throws(
+			() => mapSourceToSinkAppeal(source, mockValidationReasonLookups),
+			{
+				message: /has linkedCaseStatus='child' but is missing leadCaseReference/
+			},
+			'Should throw error when child case is missing parent reference'
+		);
 	});
 
 	test('handles optional fields gracefully', () => {
@@ -457,13 +507,16 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 		const result = mapSourceToSinkAppeal(MockCases.mockCaseWithLpaDate, mockValidationReasonLookups);
 
 		assert.ok(result.appealTimetable);
-		assert.ok(result.appealTimetable.create.lpaQuestionnaireDueDate instanceof Date);
+		assert.strictEqual(
+			result.appealTimetable.create.lpaQuestionnaireDueDate?.toISOString(),
+			'2024-06-01T10:00:00.000Z'
+		);
 	});
 
 	test('maps caseExtensionDate when populated', () => {
 		const result = mapSourceToSinkAppeal(MockCases.mockCaseWithExtension, mockValidationReasonLookups);
 
-		assert.ok(result.caseExtensionDate instanceof Date);
+		assert.strictEqual(result.caseExtensionDate?.toISOString(), '2024-05-15T10:00:00.000Z');
 	});
 
 	test('creates COMPLETE status when caseCompletedDate is populated', () => {
@@ -471,8 +524,29 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 
 		const completeStatus = result.appealStatus?.create.find((s) => s.status === APPEAL_CASE_STATUS.COMPLETE);
 		assert.ok(completeStatus);
-		assert.ok(completeStatus.createdAt instanceof Date);
+		assert.strictEqual(completeStatus.createdAt?.toISOString(), '2024-08-01T10:00:00.000Z');
 		assert.strictEqual(completeStatus.valid, false);
+	});
+
+	test('creates CLOSED status when transferredCaseClosedDate is populated', () => {
+		const source = {
+			...mockAppealHasCase,
+			transferredCaseClosedDate: '2024-04-01T10:00:00.000Z'
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		const closedStatus = result.appealStatus?.create.find((s) => s.status === APPEAL_CASE_STATUS.CLOSED);
+		assert.ok(closedStatus);
+		assert.strictEqual(closedStatus.createdAt?.toISOString(), '2024-04-01T10:00:00.000Z');
+		assert.strictEqual(closedStatus.valid, false);
+	});
+
+	test('does not create CLOSED status when transferredCaseClosedDate is null', () => {
+		const result = mapSourceToSinkAppeal(mockAppealHasCase, mockValidationReasonLookups);
+
+		const closedStatus = result.appealStatus?.create.find((s) => s.status === APPEAL_CASE_STATUS.CLOSED);
+		assert.strictEqual(closedStatus, undefined);
 	});
 
 	test('creates WITHDRAWN status when caseWithdrawnDate is populated', () => {
@@ -480,7 +554,7 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 
 		const withdrawnStatus = result.appealStatus?.create.find((s) => s.status === APPEAL_CASE_STATUS.WITHDRAWN);
 		assert.ok(withdrawnStatus);
-		assert.ok(withdrawnStatus.createdAt instanceof Date);
+		assert.strictEqual(withdrawnStatus.createdAt?.toISOString(), '2024-07-15T10:00:00.000Z');
 		assert.strictEqual(withdrawnStatus.valid, false);
 	});
 
@@ -1039,8 +1113,11 @@ describe('mapSourceToSinkAppeal - LPA Questionnaire Mapping', () => {
 		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
 
 		assert.ok(result.lpaQuestionnaire);
-		assert.ok(result.lpaQuestionnaire.create.lpaQuestionnaireSubmittedDate instanceof Date);
-		assert.ok(result.lpaQuestionnaire.create.lpaqCreatedDate instanceof Date);
+		assert.strictEqual(
+			result.lpaQuestionnaire.create.lpaQuestionnaireSubmittedDate?.toISOString(),
+			'2024-02-10T10:00:00.000Z'
+		);
+		assert.strictEqual(result.lpaQuestionnaire.create.lpaqCreatedDate?.toISOString(), '2024-02-05T09:00:00.000Z');
 	});
 
 	test('does not set lpaqCreatedDate when lpaQuestionnaireCreatedDate is null', () => {
@@ -1207,11 +1284,20 @@ describe('mapSourceToSinkAppeal - LPA Questionnaire Mapping', () => {
 		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
 
 		assert.ok(result.lpaQuestionnaire);
-		assert.ok(result.lpaQuestionnaire.create.dateCostsReportDespatched instanceof Date);
-		assert.ok(result.lpaQuestionnaire.create.dateNotRecoveredOrDerecovered instanceof Date);
-		assert.ok(result.lpaQuestionnaire.create.dateRecovered instanceof Date);
-		assert.ok(result.lpaQuestionnaire.create.originalCaseDecisionDate instanceof Date);
-		assert.ok(result.lpaQuestionnaire.create.targetDate instanceof Date);
+		assert.strictEqual(
+			result.lpaQuestionnaire.create.dateCostsReportDespatched?.toISOString(),
+			'2024-03-01T00:00:00.000Z'
+		);
+		assert.strictEqual(
+			result.lpaQuestionnaire.create.dateNotRecoveredOrDerecovered?.toISOString(),
+			'2024-03-05T00:00:00.000Z'
+		);
+		assert.strictEqual(result.lpaQuestionnaire.create.dateRecovered?.toISOString(), '2024-03-10T00:00:00.000Z');
+		assert.strictEqual(
+			result.lpaQuestionnaire.create.originalCaseDecisionDate?.toISOString(),
+			'2023-12-01T00:00:00.000Z'
+		);
+		assert.strictEqual(result.lpaQuestionnaire.create.targetDate?.toISOString(), '2024-06-01T00:00:00.000Z');
 	});
 
 	test('maps string fields', () => {
@@ -1289,7 +1375,9 @@ describe('mapSourceToSinkAppeal - LPA Questionnaire Mapping', () => {
 		assert.ok(result.lpaQuestionnaire.create.listedBuildingDetails);
 		assert.strictEqual(result.lpaQuestionnaire.create.listedBuildingDetails.create.length, 2);
 		assert.strictEqual(result.lpaQuestionnaire.create.listedBuildingDetails.create[0].listEntry, '1234567');
+		assert.strictEqual(result.lpaQuestionnaire.create.listedBuildingDetails.create[0].affectsListedBuilding, true);
 		assert.strictEqual(result.lpaQuestionnaire.create.listedBuildingDetails.create[1].listEntry, '7654321');
+		assert.strictEqual(result.lpaQuestionnaire.create.listedBuildingDetails.create[1].affectsListedBuilding, true);
 	});
 
 	test('omits listedBuildingDetails when affectedListedBuildingNumbers is null', () => {
@@ -1351,6 +1439,55 @@ describe('mapSourceToSinkAppeal - LPA Questionnaire Mapping', () => {
 
 		assert.ok(result.lpaQuestionnaire);
 		assert.strictEqual(result.lpaQuestionnaire.create.designatedSiteNames, undefined);
+	});
+
+	test('maps lpaQuestionnaireValidationDetails to lpaQuestionnaireIncompleteReasonsSelected', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			lpaQuestionnaireValidationDetails: '["Missing documents", "Incorrect fee: Wrong amount"]'
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.ok(result.lpaQuestionnaire.create.lpaQuestionnaireIncompleteReasonsSelected);
+		const selected = result.lpaQuestionnaire.create.lpaQuestionnaireIncompleteReasonsSelected.create;
+		assert.strictEqual(selected.length, 2);
+
+		// First reason without text
+		assert.strictEqual(selected[0].lpaQuestionnaireIncompleteReason.connect.id, 1);
+		assert.strictEqual(selected[0].lpaQuestionnaireIncompleteReasonText, undefined);
+
+		// Second reason with text
+		assert.strictEqual(selected[1].lpaQuestionnaireIncompleteReason.connect.id, 2);
+		assert.ok(selected[1].lpaQuestionnaireIncompleteReasonText);
+		assert.strictEqual(selected[1].lpaQuestionnaireIncompleteReasonText.create[0].text, 'Wrong amount');
+	});
+
+	test('omits lpaQuestionnaireIncompleteReasonsSelected when lpaQuestionnaireValidationDetails is null', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			lpaQuestionnaireValidationDetails: null
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.strictEqual(result.lpaQuestionnaire.create.lpaQuestionnaireIncompleteReasonsSelected, undefined);
+	});
+
+	test('throws error for unknown lpaQuestionnaire incomplete reason', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			lpaQuestionnaireValidationDetails: '["Unknown reason that does not exist"]'
+		};
+
+		assert.throws(() => mapSourceToSinkAppeal(source, mockValidationReasonLookups), {
+			message: /Unknown lpaquestionnairevalidationdetails reason: "Unknown reason that does not exist"/
+		});
 	});
 });
 
