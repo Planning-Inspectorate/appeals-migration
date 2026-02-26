@@ -15,5 +15,10 @@ export const mockValidationReasonLookups: ValidationReasonLookups = {
 		['Appeal has not been submitted on time', 1],
 		['Documents have not been submitted on time', 2],
 		['Other', 3]
+	]),
+	lpaIncomplete: new Map([
+		['Missing documents', 1],
+		['Incorrect fee', 2],
+		['Additional information required', 3]
 	])
 };
