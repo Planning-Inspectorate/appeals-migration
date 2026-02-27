@@ -9,6 +9,7 @@ import type { PrismaClient as SinkPrismaClient } from '@pins/manage-appeals-data
 import { newOdwDatabaseClient } from '@pins/odw-curated-database';
 import type { PrismaClient as SourcePrismaClient } from '@pins/odw-curated-database/src/client/client.ts';
 import type { Config } from './config.ts';
+import type { SourceDocumentClient } from './types.ts';
 
 /**
  * This class encapsulates all the services and clients for the application
@@ -16,7 +17,7 @@ import type { Config } from './config.ts';
 export class FunctionService {
 	#config: Config;
 	databaseClient: MigrationPrismaClient;
-	horizonWebClient: HorizonWebClient;
+	sourceDocumentClient: SourceDocumentClient;
 	sourceDatabaseClient: SourcePrismaClient;
 	sinkDatabaseClient: SinkPrismaClient;
 	sinkBlobContainerClient: ContainerClient;
@@ -46,7 +47,7 @@ export class FunctionService {
 		);
 		this.sinkBlobContainerClient = blobClient.getContainerClient(config.manageAppeals.documents.containerName);
 
-		this.horizonWebClient = new HorizonWebClient(config.horizon);
+		this.sourceDocumentClient = new HorizonWebClient(config.horizon);
 	}
 
 	get aListCasesToMigrateSchedule() {
