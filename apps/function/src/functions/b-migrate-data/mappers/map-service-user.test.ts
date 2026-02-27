@@ -106,12 +106,24 @@ describe('getServiceUserRole', () => {
 		assert.strictEqual(result.serviceUserType, null);
 	});
 
-	test('handles unknown service user type', () => {
+	test('identifies interested party correctly', () => {
 		const result = getServiceUserRole({ serviceUserType: SERVICE_USER_TYPE.INTERESTED_PARTY });
 
 		assert.strictEqual(result.isAppellant, false);
 		assert.strictEqual(result.isAgent, false);
+		assert.strictEqual(result.isInterestedParty, true);
+		assert.strictEqual(result.isRule6Party, false);
 		assert.strictEqual(result.serviceUserType, SERVICE_USER_TYPE.INTERESTED_PARTY);
+	});
+
+	test('identifies rule 6 party correctly', () => {
+		const result = getServiceUserRole({ serviceUserType: SERVICE_USER_TYPE.RULE_6_PARTY });
+
+		assert.strictEqual(result.isAppellant, false);
+		assert.strictEqual(result.isAgent, false);
+		assert.strictEqual(result.isInterestedParty, false);
+		assert.strictEqual(result.isRule6Party, true);
+		assert.strictEqual(result.serviceUserType, SERVICE_USER_TYPE.RULE_6_PARTY);
 	});
 });
 
@@ -124,11 +136,13 @@ describe('mapServiceUsersToAppealRelations', () => {
 
 		const result = mapServiceUsersToAppealRelations(serviceUsers);
 
-		assert.ok(result.appellant);
+		assert.strictEqual(typeof result.appellant, 'object');
+		assert.notStrictEqual(result.appellant, null);
 		assert.strictEqual(result.appellant.firstName, 'John');
 		assert.strictEqual(result.appellant.email, 'appellant@example.com');
 
-		assert.ok(result.agent);
+		assert.strictEqual(typeof result.agent, 'object');
+		assert.notStrictEqual(result.agent, null);
 		assert.strictEqual(result.agent.firstName, 'Jane');
 		assert.strictEqual(result.agent.email, 'agent@example.com');
 	});
@@ -136,7 +150,8 @@ describe('mapServiceUsersToAppealRelations', () => {
 	test('handles only appellant present', () => {
 		const result = mapServiceUsersToAppealRelations([{ serviceUserType: SERVICE_USER_TYPE.APPELLANT }]);
 
-		assert.ok(result.appellant);
+		assert.strictEqual(typeof result.appellant, 'object');
+		assert.notStrictEqual(result.appellant, null);
 		assert.strictEqual(result.agent, undefined);
 	});
 
@@ -144,7 +159,8 @@ describe('mapServiceUsersToAppealRelations', () => {
 		const result = mapServiceUsersToAppealRelations([{ serviceUserType: SERVICE_USER_TYPE.AGENT }]);
 
 		assert.strictEqual(result.appellant, undefined);
-		assert.ok(result.agent);
+		assert.strictEqual(typeof result.agent, 'object');
+		assert.notStrictEqual(result.agent, null);
 	});
 
 	test('handles empty array', () => {
@@ -187,15 +203,82 @@ describe('mapServiceUsersToAppealRelations', () => {
 	});
 
 	test('throws error for unknown service user types', () => {
-		const serviceUsers = [{ serviceUserType: SERVICE_USER_TYPE.INTERESTED_PARTY }];
+		const serviceUsers = [{ serviceUserType: SERVICE_USER_TYPE.APPLICANT }];
 
 		assert.throws(
 			() => {
 				mapServiceUsersToAppealRelations(serviceUsers);
 			},
 			{
-				message: /Unknown service user type: InterestedParty/
+				message: /Unknown service user type: Applicant/
 			}
 		);
+	});
+
+	test('maps interested party to representation', () => {
+		const serviceUsers = [
+			{
+				firstName: 'Alice',
+				emailAddress: 'interested@example.com',
+				serviceUserType: SERVICE_USER_TYPE.INTERESTED_PARTY
+			}
+		];
+
+		const result = mapServiceUsersToAppealRelations(serviceUsers);
+
+		assert.strictEqual(Array.isArray(result.interestedPartyRepresentations), true);
+		assert.strictEqual(result.interestedPartyRepresentations.length, 1);
+		assert.strictEqual(result.interestedPartyRepresentations[0].representationType, 'comment');
+		assert.strictEqual(typeof result.interestedPartyRepresentations[0].represented, 'object');
+		assert.notStrictEqual(result.interestedPartyRepresentations[0].represented, null);
+		assert.strictEqual(typeof result.interestedPartyRepresentations[0].represented.create, 'object');
+		assert.notStrictEqual(result.interestedPartyRepresentations[0].represented.create, null);
+		assert.strictEqual(result.interestedPartyRepresentations[0].represented.create.firstName, 'Alice');
+		assert.strictEqual(result.interestedPartyRepresentations[0].represented.create.email, 'interested@example.com');
+	});
+
+	test('maps rule 6 party to appeal rule 6 party', () => {
+		const serviceUsers = [
+			{ firstName: 'Bob', emailAddress: 'rule6@example.com', serviceUserType: SERVICE_USER_TYPE.RULE_6_PARTY }
+		];
+
+		const result = mapServiceUsersToAppealRelations(serviceUsers);
+
+		assert.strictEqual(Array.isArray(result.rule6Parties), true);
+		assert.strictEqual(result.rule6Parties.length, 1);
+		assert.strictEqual(typeof result.rule6Parties[0].serviceUser, 'object');
+		assert.notStrictEqual(result.rule6Parties[0].serviceUser, null);
+		assert.strictEqual(typeof result.rule6Parties[0].serviceUser.create, 'object');
+		assert.notStrictEqual(result.rule6Parties[0].serviceUser.create, null);
+		assert.strictEqual(result.rule6Parties[0].serviceUser.create.firstName, 'Bob');
+		assert.strictEqual(result.rule6Parties[0].serviceUser.create.email, 'rule6@example.com');
+	});
+
+	test('maps all service user types together', () => {
+		const serviceUsers = [
+			{ firstName: 'John', emailAddress: 'appellant@example.com', serviceUserType: SERVICE_USER_TYPE.APPELLANT },
+			{ firstName: 'Jane', emailAddress: 'agent@example.com', serviceUserType: SERVICE_USER_TYPE.AGENT },
+			{
+				firstName: 'Alice',
+				emailAddress: 'interested@example.com',
+				serviceUserType: SERVICE_USER_TYPE.INTERESTED_PARTY
+			},
+			{ firstName: 'Bob', emailAddress: 'rule6@example.com', serviceUserType: SERVICE_USER_TYPE.RULE_6_PARTY }
+		];
+
+		const result = mapServiceUsersToAppealRelations(serviceUsers);
+
+		assert.strictEqual(typeof result.appellant, 'object');
+		assert.notStrictEqual(result.appellant, null);
+		assert.strictEqual(result.appellant.firstName, 'John');
+		assert.strictEqual(typeof result.agent, 'object');
+		assert.notStrictEqual(result.agent, null);
+		assert.strictEqual(result.agent.firstName, 'Jane');
+		assert.strictEqual(Array.isArray(result.interestedPartyRepresentations), true);
+		assert.strictEqual(result.interestedPartyRepresentations.length, 1);
+		assert.strictEqual(result.interestedPartyRepresentations[0].represented.create.firstName, 'Alice');
+		assert.strictEqual(Array.isArray(result.rule6Parties), true);
+		assert.strictEqual(result.rule6Parties.length, 1);
+		assert.strictEqual(result.rule6Parties[0].serviceUser.create.firstName, 'Bob');
 	});
 });

@@ -88,3 +88,53 @@ export const mockDuplicateAgents: AppealServiceUser[] = [
 		caseReference: 'CASE-011'
 	}
 ];
+
+export const mockInterestedPartyServiceUser: AppealServiceUser = {
+	id: '3',
+	firstName: 'Alice',
+	lastName: 'InterestedParty',
+	emailAddress: 'interested@example.com',
+	serviceUserType: SERVICE_USER_TYPE.INTERESTED_PARTY,
+	caseReference: 'APP/HAS/2024/001',
+	addressLine1: '456 Oak Avenue',
+	postcode: 'SW2B 2BB',
+	salutation: null,
+	addressLine2: null,
+	addressTown: null,
+	addressCounty: null,
+	addressCountry: null,
+	organisation: null,
+	organisationType: null,
+	role: null,
+	telephoneNumber: null,
+	otherPhoneNumber: null,
+	faxNumber: null,
+	webAddress: null,
+	sourceSuid: null,
+	sourceSystem: null
+};
+
+export const mockRule6PartyServiceUser: AppealServiceUser = {
+	id: '4',
+	firstName: 'Bob',
+	lastName: 'Rule6Party',
+	emailAddress: 'rule6@example.com',
+	serviceUserType: SERVICE_USER_TYPE.RULE_6_PARTY,
+	caseReference: 'APP/HAS/2024/001',
+	addressLine1: '789 Pine Street',
+	postcode: 'SW3C 3CC',
+	telephoneNumber: '020 9876 5432',
+	salutation: null,
+	addressLine2: null,
+	addressTown: null,
+	addressCounty: null,
+	addressCountry: null,
+	organisation: null,
+	organisationType: null,
+	role: null,
+	otherPhoneNumber: null,
+	faxNumber: null,
+	webAddress: null,
+	sourceSuid: null,
+	sourceSystem: null
+};

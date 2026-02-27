@@ -345,6 +345,54 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 		assert.strictEqual(result.appellant.create.firstName, 'John');
 	});
 
+	test('maps all service user types together in one appeal', () => {
+		const sourceCase = {
+			caseReference: 'CASE-016',
+			lpaCode: 'Q9999',
+			caseSubmittedDate: '2024-01-01T00:00:00.000Z',
+			applicationDecision: 'refused'
+		};
+		const serviceUsers = [
+			{
+				firstName: 'John',
+				emailAddress: 'appellant@example.com',
+				serviceUserType: 'Appellant',
+				caseReference: 'CASE-016'
+			},
+			{ firstName: 'Jane', emailAddress: 'agent@example.com', serviceUserType: 'Agent', caseReference: 'CASE-016' },
+			{
+				firstName: 'Alice',
+				emailAddress: 'interested@example.com',
+				serviceUserType: 'InterestedParty',
+				caseReference: 'CASE-016'
+			},
+			{ firstName: 'Bob', emailAddress: 'rule6@example.com', serviceUserType: 'Rule6Party', caseReference: 'CASE-016' }
+		];
+
+		const result = mapSourceToSinkAppeal(sourceCase, mockValidationReasonLookups, undefined, serviceUsers);
+
+		assert.strictEqual(result.reference, 'CASE-016');
+
+		assert.ok(result.appellant);
+		assert.ok(result.appellant.create);
+		assert.strictEqual(result.appellant.create.firstName, 'John');
+
+		assert.ok(result.agent);
+		assert.ok(result.agent.create);
+		assert.strictEqual(result.agent.create.firstName, 'Jane');
+
+		assert.ok(result.representations);
+		assert.ok(result.representations.create);
+		assert.ok(Array.isArray(result.representations.create));
+		assert.strictEqual(result.representations.create.length, 1);
+		assert.strictEqual(result.representations.create[0].represented.create.firstName, 'Alice');
+
+		assert.ok(result.appealRule6Parties);
+		assert.ok(result.appealRule6Parties.create);
+		assert.strictEqual(result.appealRule6Parties.create.length, 1);
+		assert.strictEqual(result.appealRule6Parties.create[0].serviceUser.create.firstName, 'Bob');
+	});
+
 	test('handles empty service users array', () => {
 		const result = mapSourceToSinkAppeal(
 			{
@@ -1692,6 +1740,44 @@ describe('mapSourceToSinkAppeal - S78 Additional Field Mappings', () => {
 		assert.strictEqual(groundA.factsForGround, 'Ground A facts');
 		assert.ok(groundB);
 		assert.strictEqual(groundB.factsForGround, 'Ground B facts');
+	});
+
+	test('merges interested party representations with existing representations (does not overwrite)', () => {
+		const source = {
+			...mockAppealHasCase,
+			caseReference: 'CASE-017',
+			appellantCommentsSubmittedDate: '2024-02-01T10:00:00.000Z',
+			appellantStatementSubmittedDate: '2024-02-02T11:00:00.000Z',
+			appellantProofsSubmittedDate: '2024-02-03T12:00:00.000Z',
+			lpaCommentsSubmittedDate: '2024-02-04T13:00:00.000Z',
+			lpaProofsSubmittedDate: '2024-02-05T14:00:00.000Z',
+			lpaStatementSubmittedDate: '2024-02-06T15:00:00.000Z'
+		};
+
+		const serviceUsers = [
+			{
+				firstName: 'Alice',
+				emailAddress: 'interested@example.com',
+				serviceUserType: 'InterestedParty',
+				caseReference: 'CASE-017'
+			}
+		];
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups, undefined, serviceUsers);
+
+		assert.ok(result.representations);
+		assert.ok(result.representations.create);
+		assert.ok(Array.isArray(result.representations.create));
+
+		assert.strictEqual(result.representations.create.length, 7);
+
+		const appellantFinalComment = result.representations.create.find(
+			(r) => r.representationType === 'appellant_final_comment'
+		);
+		assert.ok(appellantFinalComment);
+
+		const interestedPartyRep = result.representations.create.find((r) => r.represented?.create?.firstName === 'Alice');
+		assert.ok(interestedPartyRep);
 	});
 
 	test('omits appealGrounds when enforcementAppealGroundsDetails is null or empty', () => {
