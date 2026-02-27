@@ -1,5 +1,6 @@
 import type { InvocationContext } from '@azure/functions';
 import type { CaseToMigrate, DocumentToMigrate } from '@pins/appeals-migration-database/src/client/client.ts';
+import type { Readable } from 'node:stream';
 
 export type ItemToMigrate = CaseToMigrate | DocumentToMigrate;
 
@@ -20,3 +21,19 @@ type NumericFieldNames<Type> = {
 }[keyof Type];
 
 export type StepIdField = NumericFieldNames<CaseToMigrate> | NumericFieldNames<DocumentToMigrate>;
+
+export interface SourceDocumentParameters {
+	version?: number;
+	rendition?: boolean;
+}
+export interface SourceDocumentResponse {
+	filename: string;
+	stream: Readable;
+}
+
+/**
+ * A client interface for getting documents from the source system
+ */
+export interface SourceDocumentClient {
+	getDocument(documentId: string, parameters: SourceDocumentParameters): Promise<SourceDocumentResponse>;
+}
