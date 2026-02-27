@@ -18,7 +18,7 @@ import { FOLDERS } from './folders.ts';
 import { mapEventToSink } from './map-event-to-sink.ts';
 import { mapServiceUsersToAppealRelations } from './map-service-user.ts';
 
-const APPEAL_REPRESENTATION_TYPE = Object.freeze({
+export const APPEAL_REPRESENTATION_TYPE = Object.freeze({
 	LPA_STATEMENT: 'lpa_statement',
 	APPELLANT_STATEMENT: 'appellant_statement',
 	COMMENT: 'comment',
@@ -252,6 +252,22 @@ function buildListedBuildingDetails(source: AppealHas | AppealS78) {
 
 	if (entries.length === 0) return undefined;
 	return { create: entries };
+}
+
+/**
+ * Merge interested party representations into an existing representations relation
+ */
+function mergeInterestedPartyRepresentations(
+	existing: Prisma.RepresentationCreateNestedManyWithoutAppealInput | undefined,
+	incoming: Prisma.RepresentationCreateWithoutAppealInput[]
+): { create: Prisma.RepresentationCreateWithoutAppealInput[] } {
+	if (!existing?.create) {
+		return { create: incoming };
+	}
+	const existingCreate = Array.isArray(existing.create) ? existing.create : [existing.create];
+	return {
+		create: [...(existingCreate as Prisma.RepresentationCreateWithoutAppealInput[]), ...incoming]
+	};
 }
 
 /**
@@ -839,7 +855,7 @@ export function mapSourceToSinkAppeal(
 		coreAppeal[userType] = { create: userData };
 	};
 
-	// Map service users to appellant and agent relations
+	// Map service users to appellant, agent, interested party, and rule 6 party relations
 	if (serviceUsers && serviceUsers.length > 0) {
 		const serviceUserRelations = mapServiceUsersToAppealRelations(serviceUsers);
 
@@ -849,6 +865,20 @@ export function mapSourceToSinkAppeal(
 
 		if (serviceUserRelations.agent) {
 			addUniqueServiceUser('agent', serviceUserRelations.agent);
+		}
+
+		if (
+			serviceUserRelations.interestedPartyRepresentations &&
+			serviceUserRelations.interestedPartyRepresentations.length > 0
+		) {
+			coreAppeal.representations = mergeInterestedPartyRepresentations(
+				coreAppeal.representations,
+				serviceUserRelations.interestedPartyRepresentations
+			);
+		}
+
+		if (serviceUserRelations.rule6Parties && serviceUserRelations.rule6Parties.length > 0) {
+			coreAppeal.appealRule6Parties = { create: serviceUserRelations.rule6Parties };
 		}
 	}
 

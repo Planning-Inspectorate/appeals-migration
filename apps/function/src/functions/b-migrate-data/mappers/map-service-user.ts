@@ -2,6 +2,7 @@ import type { Prisma } from '@pins/manage-appeals-database/src/client/client.d.t
 import type { AppealServiceUser } from '@pins/odw-curated-database/src/client/client.ts';
 import { SERVICE_USER_TYPE } from '@planning-inspectorate/data-model';
 import { hasAnyValue, stringOrUndefined, trimAndLowercase } from '../../shared/helpers/index.ts';
+import { APPEAL_REPRESENTATION_TYPE } from './map-source-to-sink.ts';
 
 function mapServiceUserAddress(
 	sourceServiceUser: AppealServiceUser
@@ -55,7 +56,11 @@ export function mapServiceUser(sourceServiceUser: AppealServiceUser): Prisma.Ser
 	};
 }
 
-type ServiceUserCategory = typeof SERVICE_USER_TYPE.APPELLANT | typeof SERVICE_USER_TYPE.AGENT;
+type ServiceUserCategory =
+	| typeof SERVICE_USER_TYPE.APPELLANT
+	| typeof SERVICE_USER_TYPE.AGENT
+	| typeof SERVICE_USER_TYPE.INTERESTED_PARTY
+	| typeof SERVICE_USER_TYPE.RULE_6_PARTY;
 
 function getServiceUserCategory(serviceUserType: string | null | undefined): ServiceUserCategory | null {
 	const normalizedType = trimAndLowercase(serviceUserType);
@@ -72,12 +77,22 @@ function getServiceUserCategory(serviceUserType: string | null | undefined): Ser
 		return SERVICE_USER_TYPE.AGENT;
 	}
 
+	if (normalizedType === SERVICE_USER_TYPE.INTERESTED_PARTY.toLowerCase()) {
+		return SERVICE_USER_TYPE.INTERESTED_PARTY;
+	}
+
+	if (normalizedType === SERVICE_USER_TYPE.RULE_6_PARTY.toLowerCase()) {
+		return SERVICE_USER_TYPE.RULE_6_PARTY;
+	}
+
 	return null;
 }
 
 export function getServiceUserRole(sourceServiceUser: AppealServiceUser): {
 	isAppellant: boolean;
 	isAgent: boolean;
+	isInterestedParty: boolean;
+	isRule6Party: boolean;
 	serviceUserType: string | null;
 } {
 	const serviceUserType = sourceServiceUser.serviceUserType;
@@ -86,6 +101,8 @@ export function getServiceUserRole(sourceServiceUser: AppealServiceUser): {
 	return {
 		isAppellant: category === SERVICE_USER_TYPE.APPELLANT,
 		isAgent: category === SERVICE_USER_TYPE.AGENT,
+		isInterestedParty: category === SERVICE_USER_TYPE.INTERESTED_PARTY,
+		isRule6Party: category === SERVICE_USER_TYPE.RULE_6_PARTY,
 		serviceUserType: serviceUserType ?? null
 	};
 }
@@ -106,10 +123,14 @@ function mapServiceUserByCategory(
 export function mapServiceUsersToAppealRelations(serviceUsers: AppealServiceUser[]): {
 	appellant?: Prisma.ServiceUserCreateInput;
 	agent?: Prisma.ServiceUserCreateInput;
+	interestedPartyRepresentations?: Prisma.RepresentationCreateWithoutAppealInput[];
+	rule6Parties?: Prisma.AppealRule6PartyCreateWithoutAppealInput[];
 } {
 	const result: {
 		appellant?: Prisma.ServiceUserCreateInput;
 		agent?: Prisma.ServiceUserCreateInput;
+		interestedPartyRepresentations?: Prisma.RepresentationCreateWithoutAppealInput[];
+		rule6Parties?: Prisma.AppealRule6PartyCreateWithoutAppealInput[];
 	} = {};
 
 	for (const serviceUser of serviceUsers) {
@@ -137,6 +158,28 @@ export function mapServiceUsersToAppealRelations(serviceUsers: AppealServiceUser
 			if (agent) {
 				result.agent = agent;
 			}
+		}
+
+		if (category === SERVICE_USER_TYPE.INTERESTED_PARTY) {
+			const serviceUserData = mapServiceUser(serviceUser);
+			if (!result.interestedPartyRepresentations) {
+				result.interestedPartyRepresentations = [];
+			}
+
+			result.interestedPartyRepresentations.push({
+				representationType: APPEAL_REPRESENTATION_TYPE.COMMENT,
+				represented: { create: serviceUserData }
+			});
+		}
+
+		if (category === SERVICE_USER_TYPE.RULE_6_PARTY) {
+			const serviceUserData = mapServiceUser(serviceUser);
+			if (!result.rule6Parties) {
+				result.rule6Parties = [];
+			}
+			result.rule6Parties.push({
+				serviceUser: { create: serviceUserData }
+			});
 		}
 	}
 
