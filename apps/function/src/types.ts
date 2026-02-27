@@ -1,4 +1,5 @@
 import type { InvocationContext } from '@azure/functions';
+import type { BlobGetPropertiesHeaders } from '@azure/storage-blob';
 import type { CaseToMigrate, DocumentToMigrate } from '@pins/appeals-migration-database/src/client/client.ts';
 import type { Readable } from 'node:stream';
 
@@ -36,4 +37,13 @@ export interface SourceDocumentResponse {
  */
 export interface SourceDocumentClient {
 	getDocument(documentId: string, parameters: SourceDocumentParameters): Promise<SourceDocumentResponse>;
+}
+
+export interface SinkDocumentClient {
+	getBlockBlobClient(filepath: string): SinkDocumentUploadClient;
+}
+
+export interface SinkDocumentUploadClient {
+	uploadStream(stream: Readable): Promise<unknown>;
+	getProperties(): Promise<BlobGetPropertiesHeaders>;
 }

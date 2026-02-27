@@ -1,6 +1,6 @@
 import { DefaultAzureCredential } from '@azure/identity';
 import { ServiceBusAdministrationClient, ServiceBusClient } from '@azure/service-bus';
-import { BlobServiceClient, type ContainerClient } from '@azure/storage-blob';
+import { BlobServiceClient } from '@azure/storage-blob';
 import { newDatabaseClient } from '@pins/appeals-migration-database';
 import type { PrismaClient as MigrationPrismaClient } from '@pins/appeals-migration-database/src/client/client.ts';
 import { HorizonWebClient } from '@pins/appeals-migration-lib/horizon/web/horizon-web-client.ts';
@@ -9,7 +9,7 @@ import type { PrismaClient as SinkPrismaClient } from '@pins/manage-appeals-data
 import { newOdwDatabaseClient } from '@pins/odw-curated-database';
 import type { PrismaClient as SourcePrismaClient } from '@pins/odw-curated-database/src/client/client.ts';
 import type { Config } from './config.ts';
-import type { SourceDocumentClient } from './types.ts';
+import type { SinkDocumentClient, SourceDocumentClient } from './types.ts';
 
 /**
  * This class encapsulates all the services and clients for the application
@@ -20,7 +20,7 @@ export class FunctionService {
 	sourceDocumentClient: SourceDocumentClient;
 	sourceDatabaseClient: SourcePrismaClient;
 	sinkDatabaseClient: SinkPrismaClient;
-	sinkBlobContainerClient: ContainerClient;
+	sinkDocumentClient: SinkDocumentClient;
 	serviceBusClient: ServiceBusClient;
 	serviceBusAdministrationClient: ServiceBusAdministrationClient;
 
@@ -45,7 +45,7 @@ export class FunctionService {
 			`https://${config.manageAppeals.documents.accountName}.blob.core.windows.net`,
 			new DefaultAzureCredential()
 		);
-		this.sinkBlobContainerClient = blobClient.getContainerClient(config.manageAppeals.documents.containerName);
+		this.sinkDocumentClient = blobClient.getContainerClient(config.manageAppeals.documents.containerName);
 
 		this.sourceDocumentClient = new HorizonWebClient(config.horizon);
 	}
