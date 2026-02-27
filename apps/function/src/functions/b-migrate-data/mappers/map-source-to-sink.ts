@@ -7,7 +7,13 @@ import type {
 } from '@pins/odw-curated-database/src/client/client.ts';
 import type { Schemas } from '@planning-inspectorate/data-model';
 import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
-import { parseDateOrUndefined, parseJsonArray, parseNumber, stringOrUndefined } from '../../shared/helpers/index.ts';
+import {
+	booleanOrUndefined,
+	parseDateOrUndefined,
+	parseJsonArray,
+	parseNumber,
+	stringOrUndefined
+} from '../../shared/helpers/index.ts';
 import { mapEventToSink } from './map-event-to-sink.ts';
 import { mapServiceUsersToAppealRelations } from './map-service-user.ts';
 
@@ -313,6 +319,7 @@ function buildDesignatedSites(source: AppealHas | AppealS78) {
  * Build LPA questionnaire object
  */
 function buildLpaQuestionnaire(source: AppealHas | AppealS78, validationReasonLookups: ValidationReasonLookups) {
+	const s78 = source as AppealS78;
 	const create = {
 		lpaQuestionnaireSubmittedDate: parseDateOrUndefined(source.lpaQuestionnaireSubmittedDate),
 		lpaqCreatedDate: parseDateOrUndefined(source.lpaQuestionnaireCreatedDate),
@@ -344,6 +351,44 @@ function buildLpaQuestionnaire(source: AppealHas | AppealS78, validationReasonLo
 		isSiteInAreaOfSpecialControlAdverts: source.isSiteInAreaOfSpecialControlAdverts ?? undefined,
 		wasApplicationRefusedDueToHighwayOrTraffic: source.wasApplicationRefusedDueToHighwayOrTraffic ?? undefined,
 		didAppellantSubmitCompletePhotosAndPlans: source.didAppellantSubmitCompletePhotosAndPlans ?? undefined,
+
+		// S78-specific fields
+		isGypsyOrTravellerSite: booleanOrUndefined(s78.isGypsyOrTravellerSite),
+		isPublicRightOfWay: booleanOrUndefined(s78.isPublicRightOfWay),
+		siteWithinSSSI: booleanOrUndefined(s78.siteWithinSSSI),
+		eiaEnvironmentalImpactSchedule: stringOrUndefined(s78.eiaEnvironmentalImpactSchedule),
+		eiaDevelopmentDescription: stringOrUndefined(s78.eiaDevelopmentDescription),
+		eiaSensitiveAreaDetails: stringOrUndefined(s78.eiaSensitiveAreaDetails),
+		eiaColumnTwoThreshold: booleanOrUndefined(s78.eiaColumnTwoThreshold),
+		eiaScreeningOpinion: booleanOrUndefined(s78.eiaScreeningOpinion),
+		eiaRequiresEnvironmentalStatement: booleanOrUndefined(s78.eiaRequiresEnvironmentalStatement),
+		eiaCompletedEnvironmentalStatement: booleanOrUndefined(s78.eiaCompletedEnvironmentalStatement),
+		consultedBodiesDetails: stringOrUndefined(s78.consultedBodiesDetails),
+		hasStatutoryConsultees: booleanOrUndefined(s78.hasStatutoryConsultees),
+		siteNoticesSentDate: parseDateOrUndefined(s78.siteNoticesSentDate),
+
+		// Enforcement fields
+		noticeRelatesToBuildingEngineeringMiningOther: booleanOrUndefined(
+			s78.noticeRelatesToBuildingEngineeringMiningOther
+		),
+		areaOfAllegedBreachInSquareMetres: parseNumber(s78.areaOfAllegedBreachInSquareMetres),
+		doesAllegedBreachCreateFloorSpace: booleanOrUndefined(s78.doesAllegedBreachCreateFloorSpace),
+		floorSpaceCreatedByBreachInSquareMetres: parseNumber(s78.floorSpaceCreatedByBreachInSquareMetres),
+		changeOfUseRefuseOrWaste: booleanOrUndefined(s78.changeOfUseRefuseOrWaste),
+		changeOfUseMineralExtraction: booleanOrUndefined(s78.changeOfUseMineralExtraction),
+		changeOfUseMineralStorage: booleanOrUndefined(s78.changeOfUseMineralStorage),
+		relatesToErectionOfBuildingOrBuildings: booleanOrUndefined(s78.relatesToErectionOfBuildingOrBuildings),
+		relatesToBuildingWithAgriculturalPurpose: booleanOrUndefined(s78.relatesToBuildingWithAgriculturalPurpose),
+		relatesToBuildingSingleDwellingHouse: booleanOrUndefined(s78.relatesToBuildingSingleDwellingHouse),
+		affectedTrunkRoadName: stringOrUndefined(s78.affectedTrunkRoadName),
+		isSiteOnCrownLand: booleanOrUndefined(s78.isSiteOnCrownLand),
+		article4AffectedDevelopmentRights: stringOrUndefined(s78.article4AffectedDevelopmentRights),
+
+		// S20 fields
+		historicEnglandConsultation: booleanOrUndefined(s78.consultHistoricEngland),
+		preserveGrantLoan: booleanOrUndefined(s78.preserveGrantLoan),
+
+		// Relations
 		lpaQuestionnaireValidationOutcome: buildLpaValidationOutcome(source),
 		lpaQuestionnaireIncompleteReasonsSelected:
 			buildValidationReasons<Prisma.LPAQuestionnaireIncompleteReasonsSelectedCreateWithoutLpaQuestionnaireInput>(
