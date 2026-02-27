@@ -1478,6 +1478,202 @@ describe('mapSourceToSinkAppeal - LPA Questionnaire Mapping', () => {
 		assert.strictEqual(result.lpaQuestionnaire.create.lpaQuestionnaireIncompleteReasonsSelected, undefined);
 	});
 
+	test('maps S78 enforcement fields', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			noticeRelatesToBuildingEngineeringMiningOther: true,
+			areaOfAllegedBreachInSquareMetres: new Prisma.Decimal(500.25),
+			doesAllegedBreachCreateFloorSpace: true,
+			floorSpaceCreatedByBreachInSquareMetres: new Prisma.Decimal(200.75),
+			changeOfUseRefuseOrWaste: true,
+			changeOfUseMineralExtraction: false,
+			changeOfUseMineralStorage: true,
+			relatesToErectionOfBuildingOrBuildings: false,
+			relatesToBuildingWithAgriculturalPurpose: true,
+			relatesToBuildingSingleDwellingHouse: false,
+			affectedTrunkRoadName: 'M1',
+			isSiteOnCrownLand: true,
+			article4AffectedDevelopmentRights: 'Article 4 direction'
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.strictEqual(result.lpaQuestionnaire.create.noticeRelatesToBuildingEngineeringMiningOther, true);
+		assert.strictEqual(result.lpaQuestionnaire.create.areaOfAllegedBreachInSquareMetres, 500.25);
+		assert.strictEqual(result.lpaQuestionnaire.create.doesAllegedBreachCreateFloorSpace, true);
+		assert.strictEqual(result.lpaQuestionnaire.create.floorSpaceCreatedByBreachInSquareMetres, 200.75);
+		assert.strictEqual(result.lpaQuestionnaire.create.changeOfUseRefuseOrWaste, true);
+		assert.strictEqual(result.lpaQuestionnaire.create.changeOfUseMineralExtraction, false);
+		assert.strictEqual(result.lpaQuestionnaire.create.changeOfUseMineralStorage, true);
+		assert.strictEqual(result.lpaQuestionnaire.create.relatesToErectionOfBuildingOrBuildings, false);
+		assert.strictEqual(result.lpaQuestionnaire.create.relatesToBuildingWithAgriculturalPurpose, true);
+		assert.strictEqual(result.lpaQuestionnaire.create.relatesToBuildingSingleDwellingHouse, false);
+		assert.strictEqual(result.lpaQuestionnaire.create.affectedTrunkRoadName, 'M1');
+		assert.strictEqual(result.lpaQuestionnaire.create.isSiteOnCrownLand, true);
+		assert.strictEqual(result.lpaQuestionnaire.create.article4AffectedDevelopmentRights, 'Article 4 direction');
+	});
+
+	test('maps S78 date fields', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			siteNoticesSentDate: '2024-01-15T00:00:00.000Z',
+			originalCaseDecisionDate: '2024-01-20T00:00:00.000Z',
+			targetDate: '2024-03-01T00:00:00.000Z',
+			dateCostsReportDespatched: '2024-02-01T00:00:00.000Z',
+			dateNotRecoveredOrDerecovered: '2024-02-05T00:00:00.000Z',
+			dateRecovered: '2024-02-10T00:00:00.000Z'
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.strictEqual(result.lpaQuestionnaire.create.siteNoticesSentDate?.toISOString(), '2024-01-15T00:00:00.000Z');
+		assert.strictEqual(
+			result.lpaQuestionnaire.create.originalCaseDecisionDate?.toISOString(),
+			'2024-01-20T00:00:00.000Z'
+		);
+		assert.strictEqual(result.lpaQuestionnaire.create.targetDate?.toISOString(), '2024-03-01T00:00:00.000Z');
+		assert.strictEqual(
+			result.lpaQuestionnaire.create.dateCostsReportDespatched?.toISOString(),
+			'2024-02-01T00:00:00.000Z'
+		);
+		assert.strictEqual(
+			result.lpaQuestionnaire.create.dateNotRecoveredOrDerecovered?.toISOString(),
+			'2024-02-05T00:00:00.000Z'
+		);
+		assert.strictEqual(result.lpaQuestionnaire.create.dateRecovered?.toISOString(), '2024-02-10T00:00:00.000Z');
+	});
+
+	test('maps S78 string fields', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			importantInformation: 'Important site information',
+			reasonForNeighbourVisits: 'Neighbour consultation required',
+			redeterminedIndicator: 'Y'
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.strictEqual(result.lpaQuestionnaire.create.importantInformation, 'Important site information');
+		assert.strictEqual(result.lpaQuestionnaire.create.reasonForNeighbourVisits, 'Neighbour consultation required');
+		assert.strictEqual(result.lpaQuestionnaire.create.redeterminedIndicator, 'Y');
+	});
+
+	test('maps S20 and LDC fields', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			preserveGrantLoan: true,
+			consultHistoricEngland: true,
+			typeOfPlanningApplication: 'Householder'
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.strictEqual(result.lpaQuestionnaire.create.preserveGrantLoan, true);
+		assert.strictEqual(result.lpaQuestionnaire.create.historicEnglandConsultation, true);
+	});
+
+	test('handles null S78 fields gracefully', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
+			isGypsyOrTravellerSite: null,
+			isPublicRightOfWay: null,
+			siteWithinSSSI: null,
+			eiaEnvironmentalImpactSchedule: null,
+			eiaDevelopmentDescription: null,
+			eiaSensitiveAreaDetails: null,
+			eiaColumnTwoThreshold: null,
+			eiaScreeningOpinion: null,
+			eiaRequiresEnvironmentalStatement: null,
+			eiaCompletedEnvironmentalStatement: null,
+			hasStatutoryConsultees: null,
+			consultedBodiesDetails: null,
+			lpaProcedurePreference: null,
+			lpaProcedurePreferenceDetails: null,
+			lpaProcedurePreferenceDuration: null,
+			noticeRelatesToBuildingEngineeringMiningOther: null,
+			areaOfAllegedBreachInSquareMetres: null,
+			doesAllegedBreachCreateFloorSpace: null,
+			floorSpaceCreatedByBreachInSquareMetres: null,
+			changeOfUseRefuseOrWaste: null,
+			changeOfUseMineralExtraction: null,
+			changeOfUseMineralStorage: null,
+			relatesToErectionOfBuildingOrBuildings: null,
+			relatesToBuildingWithAgriculturalPurpose: null,
+			relatesToBuildingSingleDwellingHouse: null,
+			affectedTrunkRoadName: null,
+			isSiteOnCrownLand: null,
+			article4AffectedDevelopmentRights: null,
+			siteNoticesSentDate: null,
+			originalCaseDecisionDate: null,
+			targetDate: null,
+			dateCostsReportDespatched: null,
+			dateNotRecoveredOrDerecovered: null,
+			dateRecovered: null,
+			importantInformation: null,
+			reasonForNeighbourVisits: null,
+			redeterminedIndicator: null,
+			preserveGrantLoan: null,
+			consultHistoricEngland: null,
+			typeOfPlanningApplication: null
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		// Boolean fields should be undefined when null
+		assert.strictEqual(result.lpaQuestionnaire.create.isGypsyOrTravellerSite, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.isPublicRightOfWay, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.siteWithinSSSI, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.eiaColumnTwoThreshold, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.eiaScreeningOpinion, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.eiaRequiresEnvironmentalStatement, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.eiaCompletedEnvironmentalStatement, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.hasStatutoryConsultees, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.doesAllegedBreachCreateFloorSpace, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.noticeRelatesToBuildingEngineeringMiningOther, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.changeOfUseRefuseOrWaste, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.changeOfUseMineralExtraction, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.changeOfUseMineralStorage, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.relatesToErectionOfBuildingOrBuildings, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.relatesToBuildingWithAgriculturalPurpose, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.relatesToBuildingSingleDwellingHouse, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.isSiteOnCrownLand, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.preserveGrantLoan, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.historicEnglandConsultation, undefined);
+
+		// String fields should be undefined when null
+		assert.strictEqual(result.lpaQuestionnaire.create.eiaEnvironmentalImpactSchedule, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.eiaDevelopmentDescription, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.eiaSensitiveAreaDetails, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.consultedBodiesDetails, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.lpaProcedurePreference, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.lpaProcedurePreferenceDetails, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.affectedTrunkRoadName, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.article4AffectedDevelopmentRights, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.importantInformation, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.reasonForNeighbourVisits, undefined);
+
+		// Number fields should be undefined when null
+		assert.strictEqual(result.lpaQuestionnaire.create.areaOfAllegedBreachInSquareMetres, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.floorSpaceCreatedByBreachInSquareMetres, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.lpaProcedurePreferenceDuration, undefined);
+
+		// Date fields should be undefined when null
+		assert.strictEqual(result.lpaQuestionnaire.create.siteNoticesSentDate, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.originalCaseDecisionDate, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.targetDate, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.dateCostsReportDespatched, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.dateNotRecoveredOrDerecovered, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.dateRecovered, undefined);
+
+		// String fields that should be undefined when null
+		assert.strictEqual(result.lpaQuestionnaire.create.redeterminedIndicator, undefined);
+	});
+
 	test('throws error for unknown lpaQuestionnaire incomplete reason', () => {
 		const source = {
 			...mockAppealHasCase,
