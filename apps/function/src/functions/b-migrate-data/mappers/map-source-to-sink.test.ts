@@ -4,6 +4,7 @@ import { Prisma } from '@pins/odw-curated-database/src/client/client.ts';
 import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
 import assert from 'node:assert';
 import { describe, test } from 'node:test';
+import { FOLDERS } from './folders.ts';
 import { mapSourceToSinkAppeal } from './map-source-to-sink.ts';
 import * as MockCases from './test-data/mock-appeal-cases.ts';
 import { mockAppealHasCase } from './test-data/mock-appeal-has-case.ts';
@@ -2043,5 +2044,36 @@ describe('mapSourceToSinkAppeal - S78 Additional Field Mappings', () => {
 
 		assert.strictEqual(resultNull.appealGrounds, undefined);
 		assert.strictEqual(resultEmpty.appealGrounds, undefined);
+	});
+});
+
+describe('mapSourceToSinkAppeal - Folders', () => {
+	test('creates all default folders for every case', () => {
+		const result = mapSourceToSinkAppeal(mockAppealHasCase, mockValidationReasonLookups);
+
+		assert.ok(result.folders);
+		assert.strictEqual(result.folders.create.length, FOLDERS.length);
+	});
+
+	test('folder paths match the FOLDERS constant exactly', () => {
+		const result = mapSourceToSinkAppeal(mockAppealHasCase, mockValidationReasonLookups);
+
+		const createdPaths = result.folders.create.map((f) => f.path);
+		assert.deepStrictEqual(createdPaths, FOLDERS);
+	});
+
+	test('includes representation/representationAttachments folder', () => {
+		const result = mapSourceToSinkAppeal(mockAppealHasCase, mockValidationReasonLookups);
+
+		const paths = result.folders.create.map((f) => f.path);
+		assert.ok(paths.includes('representation/representationAttachments'));
+	});
+
+	test('folders are always created regardless of source case data', () => {
+		const minimalCase = MockCases.mockCaseWithNullDates;
+		const result = mapSourceToSinkAppeal(minimalCase, mockValidationReasonLookups);
+
+		assert.ok(result.folders);
+		assert.strictEqual(result.folders.create.length, FOLDERS.length);
 	});
 });

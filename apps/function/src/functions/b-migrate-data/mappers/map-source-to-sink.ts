@@ -14,6 +14,7 @@ import {
 	parseNumber,
 	stringOrUndefined
 } from '../../shared/helpers/index.ts';
+import { FOLDERS } from './folders.ts';
 import { mapEventToSink } from './map-event-to-sink.ts';
 import { mapServiceUsersToAppealRelations } from './map-service-user.ts';
 
@@ -274,6 +275,15 @@ function buildRepresentations(source: AppealHas | AppealS78) {
 
 	if (entries.length === 0) return undefined;
 	return { create: entries };
+}
+
+/**
+ * Build default folders for a case
+ */
+function buildFolders() {
+	return {
+		create: FOLDERS.map((path) => ({ path }))
+	};
 }
 
 /**
@@ -787,7 +797,8 @@ export function mapSourceToSinkAppeal(
 		neighbouringSites: parseNeighbouringSiteAddresses(sourceCase),
 		lpaQuestionnaire: buildLpaQuestionnaire(sourceCase, validationReasonLookups),
 		representations: buildRepresentations(sourceCase),
-		appealGrounds: buildAppealGrounds(sourceCase)
+		appealGrounds: buildAppealGrounds(sourceCase),
+		folders: buildFolders()
 	};
 
 	// Helper function to add event if not duplicate
