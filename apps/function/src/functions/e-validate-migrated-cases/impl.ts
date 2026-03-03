@@ -1,7 +1,6 @@
 import type { CaseToMigrate } from '@pins/appeals-migration-database/src/client/client.ts';
 import type { FunctionService } from '../../service.ts';
 import type { MigrationFunction } from '../../types.ts';
-import { saveValidationResult } from './migration/save-validation-result.ts';
 import { fetchSinkCaseDetails } from './sink/case-details.ts';
 import { fetchSourceCaseDetails } from './source/case-details.ts';
 import { fetchSourceDocuments } from './source/documents.ts';
@@ -22,10 +21,6 @@ type Validators = {
 	validateDocuments: typeof validateDocuments;
 };
 
-type Migration = {
-	saveValidationResult: typeof saveValidationResult;
-};
-
 const defaultSource: Source = {
 	fetchSourceCaseDetails,
 	fetchSourceDocuments
@@ -40,16 +35,11 @@ const defaultValidators: Validators = {
 	validateDocuments
 };
 
-const defaultMigration: Migration = {
-	saveValidationResult
-};
-
 export function buildValidateMigratedCases(
 	service: FunctionService,
 	source: Source = defaultSource,
 	sink: Sink = defaultSink,
-	validators: Validators = defaultValidators,
-	migration: Migration = defaultMigration
+	validators: Validators = defaultValidators
 ): MigrationFunction {
 	return async (itemToMigrate, context) => {
 		const caseToMigrate = itemToMigrate as CaseToMigrate;
@@ -80,9 +70,12 @@ export function buildValidateMigratedCases(
 		const documentsValidated = await validators.validateDocuments(sourceDocuments, sinkDatabase);
 		context.log(`Case ${caseReference} documents validation result: ${documentsValidated}`);
 
-		await migration.saveValidationResult(migrationDatabase, caseReference, {
-			dataValidated,
-			documentsValidated
+		await migrationDatabase.caseToMigrate.update({
+			where: { caseReference },
+			data: {
+				dataValidated,
+				documentsValidated
+			}
 		});
 
 		context.log(`Case ${caseReference} validation results saved`);
