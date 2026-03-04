@@ -4,12 +4,16 @@ import type { MigrationFunction } from '../../types.ts';
 import { fetchSinkCaseDetails } from './sink/case-details.ts';
 import { fetchSourceCaseDetails } from './source/case-details.ts';
 import { fetchSourceDocuments } from './source/documents.ts';
+import { fetchSourceEvents } from './source/event-details.ts';
+import { fetchSourceServiceUsers } from './source/service-users.ts';
 import { validateData } from './validators/validate-data.ts';
 import { validateDocuments } from './validators/validate-documents.ts';
 
 type Source = {
 	fetchSourceCaseDetails: typeof fetchSourceCaseDetails;
 	fetchSourceDocuments: typeof fetchSourceDocuments;
+	fetchSourceEvents: typeof fetchSourceEvents;
+	fetchSourceServiceUsers: typeof fetchSourceServiceUsers;
 };
 
 type Sink = {
@@ -23,7 +27,9 @@ type Validators = {
 
 const defaultSource: Source = {
 	fetchSourceCaseDetails,
-	fetchSourceDocuments
+	fetchSourceDocuments,
+	fetchSourceEvents,
+	fetchSourceServiceUsers
 };
 
 const defaultSink: Sink = {
@@ -50,10 +56,12 @@ export function buildValidateMigratedCases(
 		const sinkDatabase = service.sinkDatabaseClient;
 		const migrationDatabase = service.databaseClient;
 
-		const [sourceCase, sinkCase, sourceDocuments] = await Promise.all([
+		const [sourceCase, sinkCase, sourceDocuments, sourceEvents, sourceServiceUsers] = await Promise.all([
 			source.fetchSourceCaseDetails(sourceDatabase, caseReference),
 			sink.fetchSinkCaseDetails(sinkDatabase, caseReference),
-			source.fetchSourceDocuments(sourceDatabase, caseReference)
+			source.fetchSourceDocuments(sourceDatabase, caseReference),
+			source.fetchSourceEvents(sourceDatabase, caseReference),
+			source.fetchSourceServiceUsers(sourceDatabase, caseReference)
 		]);
 
 		if (!sourceCase) {
@@ -64,7 +72,7 @@ export function buildValidateMigratedCases(
 			throw new Error(`Case ${caseReference} not found in sink database`);
 		}
 
-		const dataValidated = validators.validateData(sourceCase, sinkCase);
+		const dataValidated = validators.validateData(sourceCase, sinkCase, sourceEvents, sourceServiceUsers);
 		context.log(`Case ${caseReference} data validation result: ${dataValidated}`);
 
 		const documentsValidated = await validators.validateDocuments(sourceDocuments, sinkDatabase);

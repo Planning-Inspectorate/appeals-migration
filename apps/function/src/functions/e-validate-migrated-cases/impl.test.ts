@@ -16,7 +16,9 @@ describe('buildValidateMigratedCases', () => {
 
 	const newSource = () => ({
 		fetchSourceCaseDetails: mock.fn(),
-		fetchSourceDocuments: mock.fn()
+		fetchSourceDocuments: mock.fn(),
+		fetchSourceEvents: mock.fn(),
+		fetchSourceServiceUsers: mock.fn()
 	});
 
 	const newSink = () => ({
@@ -41,6 +43,8 @@ describe('buildValidateMigratedCases', () => {
 		}));
 		sink.fetchSinkCaseDetails.mock.mockImplementationOnce(() => ({ reference: 'CASE-001' }));
 		source.fetchSourceDocuments.mock.mockImplementationOnce(() => []);
+		source.fetchSourceEvents.mock.mockImplementationOnce(() => []);
+		source.fetchSourceServiceUsers.mock.mockImplementationOnce(() => []);
 		validators.validateData.mock.mockImplementationOnce(() => true);
 		validators.validateDocuments.mock.mockImplementationOnce(() => true);
 
@@ -70,6 +74,8 @@ describe('buildValidateMigratedCases', () => {
 		}));
 		sink.fetchSinkCaseDetails.mock.mockImplementationOnce(() => ({ reference: 'CASE-002' }));
 		source.fetchSourceDocuments.mock.mockImplementationOnce(() => []);
+		source.fetchSourceEvents.mock.mockImplementationOnce(() => []);
+		source.fetchSourceServiceUsers.mock.mockImplementationOnce(() => []);
 		validators.validateData.mock.mockImplementationOnce(() => true);
 		validators.validateDocuments.mock.mockImplementationOnce(() => false);
 
@@ -95,6 +101,8 @@ describe('buildValidateMigratedCases', () => {
 		source.fetchSourceCaseDetails.mock.mockImplementationOnce(() => null);
 		sink.fetchSinkCaseDetails.mock.mockImplementationOnce(() => ({ reference: 'CASE-999' }));
 		source.fetchSourceDocuments.mock.mockImplementationOnce(() => []);
+		source.fetchSourceEvents.mock.mockImplementationOnce(() => []);
+		source.fetchSourceServiceUsers.mock.mockImplementationOnce(() => []);
 
 		const handler = buildValidateMigratedCases(service, source, sink, validators);
 
@@ -114,6 +122,8 @@ describe('buildValidateMigratedCases', () => {
 		source.fetchSourceCaseDetails.mock.mockImplementationOnce(() => ({ type: 'has', data: {} }));
 		sink.fetchSinkCaseDetails.mock.mockImplementationOnce(() => null);
 		source.fetchSourceDocuments.mock.mockImplementationOnce(() => []);
+		source.fetchSourceEvents.mock.mockImplementationOnce(() => []);
+		source.fetchSourceServiceUsers.mock.mockImplementationOnce(() => []);
 
 		const handler = buildValidateMigratedCases(service, source, sink, validators);
 
@@ -134,6 +144,8 @@ describe('buildValidateMigratedCases', () => {
 		source.fetchSourceCaseDetails.mock.mockImplementationOnce(() => ({ type: 'has', data: {} }));
 		sink.fetchSinkCaseDetails.mock.mockImplementationOnce(() => ({ reference: 'CASE-001' }));
 		source.fetchSourceDocuments.mock.mockImplementationOnce(() => []);
+		source.fetchSourceEvents.mock.mockImplementationOnce(() => []);
+		source.fetchSourceServiceUsers.mock.mockImplementationOnce(() => []);
 		validators.validateData.mock.mockImplementationOnce(() => {
 			throw error;
 		});
