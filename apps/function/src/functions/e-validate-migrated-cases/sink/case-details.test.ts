@@ -12,9 +12,10 @@ describe('fetchSinkCaseDetails', () => {
 		const result = await fetchSinkCaseDetails(sinkDatabase, 'CASE-001');
 
 		assert.deepStrictEqual(result, mockAppeal);
-		assert.deepStrictEqual(sinkDatabase.appeal.findUnique.mock.calls[0].arguments[0], {
-			where: { reference: 'CASE-001' }
+		assert.deepStrictEqual(sinkDatabase.appeal.findUnique.mock.calls[0].arguments[0].where, {
+			reference: 'CASE-001'
 		});
+		assert.ok(sinkDatabase.appeal.findUnique.mock.calls[0].arguments[0].include);
 	});
 
 	test('returns null when appeal not found', async () => {
