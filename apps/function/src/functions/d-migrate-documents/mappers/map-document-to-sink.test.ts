@@ -1,0 +1,109 @@
+// @ts-nocheck
+import assert from 'node:assert';
+import { describe, test } from 'node:test';
+import { mapDocumentToSink } from './map-document-to-sink.ts';
+import {
+	mockCompleteDocument,
+	mockDocumentWithDefaults,
+	mockDocumentWithMissingDocumentId,
+	mockDocumentWithMissingFilename,
+	mockDocumentWithMissingVersion,
+	mockMultiVersionDocuments,
+	mockSingleVersionDocument
+} from './test-data/mock-source-documents.ts';
+
+describe('mapDocumentToSink', () => {
+	test('should map single version document correctly', () => {
+		const result = mapDocumentToSink(mockSingleVersionDocument, 100, 1, 'APP/Q9999/D/21/1234567');
+
+		assert.strictEqual(result.guid, 'doc-123');
+		assert.strictEqual(result.name, 'test-document.pdf');
+		assert.strictEqual(result.caseId, 100);
+		assert.strictEqual(result.folderId, 1);
+		assert.strictEqual(result.isDeleted, false);
+		assert.strictEqual(result.latestVersionId, 1);
+		assert.strictEqual(typeof result.versions, 'object');
+		assert.strictEqual(Array.isArray(result.versions.create), true);
+		assert.strictEqual(result.versions.create.length, 1);
+		assert.strictEqual(result.versions.create[0].version, 1);
+		assert.strictEqual(result.versions.create[0].sourceSystem, 'horizon');
+		assert.strictEqual(result.versions.create[0].horizonDataID, 'doc-123');
+	});
+
+	test('should map multiple versions correctly', () => {
+		const result = mapDocumentToSink(mockMultiVersionDocuments, 100, 1, 'APP/123');
+
+		assert.strictEqual(result.versions.create.length, 3);
+		assert.strictEqual(result.versions.create[0].version, 1);
+		assert.strictEqual(result.versions.create[1].version, 2);
+		assert.strictEqual(result.versions.create[2].version, 3);
+		assert.strictEqual(result.latestVersionId, 3);
+	});
+
+	test('should throw error when sourceDocuments array is empty', () => {
+		assert.throws(() => mapDocumentToSink([], 100, 1, 'APP/123'), {
+			name: 'Error',
+			message: 'No source documents provided for mapping'
+		});
+	});
+
+	test('should throw error when documentId is missing', () => {
+		assert.throws(() => mapDocumentToSink(mockDocumentWithMissingDocumentId, 100, 1, 'APP/123'), {
+			name: 'Error',
+			message: 'Document ID is required'
+		});
+	});
+
+	test('should throw error when documents have different documentIds', () => {
+		const mixedDocuments = [
+			{ ...mockSingleVersionDocument[0], documentId: 'doc-123', filename: 'v1.pdf', version: 1 },
+			{ ...mockSingleVersionDocument[0], documentId: 'doc-456', filename: 'v2.pdf', version: 2 }
+		];
+		assert.throws(() => mapDocumentToSink(mixedDocuments, 100, 1, 'APP/123'), {
+			name: 'Error',
+			message: 'All source documents must share the same documentId'
+		});
+	});
+
+	test('should throw error when filename is missing', () => {
+		assert.throws(() => mapDocumentToSink(mockDocumentWithMissingFilename, 100, 1, 'APP/123'), {
+			name: 'Error',
+			message: 'Document filename is required'
+		});
+	});
+
+	test('should handle missing version numbers by using index + 1', () => {
+		const result = mapDocumentToSink(mockDocumentWithMissingVersion, 100, 1, 'APP/123');
+
+		assert.strictEqual(result.versions.create[0].version, 1);
+	});
+
+	test('should map optional fields correctly', () => {
+		const result = mapDocumentToSink(mockCompleteDocument, 100, 1, 'APP/123');
+		const version = result.versions.create[0];
+
+		assert.strictEqual(version.documentType, 'Appeal Statement');
+		assert.strictEqual(version.virusCheckStatus, 'scanned');
+		assert.strictEqual(version.origin, 'pins');
+		assert.strictEqual(version.originalFilename, 'original.pdf');
+		assert.strictEqual(version.description, 'Test description');
+		assert.strictEqual(version.owner, 'John Doe');
+		assert.strictEqual(version.author, 'Jane Smith');
+		assert.strictEqual(version.mime, 'application/pdf');
+		assert.strictEqual(version.fileMD5, 'abc123');
+		assert.strictEqual(version.size, 2048000);
+		assert.strictEqual(version.stage, 'appellant-case');
+		assert.strictEqual(version.documentURI, 'http://example.com/doc');
+	});
+
+	test('should set default values for placeholder fields', () => {
+		const result = mapDocumentToSink(mockDocumentWithDefaults, 100, 1, 'APP/123');
+		const version = result.versions.create[0];
+
+		assert.strictEqual(version.published, false);
+		assert.strictEqual(version.draft, true);
+		assert.strictEqual(version.sourceSystem, 'horizon');
+		assert.strictEqual(version.virusCheckStatus, 'not_scanned');
+		assert.strictEqual(version.isDeleted, false);
+	});
+});
