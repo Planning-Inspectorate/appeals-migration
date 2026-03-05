@@ -2,6 +2,7 @@ import type { Prisma } from '@pins/manage-appeals-database/src/client/client.d.t
 import type { AppealDocument } from '@pins/odw-curated-database/src/client/client.ts';
 import { parseDateOrUndefined } from '../../shared/helpers/index.ts';
 import { buildBlobStoragePath } from '../helpers/map-case-reference-for-storage.ts';
+import { mapHorizonToAppealDocumentType } from '../helpers/map-document-type-to-folder.ts';
 
 const DEFAULT_SOURCE_SYSTEM = 'horizon';
 const DEFAULT_VIRUS_STATUS = 'not_scanned';
@@ -10,7 +11,8 @@ export function mapDocumentToSink(
 	sourceDocuments: AppealDocument[],
 	caseId: number,
 	folderId: number,
-	caseReference: string
+	caseReference: string,
+	blobStorageContainer: string
 ): Prisma.DocumentUncheckedCreateInput {
 	if (sourceDocuments.length === 0) {
 		throw new Error('No source documents provided for mapping');
@@ -44,7 +46,7 @@ export function mapDocumentToSink(
 		return {
 			version: versionNumber,
 			lastModified: parseDateOrUndefined(doc.lastModified),
-			documentType: doc.documentType,
+			documentType: mapHorizonToAppealDocumentType(doc.documentType) ?? doc.documentType,
 			published: false, // Placeholder - will be mapped in full implementation
 			draft: true, // Placeholder - will be mapped in full implementation
 			sourceSystem: doc.sourceSystem ?? DEFAULT_SOURCE_SYSTEM,
@@ -60,15 +62,15 @@ export function mapDocumentToSink(
 			fileMD5: doc.fileMD5,
 			size: doc.size,
 			stage: doc.caseStage,
-			blobStorageContainer: undefined, // Will be set by environment configuration
+			blobStorageContainer,
 			blobStoragePath,
 			documentURI: doc.documentURI,
 			dateCreated: parseDateOrUndefined(doc.dateCreated) ?? new Date(),
 			datePublished: parseDateOrUndefined(doc.datePublished),
 			dateReceived: parseDateOrUndefined(doc.dateReceived),
 			isDeleted: false,
-			isLateEntry: undefined, // Placeholder - will be mapped in full implementation
-			redactionStatusId: undefined // Placeholder - no source mapping available
+			isLateEntry: false, // Placeholder - will be mapped in full implementation
+			redactionStatusId: 1 // Placeholder - no source mapping available
 		} satisfies Prisma.DocumentVersionUncheckedCreateWithoutDocumentInput;
 	});
 

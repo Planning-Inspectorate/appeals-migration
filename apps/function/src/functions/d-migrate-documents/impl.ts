@@ -136,7 +136,13 @@ export function buildMigrateDocuments(service: FunctionService): MigrationFuncti
 		}
 
 		// Map document to sink database models
-		const documentData = mapDocumentToSink(sourceDocuments, sinkCase.id, folderId, caseReference);
+		const documentData = mapDocumentToSink(
+			sourceDocuments,
+			sinkCase.id,
+			folderId,
+			caseReference,
+			service.documentsContainerName
+		);
 
 		// Insert document and versions in a transaction
 		await service.sinkDatabaseClient.$transaction(async (tx) => {

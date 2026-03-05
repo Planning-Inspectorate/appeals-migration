@@ -12,18 +12,45 @@ import {
 	mockSingleVersionDocument
 } from './test-data/mock-source-documents.ts';
 
+// Common test constants
+const TEST_CASE_ID = 100;
+const TEST_FOLDER_ID = 1;
+const TEST_CASE_REFERENCE = 'APP/Q9999/D/21/1234567';
+const TEST_CONTAINER_NAME = 'appeals-documents';
+
+// Helper function to create mock document with custom document type
+function createMockWithDocumentType(documentType: string) {
+	return [
+		{
+			...mockSingleVersionDocument[0],
+			documentType
+		}
+	];
+}
+
+// Helper function to assert basic document structure
+function assertBasicDocumentStructure(result: any, expectedVersionId: number = 1) {
+	assert.strictEqual(result.guid, 'doc-123');
+	assert.strictEqual(result.name, 'test-document.pdf');
+	assert.strictEqual(result.caseId, TEST_CASE_ID);
+	assert.strictEqual(result.folderId, TEST_FOLDER_ID);
+	assert.strictEqual(result.isDeleted, false);
+	assert.strictEqual(result.latestVersionId, expectedVersionId);
+	assert.strictEqual(typeof result.versions, 'object');
+	assert.strictEqual(Array.isArray(result.versions.create), true);
+}
+
 describe('mapDocumentToSink', () => {
 	test('should map single version document correctly', () => {
-		const result = mapDocumentToSink(mockSingleVersionDocument, 100, 1, 'APP/Q9999/D/21/1234567');
+		const result = mapDocumentToSink(
+			mockSingleVersionDocument,
+			TEST_CASE_ID,
+			TEST_FOLDER_ID,
+			TEST_CASE_REFERENCE,
+			TEST_CONTAINER_NAME
+		);
 
-		assert.strictEqual(result.guid, 'doc-123');
-		assert.strictEqual(result.name, 'test-document.pdf');
-		assert.strictEqual(result.caseId, 100);
-		assert.strictEqual(result.folderId, 1);
-		assert.strictEqual(result.isDeleted, false);
-		assert.strictEqual(result.latestVersionId, 1);
-		assert.strictEqual(typeof result.versions, 'object');
-		assert.strictEqual(Array.isArray(result.versions.create), true);
+		assertBasicDocumentStructure(result);
 		assert.strictEqual(result.versions.create.length, 1);
 		assert.strictEqual(result.versions.create[0].version, 1);
 		assert.strictEqual(result.versions.create[0].sourceSystem, 'horizon');
@@ -31,7 +58,13 @@ describe('mapDocumentToSink', () => {
 	});
 
 	test('should map multiple versions correctly', () => {
-		const result = mapDocumentToSink(mockMultiVersionDocuments, 100, 1, 'APP/123');
+		const result = mapDocumentToSink(
+			mockMultiVersionDocuments,
+			TEST_CASE_ID,
+			TEST_FOLDER_ID,
+			TEST_CASE_REFERENCE,
+			TEST_CONTAINER_NAME
+		);
 
 		assert.strictEqual(result.versions.create.length, 3);
 		assert.strictEqual(result.versions.create[0].version, 1);
@@ -41,17 +74,27 @@ describe('mapDocumentToSink', () => {
 	});
 
 	test('should throw error when sourceDocuments array is empty', () => {
-		assert.throws(() => mapDocumentToSink([], 100, 1, 'APP/123'), {
+		assert.throws(() => mapDocumentToSink([], TEST_CASE_ID, TEST_FOLDER_ID, TEST_CASE_REFERENCE, TEST_CONTAINER_NAME), {
 			name: 'Error',
 			message: 'No source documents provided for mapping'
 		});
 	});
 
 	test('should throw error when documentId is missing', () => {
-		assert.throws(() => mapDocumentToSink(mockDocumentWithMissingDocumentId, 100, 1, 'APP/123'), {
-			name: 'Error',
-			message: 'Document ID is required'
-		});
+		assert.throws(
+			() =>
+				mapDocumentToSink(
+					mockDocumentWithMissingDocumentId,
+					TEST_CASE_ID,
+					TEST_FOLDER_ID,
+					TEST_CASE_REFERENCE,
+					TEST_CONTAINER_NAME
+				),
+			{
+				name: 'Error',
+				message: 'Document ID is required'
+			}
+		);
 	});
 
 	test('should throw error when documents have different documentIds', () => {
@@ -59,27 +102,52 @@ describe('mapDocumentToSink', () => {
 			{ ...mockSingleVersionDocument[0], documentId: 'doc-123', filename: 'v1.pdf', version: 1 },
 			{ ...mockSingleVersionDocument[0], documentId: 'doc-456', filename: 'v2.pdf', version: 2 }
 		];
-		assert.throws(() => mapDocumentToSink(mixedDocuments, 100, 1, 'APP/123'), {
-			name: 'Error',
-			message: 'All source documents must share the same documentId'
-		});
+		assert.throws(
+			() => mapDocumentToSink(mixedDocuments, TEST_CASE_ID, TEST_FOLDER_ID, TEST_CASE_REFERENCE, TEST_CONTAINER_NAME),
+			{
+				name: 'Error',
+				message: 'All source documents must share the same documentId'
+			}
+		);
 	});
 
 	test('should throw error when filename is missing', () => {
-		assert.throws(() => mapDocumentToSink(mockDocumentWithMissingFilename, 100, 1, 'APP/123'), {
-			name: 'Error',
-			message: 'Document filename is required'
-		});
+		assert.throws(
+			() =>
+				mapDocumentToSink(
+					mockDocumentWithMissingFilename,
+					TEST_CASE_ID,
+					TEST_FOLDER_ID,
+					TEST_CASE_REFERENCE,
+					TEST_CONTAINER_NAME
+				),
+			{
+				name: 'Error',
+				message: 'Document filename is required'
+			}
+		);
 	});
 
 	test('should handle missing version numbers by using index + 1', () => {
-		const result = mapDocumentToSink(mockDocumentWithMissingVersion, 100, 1, 'APP/123');
+		const result = mapDocumentToSink(
+			mockDocumentWithMissingVersion,
+			TEST_CASE_ID,
+			TEST_FOLDER_ID,
+			TEST_CASE_REFERENCE,
+			TEST_CONTAINER_NAME
+		);
 
 		assert.strictEqual(result.versions.create[0].version, 1);
 	});
 
 	test('should map optional fields correctly', () => {
-		const result = mapDocumentToSink(mockCompleteDocument, 100, 1, 'APP/123');
+		const result = mapDocumentToSink(
+			mockCompleteDocument,
+			TEST_CASE_ID,
+			TEST_FOLDER_ID,
+			TEST_CASE_REFERENCE,
+			TEST_CONTAINER_NAME
+		);
 		const version = result.versions.create[0];
 
 		assert.strictEqual(version.documentType, 'Appeal Statement');
@@ -97,7 +165,13 @@ describe('mapDocumentToSink', () => {
 	});
 
 	test('should set default values for placeholder fields', () => {
-		const result = mapDocumentToSink(mockDocumentWithDefaults, 100, 1, 'APP/123');
+		const result = mapDocumentToSink(
+			mockDocumentWithDefaults,
+			TEST_CASE_ID,
+			TEST_FOLDER_ID,
+			TEST_CASE_REFERENCE,
+			TEST_CONTAINER_NAME
+		);
 		const version = result.versions.create[0];
 
 		assert.strictEqual(version.published, false);
@@ -105,5 +179,46 @@ describe('mapDocumentToSink', () => {
 		assert.strictEqual(version.sourceSystem, 'horizon');
 		assert.strictEqual(version.virusCheckStatus, 'not_scanned');
 		assert.strictEqual(version.isDeleted, false);
+	});
+
+	test('should set blobStorageContainer from config', () => {
+		const result = mapDocumentToSink(
+			mockSingleVersionDocument,
+			TEST_CASE_ID,
+			TEST_FOLDER_ID,
+			TEST_CASE_REFERENCE,
+			'test-container'
+		);
+		const version = result.versions.create[0];
+
+		assert.strictEqual(version.blobStorageContainer, 'test-container');
+	});
+
+	test('should map Horizon document types to APPEAL_DOCUMENT_TYPE constants', () => {
+		const mockWithHorizonType = createMockWithDocumentType('Appellant Final Comment');
+		const result = mapDocumentToSink(
+			mockWithHorizonType,
+			TEST_CASE_ID,
+			TEST_FOLDER_ID,
+			TEST_CASE_REFERENCE,
+			TEST_CONTAINER_NAME
+		);
+		const version = result.versions.create[0];
+
+		assert.strictEqual(version.documentType, 'appellantFinalComment');
+	});
+
+	test('should preserve unmapped document types as-is', () => {
+		const mockWithUnmappedType = createMockWithDocumentType('Unknown Type');
+		const result = mapDocumentToSink(
+			mockWithUnmappedType,
+			TEST_CASE_ID,
+			TEST_FOLDER_ID,
+			TEST_CASE_REFERENCE,
+			TEST_CONTAINER_NAME
+		);
+		const version = result.versions.create[0];
+
+		assert.strictEqual(version.documentType, 'Unknown Type');
 	});
 });
