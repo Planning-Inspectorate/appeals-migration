@@ -68,10 +68,26 @@ describe('validateData', () => {
 
 	test('validates appeal statuses', () => {
 		const source = createSource({ caseValidationDate: '2024-01-15T00:00:00.000Z' });
-		const sink = createSink({ appealStatus: [{ status: 'new' }, { status: 'ready_to_start' }] });
+		const sink = createSink({
+			appealStatus: [
+				{ status: 'new', createdAt: new Date('2024-01-20T14:30:00.000Z') },
+				{ status: 'ready_to_start', createdAt: new Date('2024-01-15T00:00:00.000Z') }
+			]
+		});
 		assert.strictEqual(validate(source, sink), true);
 		assert.strictEqual(validate(source, createSink()), false);
 		assert.strictEqual(validate(createSource(), createSink({ appealStatus: [{ status: 'wrong' }] })), false);
+	});
+
+	test('returns false when appeal status createdAt does not match', () => {
+		const source = createSource({ caseValidationDate: '2024-01-15T00:00:00.000Z' });
+		const sink = createSink({
+			appealStatus: [
+				{ status: 'new', createdAt: new Date('2024-01-20T14:30:00.000Z') },
+				{ status: 'ready_to_start', createdAt: new Date('2099-01-01T00:00:00.000Z') }
+			]
+		});
+		assert.strictEqual(validate(source, sink), false);
 	});
 
 	test('validates specialisms', () => {
@@ -188,19 +204,80 @@ describe('validateData', () => {
 	test('validates hearing event', () => {
 		const event = createEvent({ eventType: 'hearing', eventStartDateTime: '2024-07-01T10:00:00.000Z' });
 		const sink = createSink({
-			hearing: { hearingStartTime: new Date('2024-07-01T10:00:00.000Z'), hearingEndTime: null }
+			hearing: { hearingStartTime: new Date('2024-07-01T10:00:00.000Z'), hearingEndTime: null, address: null }
 		});
 		assert.strictEqual(validate(createSource(), sink, [event]), true);
 		assert.strictEqual(validate(createSource(), createSink(), [event]), false);
 	});
 
+	test('validates hearing event with end time and address', () => {
+		const event = createEvent({
+			eventType: 'hearing',
+			eventStartDateTime: '2024-07-01T10:00:00.000Z',
+			eventEndDateTime: '2024-07-01T16:00:00.000Z',
+			addressLine1: '1 Court St',
+			addressTown: 'Bristol',
+			addressPostcode: 'BS1 1AA'
+		});
+		const sink = createSink({
+			hearing: {
+				hearingStartTime: new Date('2024-07-01T10:00:00.000Z'),
+				hearingEndTime: new Date('2024-07-01T16:00:00.000Z'),
+				address: {
+					addressLine1: '1 Court St',
+					addressLine2: null,
+					addressTown: 'Bristol',
+					addressCounty: null,
+					postcode: 'BS1 1AA'
+				}
+			}
+		});
+		assert.strictEqual(validate(createSource(), sink, [event]), true);
+		assert.strictEqual(
+			validate(
+				createSource(),
+				createSink({
+					hearing: {
+						hearingStartTime: new Date('2024-07-01T10:00:00.000Z'),
+						hearingEndTime: new Date('2024-07-01T16:00:00.000Z'),
+						address: {
+							addressLine1: 'WRONG',
+							addressLine2: null,
+							addressTown: 'Bristol',
+							addressCounty: null,
+							postcode: 'BS1 1AA'
+						}
+					}
+				}),
+				[event]
+			),
+			false
+		);
+	});
+
 	test('validates inquiry event', () => {
 		const event = createEvent({ eventType: 'inquiry', eventStartDateTime: '2024-08-01T10:00:00.000Z' });
 		const sink = createSink({
-			inquiry: { inquiryStartTime: new Date('2024-08-01T10:00:00.000Z'), inquiryEndTime: null }
+			inquiry: { inquiryStartTime: new Date('2024-08-01T10:00:00.000Z'), inquiryEndTime: null, address: null }
 		});
 		assert.strictEqual(validate(createSource(), sink, [event]), true);
 		assert.strictEqual(validate(createSource(), createSink(), [event]), false);
+	});
+
+	test('returns false when event end time does not match', () => {
+		const event = createEvent({
+			eventType: 'hearing',
+			eventStartDateTime: '2024-07-01T10:00:00.000Z',
+			eventEndDateTime: '2024-07-01T16:00:00.000Z'
+		});
+		const sink = createSink({
+			hearing: {
+				hearingStartTime: new Date('2024-07-01T10:00:00.000Z'),
+				hearingEndTime: new Date('2099-01-01T00:00:00.000Z'),
+				address: null
+			}
+		});
+		assert.strictEqual(validate(createSource(), sink, [event]), false);
 	});
 
 	test('validates site visit event', () => {
@@ -263,5 +340,57 @@ describe('validateData', () => {
 		assert.strictEqual(validate(createSource(), sink, [], [appellantUser]), true);
 		assert.strictEqual(validate(createSource(), createSink(), [], [appellantUser]), false);
 		assert.strictEqual(validate(createSource(), sink, [], []), false);
+	});
+
+	test('validates service user address', () => {
+		const appellantUser = createServiceUser({
+			serviceUserType: 'Appellant',
+			firstName: 'Jane',
+			lastName: 'Doe',
+			addressLine1: '10 Main St',
+			addressTown: 'London',
+			postcode: 'SW1A 1AA'
+		});
+		const sink = createSink({
+			appellant: {
+				firstName: 'Jane',
+				lastName: 'Doe',
+				email: null,
+				phoneNumber: null,
+				address: {
+					addressLine1: '10 Main St',
+					addressLine2: null,
+					addressTown: 'London',
+					addressCounty: null,
+					postcode: 'SW1A 1AA',
+					addressCountry: 'United Kingdom'
+				}
+			}
+		});
+		assert.strictEqual(validate(createSource(), sink, [], [appellantUser]), true);
+		assert.strictEqual(
+			validate(
+				createSource(),
+				createSink({
+					appellant: {
+						firstName: 'Jane',
+						lastName: 'Doe',
+						email: null,
+						phoneNumber: null,
+						address: {
+							addressLine1: 'WRONG',
+							addressLine2: null,
+							addressTown: 'London',
+							addressCounty: null,
+							postcode: 'SW1A 1AA',
+							addressCountry: 'United Kingdom'
+						}
+					}
+				}),
+				[],
+				[appellantUser]
+			),
+			false
+		);
 	});
 });

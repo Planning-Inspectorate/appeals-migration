@@ -7,20 +7,12 @@ import type {
 import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
 import { mapEventToSink } from '../../b-migrate-data/mappers/map-event-to-sink.ts';
 import { getServiceUserRole, mapServiceUser } from '../../b-migrate-data/mappers/map-service-user.ts';
+import { APPEAL_REPRESENTATION_TYPE } from '../../b-migrate-data/mappers/map-source-to-sink.ts';
 import { parseDateOrUndefined, parseJsonArray, parseNumber, stringOrUndefined } from '../../shared/helpers/index.ts';
 import type { fetchSinkCaseDetails } from '../sink/case-details.ts';
 
 export type SourceCase = { type: 'has'; data: AppealHas } | { type: 's78'; data: AppealS78 };
 type SinkCase = NonNullable<Awaited<ReturnType<typeof fetchSinkCaseDetails>>>;
-
-const APPEAL_REPRESENTATION_TYPE = Object.freeze({
-	LPA_STATEMENT: 'lpa_statement',
-	APPELLANT_STATEMENT: 'appellant_statement',
-	LPA_FINAL_COMMENT: 'lpa_final_comment',
-	APPELLANT_FINAL_COMMENT: 'appellant_final_comment',
-	LPA_PROOFS_EVIDENCE: 'lpa_proofs_evidence',
-	APPELLANT_PROOFS_EVIDENCE: 'appellant_proofs_evidence'
-});
 
 function compareMappedString(sourceValue: string | null | undefined, sinkValue: string | null | undefined): boolean {
 	return stringOrUndefined(sourceValue) === (sinkValue ?? undefined);
@@ -87,15 +79,62 @@ function validateAllocation(source: AppealHas | AppealS78, sink: SinkCase['alloc
 }
 
 function validateAppealStatus(source: AppealHas | AppealS78, sinkStatuses: SinkCase['appealStatus']): boolean {
-	const expected = new Set<string>();
-	if (source.caseStatus) expected.add(source.caseStatus);
-	if (source.caseValidationDate) expected.add(APPEAL_CASE_STATUS.READY_TO_START);
-	if (source.lpaQuestionnairePublishedDate) expected.add(APPEAL_CASE_STATUS.EVENT);
-	if (source.caseWithdrawnDate) expected.add(APPEAL_CASE_STATUS.WITHDRAWN);
-	if (source.caseTransferredDate) expected.add(APPEAL_CASE_STATUS.TRANSFERRED);
-	if (source.caseCompletedDate) expected.add(APPEAL_CASE_STATUS.COMPLETE);
-	if (sinkStatuses.length !== expected.size) return false;
-	return [...expected].every((s) => sinkStatuses.some((ss) => ss.status === s));
+	const expected: Array<{ status: string; createdAt: Date | undefined }> = [];
+
+	if (source.caseStatus) {
+		expected.push({
+			status: source.caseStatus,
+			createdAt: parseDateOrUndefined(source.caseUpdatedDate)
+		});
+	}
+
+	if (source.caseValidationDate) {
+		expected.push({
+			status: APPEAL_CASE_STATUS.READY_TO_START,
+			createdAt: parseDateOrUndefined(source.caseValidationDate)
+		});
+	}
+
+	if (source.lpaQuestionnairePublishedDate) {
+		expected.push({
+			status: APPEAL_CASE_STATUS.EVENT,
+			createdAt: parseDateOrUndefined(source.lpaQuestionnairePublishedDate)
+		});
+	}
+
+	if (source.caseWithdrawnDate) {
+		expected.push({
+			status: APPEAL_CASE_STATUS.WITHDRAWN,
+			createdAt: parseDateOrUndefined(source.caseWithdrawnDate)
+		});
+	}
+
+	if (source.caseTransferredDate) {
+		expected.push({
+			status: APPEAL_CASE_STATUS.TRANSFERRED,
+			createdAt: parseDateOrUndefined(source.caseTransferredDate)
+		});
+	}
+
+	if (source.transferredCaseClosedDate) {
+		expected.push({
+			status: APPEAL_CASE_STATUS.CLOSED,
+			createdAt: parseDateOrUndefined(source.transferredCaseClosedDate)
+		});
+	}
+
+	if (source.caseCompletedDate) {
+		expected.push({
+			status: APPEAL_CASE_STATUS.COMPLETE,
+			createdAt: parseDateOrUndefined(source.caseCompletedDate)
+		});
+	}
+
+	if (sinkStatuses.length !== expected.length) return false;
+
+	return expected.every((exp) =>
+		sinkStatuses.some((sink) => sink.status === exp.status && compareMappedDate(exp.createdAt, sink.createdAt))
+	);
 }
 
 function validateSpecialisms(source: AppealHas | AppealS78, sinkSpecialisms: SinkCase['specialisms']): boolean {
@@ -281,6 +320,35 @@ function validateAppealGrounds(source: AppealHas | AppealS78, sinkGrounds: SinkC
 	return expected.every((ref) => sinkGrounds.some((g) => g.ground?.groundRef === ref));
 }
 
+function validateEventAddress(
+	mappedAddress:
+		| {
+				addressLine1?: string | null;
+				addressLine2?: string | null;
+				addressTown?: string | null;
+				addressCounty?: string | null;
+				postcode?: string | null;
+		  }
+		| undefined,
+	sinkAddress: {
+		addressLine1: string | null;
+		addressLine2: string | null;
+		addressTown: string | null;
+		addressCounty: string | null;
+		postcode: string | null;
+	} | null
+): boolean {
+	if (!mappedAddress && !sinkAddress) return true;
+	if (!mappedAddress || !sinkAddress) return false;
+	return (
+		compareMappedString(mappedAddress.addressLine1, sinkAddress.addressLine1) &&
+		compareMappedString(mappedAddress.addressLine2, sinkAddress.addressLine2) &&
+		compareMappedString(mappedAddress.addressTown, sinkAddress.addressTown) &&
+		compareMappedString(mappedAddress.addressCounty, sinkAddress.addressCounty) &&
+		compareMappedString(mappedAddress.postcode, sinkAddress.postcode)
+	);
+}
+
 function validateEvents(events: AppealEvent[], sink: SinkCase): boolean {
 	let hasSourceHearing = false;
 	let hasSourceInquiry = false;
@@ -291,14 +359,18 @@ function validateEvents(events: AppealEvent[], sink: SinkCase): boolean {
 		if (mapped.hearing) {
 			hasSourceHearing = true;
 			if (!sink.hearing) return false;
-			if (!compareMappedDate(mapped.hearing.create.hearingStartTime, sink.hearing.hearingStartTime)) return false;
-		}
-		if (mapped.inquiry) {
+			const hearing = mapped.hearing.create;
+			if (!compareMappedDate(hearing.hearingStartTime, sink.hearing.hearingStartTime)) return false;
+			if (!compareMappedDate(hearing.hearingEndTime, sink.hearing.hearingEndTime)) return false;
+			if (!validateEventAddress(hearing.address?.create, sink.hearing.address)) return false;
+		} else if (mapped.inquiry) {
 			hasSourceInquiry = true;
 			if (!sink.inquiry) return false;
-			if (!compareMappedDate(mapped.inquiry.create.inquiryStartTime, sink.inquiry.inquiryStartTime)) return false;
-		}
-		if (mapped.siteVisit) {
+			const inquiry = mapped.inquiry.create;
+			if (!compareMappedDate(inquiry.inquiryStartTime, sink.inquiry.inquiryStartTime)) return false;
+			if (!compareMappedDate(inquiry.inquiryEndTime, sink.inquiry.inquiryEndTime)) return false;
+			if (!validateEventAddress(inquiry.address?.create, sink.inquiry.address)) return false;
+		} else if (mapped.siteVisit) {
 			hasSourceSiteVisit = true;
 			if (!sink.siteVisit || !sink.siteVisit.visitDate || !mapped.siteVisit.create.visitDate) return false;
 			if (!compareMappedDate(mapped.siteVisit.create.visitDate, sink.siteVisit.visitDate)) return false;
@@ -318,22 +390,35 @@ function validateServiceUser(
 ): boolean {
 	if (!sinkUser) return false;
 	const mapped = mapServiceUser(sourceUser);
-	return (
+
+	const baseFieldsMatch =
 		(sinkUser.firstName ?? undefined) === mapped.firstName &&
 		(sinkUser.lastName ?? undefined) === mapped.lastName &&
 		(sinkUser.email ?? undefined) === mapped.email &&
-		(sinkUser.phoneNumber ?? undefined) === mapped.phoneNumber
+		(sinkUser.phoneNumber ?? undefined) === mapped.phoneNumber;
+
+	if (!baseFieldsMatch) return false;
+
+	const mappedAddress = mapped.address?.create;
+	const sinkAddress = sinkUser.address;
+
+	if (!mappedAddress && !sinkAddress) return true;
+	if (!mappedAddress || !sinkAddress) return false;
+
+	return (
+		(sinkAddress.addressLine1 ?? undefined) === mappedAddress.addressLine1 &&
+		(sinkAddress.addressLine2 ?? undefined) === mappedAddress.addressLine2 &&
+		(sinkAddress.addressTown ?? undefined) === mappedAddress.addressTown &&
+		(sinkAddress.addressCounty ?? undefined) === mappedAddress.addressCounty &&
+		(sinkAddress.postcode ?? undefined) === mappedAddress.postcode &&
+		(sinkAddress.addressCountry ?? undefined) === mappedAddress.addressCountry
 	);
 }
 
 function validateServiceUsers(serviceUsers: AppealServiceUser[], sink: SinkCase): boolean {
-	let appellant: AppealServiceUser | undefined;
-	let agent: AppealServiceUser | undefined;
-	for (const user of serviceUsers) {
-		const { isAppellant, isAgent } = getServiceUserRole(user);
-		if (isAppellant) appellant = user;
-		if (isAgent) agent = user;
-	}
+	const appellant = serviceUsers.find((user) => getServiceUserRole(user).isAppellant);
+	const agent = serviceUsers.find((user) => getServiceUserRole(user).isAgent);
+
 	if (appellant && !validateServiceUser(sink.appellant, appellant)) return false;
 	if (!appellant && sink.appellant) return false;
 	if (agent && !validateServiceUser(sink.agent, agent)) return false;
