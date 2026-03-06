@@ -1,16 +1,17 @@
 // @ts-nocheck
 import assert from 'node:assert';
-import { describe, mock, test } from 'node:test';
+import { describe, test } from 'node:test';
+import { createSourceDatabaseMock } from '../mock-data/database.ts';
 import { fetchSourceDocuments } from './documents.ts';
 
 describe('fetchSourceDocuments', () => {
 	test('returns documents for case reference', async () => {
-		const sourceDatabase = { appealDocument: { findMany: mock.fn() } };
+		const sourceDatabase = createSourceDatabaseMock();
 		const mockDocuments = [
 			{ id: 1, caseReference: 'CASE-001' },
 			{ id: 2, caseReference: 'CASE-001' }
 		];
-		sourceDatabase.appealDocument.findMany.mock.mockImplementationOnce(() => mockDocuments);
+		sourceDatabase.appealDocument.findMany.mock.mockImplementationOnce(async () => mockDocuments);
 
 		const result = await fetchSourceDocuments(sourceDatabase, 'CASE-001');
 
@@ -21,8 +22,8 @@ describe('fetchSourceDocuments', () => {
 	});
 
 	test('returns empty array when no documents found', async () => {
-		const sourceDatabase = { appealDocument: { findMany: mock.fn() } };
-		sourceDatabase.appealDocument.findMany.mock.mockImplementationOnce(() => []);
+		const sourceDatabase = createSourceDatabaseMock();
+		sourceDatabase.appealDocument.findMany.mock.mockImplementationOnce(async () => []);
 
 		const result = await fetchSourceDocuments(sourceDatabase, 'CASE-999');
 
