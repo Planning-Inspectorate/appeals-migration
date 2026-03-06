@@ -1,19 +1,19 @@
 import type { CaseToMigrate } from '@pins/appeals-migration-database/src/client/client.ts';
 import type { FunctionService } from '../../service.ts';
 import type { MigrationFunction } from '../../types.ts';
+import { fetchEventDetails } from '../b-migrate-data/source/event-details.ts';
+import { fetchServiceUsers } from '../b-migrate-data/source/service-users.ts';
 import { fetchSinkCaseDetails } from './sink/case-details.ts';
 import { fetchSourceCaseDetails } from './source/case-details.ts';
 import { fetchSourceDocuments } from './source/documents.ts';
-import { fetchSourceEvents } from './source/event-details.ts';
-import { fetchSourceServiceUsers } from './source/service-users.ts';
 import { validateData } from './validators/validate-data.ts';
 import { validateDocuments } from './validators/validate-documents.ts';
 
 type Source = {
 	fetchSourceCaseDetails: typeof fetchSourceCaseDetails;
 	fetchSourceDocuments: typeof fetchSourceDocuments;
-	fetchSourceEvents: typeof fetchSourceEvents;
-	fetchSourceServiceUsers: typeof fetchSourceServiceUsers;
+	fetchSourceEvents: typeof fetchEventDetails;
+	fetchSourceServiceUsers: typeof fetchServiceUsers;
 };
 
 type Sink = {
@@ -28,8 +28,8 @@ type Validators = {
 const defaultSource: Source = {
 	fetchSourceCaseDetails,
 	fetchSourceDocuments,
-	fetchSourceEvents,
-	fetchSourceServiceUsers
+	fetchSourceEvents: fetchEventDetails,
+	fetchSourceServiceUsers: fetchServiceUsers
 };
 
 const defaultSink: Sink = {

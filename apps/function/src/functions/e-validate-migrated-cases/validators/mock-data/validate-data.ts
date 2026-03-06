@@ -43,7 +43,7 @@ const baseSink = {
 	casePublishedDate: new Date('2024-01-28T16:00:00.000Z'),
 	appealTimetable: null,
 	allocation: null,
-	appealStatus: [{ status: 'new' }],
+	appealStatus: [{ status: 'new', createdAt: new Date('2024-01-20T14:30:00.000Z') }],
 	specialisms: [],
 	address: null,
 	inspectorDecision: null,
