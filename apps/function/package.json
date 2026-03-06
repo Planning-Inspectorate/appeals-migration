@@ -10,6 +10,7 @@
     "dev-list-documents": "node src/dev/run-c-list-documents.ts",
     "dev-migrate-documents": "node src/dev/run-d-migrate-documents.ts",
     "dev-validate": "node src/dev/run-e-validate.ts",
+    "dev-seed": "node src/dev/seed-dev.ts",
     "start": "func start",
     "prepare-package": "node src/package.ts",
     "test": "node --test"
