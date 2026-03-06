@@ -47,6 +47,7 @@ export function buildListCasesToMigrate(
 			const sourceDatabase = service.sourceDatabaseClient;
 
 			const params = await migration.readToMigrateParameters(migrationDatabase);
+			context.log('Read', params.length, 'parameters');
 
 			const allRefs = new Set<string>();
 
@@ -56,6 +57,8 @@ export function buildListCasesToMigrate(
 				const refs = await source.fetchCaseReferences(sourceDatabase, whereClause, whereClause);
 				refs.forEach((r) => allRefs.add(r));
 			}
+
+			context.log('Upserting', allRefs.size, 'cases');
 
 			await migration.upsertCaseReferences(migrationDatabase, Array.from(allRefs));
 		} catch (error) {
