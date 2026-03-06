@@ -5,6 +5,11 @@
   "main": "src/functions/*.ts",
   "type": "module",
   "scripts": {
+    "dev-list-cases": "node src/dev/run-a-list-cases.ts",
+    "dev-migrate-data": "node src/dev/run-b-migrate-data.ts",
+    "dev-list-documents": "node src/dev/run-c-list-documents.ts",
+    "dev-migrate-documents": "node src/dev/run-d-migrate-documents.ts",
+    "dev-validate": "node src/dev/run-e-validate.ts",
     "start": "func start",
     "prepare-package": "node src/package.ts",
     "test": "node --test"

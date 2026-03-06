@@ -71,7 +71,7 @@ async function completeCaseDocumentsStepIfFinished(
 	});
 }
 
-async function handleMigration(
+export async function handleMigration(
 	service: FunctionService,
 	name: string,
 	migrationFunction: MigrationFunction,
