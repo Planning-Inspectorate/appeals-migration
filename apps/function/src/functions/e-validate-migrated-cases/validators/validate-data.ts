@@ -304,8 +304,10 @@ function validateRepresentations(source: AppealHas | AppealS78, sinkReps: SinkCa
 	addIfDate(APPEAL_REPRESENTATION_TYPE.LPA_FINAL_COMMENT, s78.lpaCommentsSubmittedDate);
 	addIfDate(APPEAL_REPRESENTATION_TYPE.LPA_PROOFS_EVIDENCE, s78.lpaProofsSubmittedDate);
 	addIfDate(APPEAL_REPRESENTATION_TYPE.LPA_STATEMENT, s78.lpaStatementSubmittedDate);
-	if (expected.length !== sinkReps.length) return false;
-	return expected.every((type) => sinkReps.some((r) => r.representationType === type));
+	// Exclude 'comment' type representations - those are interested parties validated separately
+	const nonCommentReps = sinkReps.filter((r) => r.representationType !== APPEAL_REPRESENTATION_TYPE.COMMENT);
+	if (expected.length !== nonCommentReps.length) return false;
+	return expected.every((type) => nonCommentReps.some((r) => r.representationType === type));
 }
 
 function validateAppealGrounds(source: AppealHas | AppealS78, sinkGrounds: SinkCase['appealGrounds']): boolean {
@@ -418,12 +420,46 @@ function validateServiceUser(
 function validateServiceUsers(serviceUsers: AppealServiceUser[], sink: SinkCase): boolean {
 	const appellant = serviceUsers.find((user) => getServiceUserRole(user).isAppellant);
 	const agent = serviceUsers.find((user) => getServiceUserRole(user).isAgent);
+	const interestedParties = serviceUsers.filter((user) => getServiceUserRole(user).isInterestedParty);
+	const rule6Parties = serviceUsers.filter((user) => getServiceUserRole(user).isRule6Party);
 
 	if (appellant && !validateServiceUser(sink.appellant, appellant)) return false;
 	if (!appellant && sink.appellant) return false;
 	if (agent && !validateServiceUser(sink.agent, agent)) return false;
 	if (!agent && sink.agent) return false;
+
+	const sinkInterestedPartyReps = sink.representations.filter(
+		(r) => r.representationType === APPEAL_REPRESENTATION_TYPE.COMMENT && r.represented
+	);
+	if (interestedParties.length !== sinkInterestedPartyReps.length) return false;
+	for (const ip of interestedParties) {
+		const mapped = mapServiceUser(ip);
+		const match = sinkInterestedPartyReps.find(
+			(r) => r.represented && r.represented.email === mapped.email && r.represented.firstName === mapped.firstName
+		);
+		if (!match) return false;
+	}
+
+	if (rule6Parties.length !== sink.appealRule6Parties.length) return false;
+	for (const r6 of rule6Parties) {
+		const mapped = mapServiceUser(r6);
+		const match = sink.appealRule6Parties.find(
+			(r) => r.serviceUser && r.serviceUser.email === mapped.email && r.serviceUser.firstName === mapped.firstName
+		);
+		if (!match) return false;
+	}
+
 	return true;
+}
+
+function validateParentAppeals(source: AppealHas | AppealS78, sinkParentAppeals: SinkCase['parentAppeals']): boolean {
+	if (source.linkedCaseStatus !== 'child') {
+		return sinkParentAppeals.length === 0;
+	}
+	if (!source.leadCaseReference) return false;
+	if (sinkParentAppeals.length !== 1) return false;
+	const parent = sinkParentAppeals[0];
+	return parent.parentRef === source.leadCaseReference && parent.childRef === source.caseReference;
 }
 
 export function validateData(
@@ -437,6 +473,13 @@ export function validateData(
 	return (
 		sinkCase.reference === source.caseReference &&
 		compareMappedString(source.submissionId, sinkCase.submissionId) &&
+		compareMappedString(source.caseType, sinkCase.appealType?.key) &&
+		compareMappedString(source.caseProcedure, sinkCase.procedureType?.key) &&
+		compareMappedString(source.lpaCode, sinkCase.lpa?.lpaCode) &&
+		compareMappedString(source.caseOfficerId, sinkCase.caseOfficer?.azureAdUserId) &&
+		compareMappedString(source.inspectorId, sinkCase.inspector?.azureAdUserId) &&
+		compareMappedString(source.padsSapId, sinkCase.padsInspector?.sapId) &&
+		validateParentAppeals(source, sinkCase.parentAppeals) &&
 		compareMappedString(source.applicationReference, sinkCase.applicationReference) &&
 		compareMappedDate(source.caseCreatedDate, sinkCase.caseCreatedDate) &&
 		compareMappedDate(source.caseUpdatedDate, sinkCase.caseUpdatedDate) &&

@@ -31,6 +31,27 @@ describe('validateData', () => {
 		}
 	});
 
+	test('validates appealType, procedureType, and lpa', () => {
+		assert.strictEqual(validate(createSource({ caseType: 'D' }), createSink({ appealType: { key: 'D' } })), true);
+		assert.strictEqual(validate(createSource({ caseType: 'D' }), createSink({ appealType: { key: 'WRONG' } })), false);
+		assert.strictEqual(
+			validate(createSource({ caseProcedure: 'written' }), createSink({ procedureType: { key: 'WRONG' } })),
+			false
+		);
+		assert.strictEqual(validate(createSource({ lpaCode: 'LPA001' }), createSink({ lpa: { lpaCode: 'WRONG' } })), false);
+	});
+
+	test('validates caseOfficer and inspector', () => {
+		const source = createSource({ caseOfficerId: 'officer-123', inspectorId: 'inspector-456' });
+		const sink = createSink({
+			caseOfficer: { azureAdUserId: 'officer-123' },
+			inspector: { azureAdUserId: 'inspector-456' }
+		});
+		assert.strictEqual(validate(source, sink), true);
+		assert.strictEqual(validate(source, createSink({ caseOfficer: { azureAdUserId: 'WRONG' } })), false);
+		assert.strictEqual(validate(source, createSink({ inspector: { azureAdUserId: 'WRONG' } })), false);
+	});
+
 	test('handles null/undefined equivalence correctly', () => {
 		assert.strictEqual(validate(createSource({ submissionId: null }), createSink({ submissionId: null })), true);
 		assert.strictEqual(validate(createSource({ submissionId: null }), createSink({ submissionId: 'SUB-X' })), false);
@@ -88,6 +109,27 @@ describe('validateData', () => {
 			]
 		});
 		assert.strictEqual(validate(source, sink), false);
+	});
+
+	test('validates additional appeal status types', () => {
+		const source = createSource({
+			lpaQuestionnairePublishedDate: '2024-02-01T00:00:00.000Z',
+			caseWithdrawnDate: '2024-02-15T00:00:00.000Z',
+			caseTransferredDate: '2024-03-01T00:00:00.000Z',
+			transferredCaseClosedDate: '2024-03-15T00:00:00.000Z',
+			caseCompletedDate: '2024-04-01T00:00:00.000Z'
+		});
+		const sink = createSink({
+			appealStatus: [
+				{ status: 'new', createdAt: new Date('2024-01-20T14:30:00.000Z') },
+				{ status: 'event', createdAt: new Date('2024-02-01T00:00:00.000Z') },
+				{ status: 'withdrawn', createdAt: new Date('2024-02-15T00:00:00.000Z') },
+				{ status: 'transferred', createdAt: new Date('2024-03-01T00:00:00.000Z') },
+				{ status: 'closed', createdAt: new Date('2024-03-15T00:00:00.000Z') },
+				{ status: 'complete', createdAt: new Date('2024-04-01T00:00:00.000Z') }
+			]
+		});
+		assert.strictEqual(validate(source, sink), true);
 	});
 
 	test('validates specialisms', () => {
@@ -390,6 +432,59 @@ describe('validateData', () => {
 				[],
 				[appellantUser]
 			),
+			false
+		);
+	});
+
+	test('validates interested party service users', () => {
+		const interestedParty = createServiceUser({
+			serviceUserType: 'InterestedParty',
+			firstName: 'Alice',
+			lastName: 'Smith',
+			emailAddress: 'alice@example.com'
+		});
+		const sink = createSink({
+			representations: [
+				{
+					representationType: 'comment',
+					represented: { firstName: 'Alice', lastName: 'Smith', email: 'alice@example.com' }
+				}
+			]
+		});
+		assert.strictEqual(validate(createSource(), sink, [], [interestedParty]), true);
+		assert.strictEqual(validate(createSource(), createSink(), [], [interestedParty]), false);
+	});
+
+	test('validates rule 6 party service users', () => {
+		const rule6Party = createServiceUser({
+			serviceUserType: 'Rule6Party',
+			firstName: 'Bob',
+			lastName: 'Jones',
+			emailAddress: 'bob@example.com'
+		});
+		const sink = createSink({
+			appealRule6Parties: [{ serviceUser: { firstName: 'Bob', lastName: 'Jones', email: 'bob@example.com' } }]
+		});
+		assert.strictEqual(validate(createSource(), sink, [], [rule6Party]), true);
+		assert.strictEqual(validate(createSource(), createSink(), [], [rule6Party]), false);
+	});
+
+	test('validates padsInspector', () => {
+		const source = createSource({ padsSapId: 'SAP-123' });
+		const sink = createSink({ padsInspector: { sapId: 'SAP-123' } });
+		assert.strictEqual(validate(source, sink), true);
+		assert.strictEqual(validate(source, createSink({ padsInspector: { sapId: 'WRONG' } })), false);
+	});
+
+	test('validates parentAppeals for linked child case', () => {
+		const source = createSource({ linkedCaseStatus: 'child', leadCaseReference: 'PARENT-001' });
+		const sink = createSink({
+			parentAppeals: [{ parentRef: 'PARENT-001', childRef: 'CASE-001' }]
+		});
+		assert.strictEqual(validate(source, sink), true);
+		assert.strictEqual(validate(source, createSink()), false);
+		assert.strictEqual(
+			validate(source, createSink({ parentAppeals: [{ parentRef: 'WRONG', childRef: 'CASE-001' }] })),
 			false
 		);
 	});
