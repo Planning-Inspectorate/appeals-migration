@@ -29,3 +29,11 @@ See also [Code and test Azure Functions locally](https://learn.microsoft.com/en-
 * Run `npm run start` in `apps/function` to start the function(s)
 
 The example function runs on a schedule and prints a message to the console
+
+To run functions individually for testing, scripts are provided:
+
+* `npm run dev-list-cases`
+* `npm run dev-migrate-data -- <case-ref>`
+* `npm run dev-list-documents -- <case-ref>`
+* `npm run dev-migrate-documents -- <doc-id>`
+* `npm run dev-validate -- <case-ref>`
