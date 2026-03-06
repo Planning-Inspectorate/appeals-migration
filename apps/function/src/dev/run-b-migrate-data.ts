@@ -8,7 +8,7 @@ import { cleanup, getCase, mockContext } from './util.ts';
 async function run() {
 	const { service, caseToMigrate } = await getCase();
 	const migrator = buildMigrateData(service);
-	await handleMigration(service, 'list-documents', migrator, 'dataStepId', caseToMigrate, mockContext());
+	await handleMigration(service, 'migrate-data', migrator, 'dataStepId', caseToMigrate, mockContext());
 	await cleanup(service);
 }
 
