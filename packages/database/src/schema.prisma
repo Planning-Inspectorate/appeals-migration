@@ -51,8 +51,10 @@ model CaseToMigrate {
   ValidationStep   MigrationStep @relation("ValidationStep", fields: [validationStepId], references: [id], onUpdate: NoAction, onDelete: NoAction)
 
   // validation outcome
-  dataValidated      Boolean?
-  documentsValidated Boolean?
+  dataValidated            Boolean?
+  dataValidationErrors     String?  @db.NVarChar(MAX)
+  documentsValidated       Boolean?
+  documentValidationErrors String?  @db.NVarChar(MAX)
 
   DocumentToMigrate DocumentToMigrate[] @relation("CaseToMigrateDocuments")
 }
