@@ -26,9 +26,12 @@ function compareMappedString(sourceValue: string | null | undefined, sinkValue: 
 	return stringOrUndefined(sourceValue) === (sinkValue ?? undefined);
 }
 
-function compareMappedDate(sourceValue: string | null | undefined, sinkValue: Date | null | undefined): boolean {
+function compareMappedDate(
+	sourceValue: string | Date | null | undefined,
+	sinkValue: string | Date | null | undefined
+): boolean {
 	const mapped = parseDateOrUndefined(sourceValue);
-	const sinkDate = sinkValue ?? undefined;
+	const sinkDate = parseDateOrUndefined(sinkValue);
 	if (mapped === undefined && sinkDate === undefined) return true;
 	if (mapped === undefined || sinkDate === undefined) return false;
 	return mapped.getTime() === sinkDate.getTime();
@@ -41,18 +44,27 @@ function compareMappedNumber(
 	return (parseNumber(sourceValue) ?? null) === (sinkValue ?? null);
 }
 
+function validateArrayMatch<S, T>(
+	expected: S[],
+	sinkItems: T[],
+	getExpectedKey: (item: S) => string | null | undefined,
+	getSinkKey: (item: T) => string | null | undefined
+): boolean {
+	if (expected.length !== sinkItems.length) return false;
+	return expected.every((e) => sinkItems.some((s) => getSinkKey(s) === getExpectedKey(e)));
+}
+
 function validateAppealTimetable(source: AppealHas | AppealS78, sink: SinkCase['appealTimetable']): boolean {
 	const s78 = source as AppealS78;
-	const mapped = {
-		lpaQuestionnaireDueDate: parseDateOrUndefined(source.lpaQuestionnaireDueDate),
-		planningObligationDueDate: parseDateOrUndefined(s78.planningObligationDueDate),
-		finalCommentsDueDate: parseDateOrUndefined(s78.finalCommentsDueDate),
-		ipCommentsDueDate: parseDateOrUndefined(s78.interestedPartyRepsDueDate),
-		proofOfEvidenceAndWitnessesDueDate: parseDateOrUndefined(s78.proofsOfEvidenceDueDate),
-		lpaStatementDueDate: parseDateOrUndefined(s78.statementDueDate),
-		statementOfCommonGroundDueDate: parseDateOrUndefined(s78.statementOfCommonGroundDueDate)
-	};
-	const shouldExist = Object.values(mapped).some((v) => v !== undefined);
+	const shouldExist = [
+		source.lpaQuestionnaireDueDate,
+		s78.planningObligationDueDate,
+		s78.finalCommentsDueDate,
+		s78.interestedPartyRepsDueDate,
+		s78.proofsOfEvidenceDueDate,
+		s78.statementDueDate,
+		s78.statementOfCommonGroundDueDate
+	].some((v) => parseDateOrUndefined(v) !== undefined);
 
 	if (!shouldExist && !sink) return true;
 	if (!sink) return false;
@@ -88,8 +100,12 @@ function validateAppealStatus(source: AppealHas | AppealS78, sinkStatuses: SinkC
 
 function validateSpecialisms(source: AppealHas | AppealS78, sinkSpecialisms: SinkCase['specialisms']): boolean {
 	const expected = [...new Set(parseJsonArray<string>(source.caseSpecialisms, 'specialisms').filter(Boolean))];
-	if (expected.length !== sinkSpecialisms.length) return false;
-	return expected.every((name) => sinkSpecialisms.some((ss) => ss.specialism.name === name));
+	return validateArrayMatch(
+		expected,
+		sinkSpecialisms,
+		(name) => name,
+		(s) => s.specialism.name
+	);
 }
 
 function validateAddress(source: AppealHas | AppealS78, sink: SinkCase['address']): boolean {
@@ -137,31 +153,36 @@ function validateAppellantCase(source: AppealHas | AppealS78, sink: SinkCase['ap
 
 function validateChildAppeals(source: AppealHas | AppealS78, sinkAppeals: SinkCase['childAppeals']): boolean {
 	const refs = parseJsonArray<string>(source.nearbyCaseReferences, 'nearbyCaseReferences');
-	if (refs.length !== sinkAppeals.length) return false;
-	return refs.every((ref) => sinkAppeals.some((s) => s.childRef === ref.trim()));
+	return validateArrayMatch(
+		refs,
+		sinkAppeals,
+		(ref) => ref.trim(),
+		(s) => s.childRef
+	);
 }
 
 function validateNeighbouringSites(source: AppealHas | AppealS78, sinkSites: SinkCase['neighbouringSites']): boolean {
 	type Addr = { neighbouringSiteAddressLine1?: string | null };
 	const addrs = parseJsonArray<Addr>(source.neighbouringSiteAddresses, 'neighbouringSiteAddresses');
-	if (addrs.length !== sinkSites.length) return false;
-	return addrs.every((addr) =>
-		sinkSites.some((s) => s.address?.addressLine1 === (addr.neighbouringSiteAddressLine1 ?? null))
+	return validateArrayMatch(
+		addrs,
+		sinkSites,
+		(a) => a.neighbouringSiteAddressLine1 ?? null,
+		(s) => s.address?.addressLine1 ?? null
 	);
 }
 
 function validateLpaQuestionnaire(source: AppealHas | AppealS78, sink: SinkCase['lpaQuestionnaire']): boolean {
-	const mappedScalars = {
-		lpaQuestionnaireSubmittedDate: parseDateOrUndefined(source.lpaQuestionnaireSubmittedDate),
-		lpaqCreatedDate: parseDateOrUndefined(source.lpaQuestionnaireCreatedDate),
-		lpaStatement: stringOrUndefined(source.lpaStatement),
-		isCorrectAppealType: source.isCorrectAppealType ?? undefined,
-		inConservationArea: source.inConservationArea ?? undefined,
-		lpaProcedurePreference: stringOrUndefined(source.lpaProcedurePreference),
-		importantInformation: stringOrUndefined(source.importantInformation),
-		targetDate: parseDateOrUndefined(source.targetDate)
-	};
-	const shouldExist = Object.values(mappedScalars).some((v) => v !== undefined);
+	const shouldExist = [
+		parseDateOrUndefined(source.lpaQuestionnaireSubmittedDate),
+		parseDateOrUndefined(source.lpaQuestionnaireCreatedDate),
+		stringOrUndefined(source.lpaStatement),
+		source.isCorrectAppealType ?? undefined,
+		source.inConservationArea ?? undefined,
+		stringOrUndefined(source.lpaProcedurePreference),
+		stringOrUndefined(source.importantInformation),
+		parseDateOrUndefined(source.targetDate)
+	].some((v) => v !== undefined);
 
 	if (!shouldExist && !sink) return true;
 	if (!sink) return false;
@@ -187,8 +208,12 @@ function validateLpaNotificationMethods(
 		: NonNullable<SinkCase['lpaQuestionnaire']>['lpaNotificationMethods']
 ): boolean {
 	const expected = parseJsonArray<string>(source.notificationMethod, 'notificationMethod');
-	if (expected.length !== sinkMethods.length) return false;
-	return expected.every((key) => sinkMethods.some((m) => m.lpaNotificationMethod.key === key));
+	return validateArrayMatch(
+		expected,
+		sinkMethods,
+		(key) => key,
+		(m) => m.lpaNotificationMethod.key
+	);
 }
 
 function validateListedBuildingDetails(
@@ -202,9 +227,12 @@ function validateListedBuildingDetails(
 		(source as AppealS78).changedListedBuildingNumbers,
 		'changedListedBuildingNumbers'
 	);
-	const expected = [...affected, ...changed];
-	if (expected.length !== sinkDetails.length) return false;
-	return expected.every((listEntry) => sinkDetails.some((d) => d.listEntry === listEntry));
+	return validateArrayMatch(
+		[...affected, ...changed],
+		sinkDetails,
+		(entry) => entry,
+		(d) => d.listEntry
+	);
 }
 
 function validateDesignatedSiteNames(
@@ -217,8 +245,12 @@ function validateDesignatedSiteNames(
 		source.designatedSitesNames as string | null | undefined,
 		'designatedSitesNames'
 	);
-	if (expected.length !== sinkNames.length) return false;
-	return expected.every((key) => sinkNames.some((n) => n.designatedSite.key === key));
+	return validateArrayMatch(
+		expected,
+		sinkNames,
+		(key) => key,
+		(n) => n.designatedSite.key
+	);
 }
 
 function validateRepresentations(source: AppealHas | AppealS78, sinkReps: SinkCase['representations']): boolean {
@@ -249,14 +281,6 @@ function validateAppealGrounds(source: AppealHas | AppealS78, sinkGrounds: SinkC
 	return expected.every((ref) => sinkGrounds.some((g) => g.ground?.groundRef === ref));
 }
 
-function compareDates(a: Date | string | null | undefined, b: Date | string | null | undefined): boolean {
-	const dateA = parseDateOrUndefined(a as string | Date | null | undefined);
-	const dateB = parseDateOrUndefined(b as string | Date | null | undefined);
-	if (dateA === undefined && dateB === undefined) return true;
-	if (!dateA || !dateB) return false;
-	return dateA.getTime() === dateB.getTime();
-}
-
 function validateEvents(events: AppealEvent[], sink: SinkCase): boolean {
 	let hasSourceHearing = false;
 	let hasSourceInquiry = false;
@@ -267,17 +291,17 @@ function validateEvents(events: AppealEvent[], sink: SinkCase): boolean {
 		if (mapped.hearing) {
 			hasSourceHearing = true;
 			if (!sink.hearing) return false;
-			if (!compareDates(mapped.hearing.create.hearingStartTime, sink.hearing.hearingStartTime)) return false;
+			if (!compareMappedDate(mapped.hearing.create.hearingStartTime, sink.hearing.hearingStartTime)) return false;
 		}
 		if (mapped.inquiry) {
 			hasSourceInquiry = true;
 			if (!sink.inquiry) return false;
-			if (!compareDates(mapped.inquiry.create.inquiryStartTime, sink.inquiry.inquiryStartTime)) return false;
+			if (!compareMappedDate(mapped.inquiry.create.inquiryStartTime, sink.inquiry.inquiryStartTime)) return false;
 		}
 		if (mapped.siteVisit) {
 			hasSourceSiteVisit = true;
 			if (!sink.siteVisit || !sink.siteVisit.visitDate || !mapped.siteVisit.create.visitDate) return false;
-			if (!compareDates(mapped.siteVisit.create.visitDate, sink.siteVisit.visitDate)) return false;
+			if (!compareMappedDate(mapped.siteVisit.create.visitDate, sink.siteVisit.visitDate)) return false;
 		}
 	}
 
