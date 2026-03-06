@@ -4,6 +4,13 @@ export async function fetchSinkCaseDetails(sinkDatabase: SinkPrismaClient, caseR
 	return sinkDatabase.appeal.findUnique({
 		where: { reference: caseReference },
 		include: {
+			appealType: true,
+			procedureType: true,
+			lpa: true,
+			caseOfficer: true,
+			inspector: true,
+			padsInspector: true,
+			parentAppeals: true,
 			appealTimetable: true,
 			allocation: true,
 			appealStatus: true,
@@ -20,7 +27,8 @@ export async function fetchSinkCaseDetails(sinkDatabase: SinkPrismaClient, caseR
 					designatedSiteNames: { include: { designatedSite: true } }
 				}
 			},
-			representations: true,
+			representations: { include: { represented: { include: { address: true } } } },
+			appealRule6Parties: { include: { serviceUser: { include: { address: true } } } },
 			appealGrounds: { include: { ground: true } },
 			hearing: { include: { address: true } },
 			inquiry: { include: { address: true } },

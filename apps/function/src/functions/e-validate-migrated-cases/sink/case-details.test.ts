@@ -17,6 +17,13 @@ describe('fetchSinkCaseDetails', () => {
 			reference: 'CASE-001'
 		});
 		assert.deepStrictEqual(sinkDatabase.appeal.findUnique.mock.calls[0].arguments[0].include, {
+			appealType: true,
+			procedureType: true,
+			lpa: true,
+			caseOfficer: true,
+			inspector: true,
+			padsInspector: true,
+			parentAppeals: true,
 			appealTimetable: true,
 			allocation: true,
 			appealStatus: true,
@@ -33,7 +40,8 @@ describe('fetchSinkCaseDetails', () => {
 					designatedSiteNames: { include: { designatedSite: true } }
 				}
 			},
-			representations: true,
+			representations: { include: { represented: { include: { address: true } } } },
+			appealRule6Parties: { include: { serviceUser: { include: { address: true } } } },
 			appealGrounds: { include: { ground: true } },
 			hearing: { include: { address: true } },
 			inquiry: { include: { address: true } },
