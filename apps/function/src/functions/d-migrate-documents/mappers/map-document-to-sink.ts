@@ -2,7 +2,6 @@ import type { Prisma } from '@pins/manage-appeals-database/src/client/client.d.t
 import type { AppealDocument } from '@pins/odw-curated-database/src/client/client.ts';
 import { parseDateOrUndefined } from '../../shared/helpers/index.ts';
 import { buildBlobStoragePath } from '../helpers/map-case-reference-for-storage.ts';
-import { mapHorizonToAppealDocumentType } from '../helpers/map-document-type-to-folder.ts';
 
 const DEFAULT_SOURCE_SYSTEM = 'horizon';
 const DEFAULT_VIRUS_STATUS = 'not_scanned';
@@ -12,7 +11,8 @@ export function mapDocumentToSink(
 	caseId: number,
 	folderId: number,
 	caseReference: string,
-	blobStorageContainer: string
+	blobStorageContainer: string,
+	appealDocumentType: string
 ): Prisma.DocumentUncheckedCreateInput {
 	if (sourceDocuments.length === 0) {
 		throw new Error('No source documents provided for mapping');
@@ -39,14 +39,17 @@ export function mapDocumentToSink(
 		}
 	});
 
-	const versions = sourceDocuments.map((doc, index) => {
+	// Sort by version to ensure correct ordering
+	const sortedDocuments = [...sourceDocuments].sort((a, b) => (a.version ?? 0) - (b.version ?? 0));
+
+	const versions = sortedDocuments.map((doc, index) => {
 		const versionNumber = doc.version ?? index + 1;
 		const blobStoragePath = buildBlobStoragePath(caseReference, documentId, versionNumber, doc.filename!);
 
 		return {
 			version: versionNumber,
 			lastModified: parseDateOrUndefined(doc.lastModified),
-			documentType: mapHorizonToAppealDocumentType(doc.documentType) ?? doc.documentType,
+			documentType: appealDocumentType,
 			published: false, // Placeholder - will be mapped in full implementation
 			draft: true, // Placeholder - will be mapped in full implementation
 			sourceSystem: doc.sourceSystem ?? DEFAULT_SOURCE_SYSTEM,
@@ -74,7 +77,8 @@ export function mapDocumentToSink(
 		} satisfies Prisma.DocumentVersionUncheckedCreateWithoutDocumentInput;
 	});
 
-	const latestVersionId = Math.max(...versions.map((v) => v.version));
+	// Latest version is the last one after sorting
+	const latestVersionId = versions[versions.length - 1]!.version;
 
 	return {
 		guid: documentId,

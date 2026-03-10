@@ -1,96 +1,78 @@
 // @ts-nocheck
 import assert from 'node:assert';
 import { describe, test } from 'node:test';
-import {
-	getFolderPathForDocumentType,
-	isRepresentationAttachment,
-	mapHorizonToAppealDocumentType
-} from './map-document-type-to-folder.ts';
+import { mapHorizonDocumentTypeAndFolder } from './map-document-type-to-folder.ts';
 
-describe('getFolderPathForDocumentType', () => {
-	test('returns correct folder path for representation attachment types', () => {
-		assert.strictEqual(
-			getFolderPathForDocumentType('Appellant Final Comment'),
-			'representation/representationAttachments'
-		);
-		assert.strictEqual(
-			getFolderPathForDocumentType('LPA Proof of Evidence'),
-			'representation/representationAttachments'
-		);
-		assert.strictEqual(getFolderPathForDocumentType('Rule 6 Statement'), 'representation/representationAttachments');
+describe('mapHorizonDocumentTypeAndFolder', () => {
+	test('maps confirmed Horizon types to appellant-case folder', () => {
+		const result = mapHorizonDocumentTypeAndFolder('Application Form');
+		assert.strictEqual(result.appealDocumentType, 'originalApplicationForm');
+		assert.strictEqual(result.folderPath, 'appellant-case');
 	});
 
-	test('returns undefined for Horizon document types without confirmed mapping', () => {
-		assert.strictEqual(getFolderPathForDocumentType('Appellant Witnesses Evidence'), undefined);
-		assert.strictEqual(getFolderPathForDocumentType('Conservation Documents'), undefined);
-		assert.strictEqual(getFolderPathForDocumentType('Delegated Report'), undefined);
+	test('maps confirmed Horizon types to lpa-questionnaire folder', () => {
+		const result = mapHorizonDocumentTypeAndFolder('Consultation Responses');
+		assert.strictEqual(result.appealDocumentType, 'consultationResponses');
+		assert.strictEqual(result.folderPath, 'lpa-questionnaire');
 	});
 
-	test('returns undefined for null or undefined document type', () => {
-		assert.strictEqual(getFolderPathForDocumentType(null), undefined);
-		assert.strictEqual(getFolderPathForDocumentType(undefined), undefined);
+	test('maps confirmed Horizon types to costs folder', () => {
+		const result = mapHorizonDocumentTypeAndFolder('Costs');
+		assert.strictEqual(result.appealDocumentType, 'appellantCostsApplication');
+		assert.strictEqual(result.folderPath, 'costs');
 	});
 
-	test('returns undefined for unknown document type', () => {
-		assert.strictEqual(getFolderPathForDocumentType('unknownDocumentType'), undefined);
+	test('maps confirmed Horizon types to representation folder', () => {
+		const result = mapHorizonDocumentTypeAndFolder("Appellant's Final Comments");
+		assert.strictEqual(result.appealDocumentType, 'appellantFinalComment');
+		assert.strictEqual(result.folderPath, 'representation');
 	});
 
-	test('handles all confirmed Horizon representation attachment types', () => {
-		const horizonRepresentationTypes = [
-			'Appellant Final Comment',
+	test('maps confirmed Horizon types to internal folder', () => {
+		const result = mapHorizonDocumentTypeAndFolder('Main Party Correspondence');
+		assert.strictEqual(result.appealDocumentType, 'mainPartyCorrespondence');
+		assert.strictEqual(result.folderPath, 'internal');
+	});
+
+	test('handles whitespace in Horizon document types', () => {
+		const result = mapHorizonDocumentTypeAndFolder('  Application Form  ');
+		assert.strictEqual(result.appealDocumentType, 'originalApplicationForm');
+		assert.strictEqual(result.folderPath, 'appellant-case');
+	});
+
+	test('defaults unmapped Horizon types to UNCATEGORISED with warning', () => {
+		const warnings: string[] = [];
+		const mockLogger = {
+			warn: (msg: string) => warnings.push(msg)
+		};
+
+		const result = mapHorizonDocumentTypeAndFolder('Unknown Document Type', mockLogger);
+		assert.strictEqual(result.appealDocumentType, 'uncategorised');
+		assert.strictEqual(result.folderPath, 'internal');
+		assert.strictEqual(warnings.length, 1);
+		assert.ok(warnings[0].includes('Unknown Document Type'));
+		assert.ok(warnings[0].includes('UNCATEGORISED'));
+	});
+
+	test('works without logger for unmapped types', () => {
+		const result = mapHorizonDocumentTypeAndFolder('Unknown Type');
+		assert.strictEqual(result.appealDocumentType, 'uncategorised');
+		assert.strictEqual(result.folderPath, 'internal');
+	});
+
+	test('handles all representation attachment types correctly', () => {
+		const representationTypes = [
+			"Appellant's Final Comments",
 			'Appellant Proof of Evidence',
-			'Interested Party Comment',
-			'LPA Final Comment',
+			'LPA Final Comments',
 			'LPA Proof of Evidence',
 			'LPA Statement',
-			'Rule 6 Proof of Evidence',
-			'Rule 6 Statement',
-			'Rule 6 Witnesses Evidence'
+			'Rule 6 Statement / Proof'
 		];
 
-		horizonRepresentationTypes.forEach((type) => {
-			assert.strictEqual(
-				getFolderPathForDocumentType(type),
-				'representation/representationAttachments',
-				`Failed for type: ${type}`
-			);
+		representationTypes.forEach((type) => {
+			const result = mapHorizonDocumentTypeAndFolder(type);
+			assert.strictEqual(result.folderPath, 'representation', `Failed for type: ${type}`);
 		});
-	});
-});
-
-describe('mapHorizonToAppealDocumentType', () => {
-	test('maps Horizon document types to APPEAL_DOCUMENT_TYPE constants', () => {
-		assert.strictEqual(mapHorizonToAppealDocumentType('Appellant Final Comment'), 'appellantFinalComment');
-		assert.strictEqual(mapHorizonToAppealDocumentType('LPA Proof of Evidence'), 'lpaProofOfEvidence');
-		assert.strictEqual(mapHorizonToAppealDocumentType('Rule 6 Statement'), 'rule6Statement');
-	});
-
-	test('returns undefined for unmapped Horizon document types', () => {
-		assert.strictEqual(mapHorizonToAppealDocumentType('Unknown Type'), undefined);
-		assert.strictEqual(mapHorizonToAppealDocumentType('Appellant Witnesses Evidence'), undefined);
-	});
-
-	test('returns undefined for null or undefined', () => {
-		assert.strictEqual(mapHorizonToAppealDocumentType(null), undefined);
-		assert.strictEqual(mapHorizonToAppealDocumentType(undefined), undefined);
-	});
-});
-
-describe('isRepresentationAttachment', () => {
-	test('returns true for Horizon representation attachment types', () => {
-		assert.strictEqual(isRepresentationAttachment('Appellant Final Comment'), true);
-		assert.strictEqual(isRepresentationAttachment('LPA Proof of Evidence'), true);
-		assert.strictEqual(isRepresentationAttachment('Interested Party Comment'), true);
-	});
-
-	test('returns false for non-representation attachment types', () => {
-		assert.strictEqual(isRepresentationAttachment('Appellant Witnesses Evidence'), false);
-		assert.strictEqual(isRepresentationAttachment('Conservation Documents'), false);
-		assert.strictEqual(isRepresentationAttachment('Unknown Type'), false);
-	});
-
-	test('returns false for null or undefined', () => {
-		assert.strictEqual(isRepresentationAttachment(null), false);
-		assert.strictEqual(isRepresentationAttachment(undefined), false);
 	});
 });
