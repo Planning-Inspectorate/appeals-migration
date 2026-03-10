@@ -2,7 +2,7 @@ import type { DocumentToMigrate } from '@pins/appeals-migration-database/src/cli
 import type { FunctionService } from '../../service.ts';
 import type { MigrationFunction } from '../../types.ts';
 import { buildBlobStoragePath } from './helpers/map-case-reference-for-storage.ts';
-import { getFolderPathForDocumentType } from './helpers/map-document-type-to-folder.ts';
+import { mapHorizonDocumentTypeAndFolder } from './helpers/map-document-type-to-folder.ts';
 import { mapDocumentToSink } from './mappers/map-document-to-sink.ts';
 import { fetchDocumentDetails } from './source/fetch-document-details.ts';
 import { validateSourceDocuments } from './validators/validate-source-documents.ts';
@@ -10,6 +10,8 @@ import { validateSourceDocuments } from './validators/validate-source-documents.
 export function buildMigrateDocuments(service: FunctionService): MigrationFunction {
 	// Cache folders per case to avoid repeated database queries during bulk migrations
 	const caseFolderCache = new Map<string, Map<string, number>>();
+	// Cache case IDs to avoid repeated lookups
+	const caseIdCache = new Map<string, number>();
 
 	return async (itemToMigrate, context) => {
 		const documentToMigrate = itemToMigrate as DocumentToMigrate;
@@ -51,56 +53,47 @@ export function buildMigrateDocuments(service: FunctionService): MigrationFuncti
 			}
 		}
 
-		// Check if case exists in sink database and get case ID
-		const sinkCase = await service.sinkDatabaseClient.appeal.findUnique({
-			where: { reference: caseReference },
-			select: { id: true }
-		});
+		// Check if case exists in sink database and get case ID (with caching)
+		let caseId = caseIdCache.get(caseReference);
 
-		if (!sinkCase) {
-			context.log(
-				`Case ${caseReference} does not exist in sink database - document will be inserted when case is migrated`
-			);
-			throw new Error(`Case ${caseReference} not found in sink database. Migrate the case first.`);
+		if (!caseId) {
+			const sinkCase = await service.sinkDatabaseClient.appeal.findUnique({
+				where: { reference: caseReference },
+				select: { id: true }
+			});
+
+			if (!sinkCase) {
+				context.log(
+					`Case ${caseReference} does not exist in sink database - document will be inserted when case is migrated`
+				);
+				throw new Error(`Case ${caseReference} not found in sink database. Migrate the case first.`);
+			}
+
+			caseId = sinkCase.id;
+			caseIdCache.set(caseReference, caseId);
 		}
 
-		// Determine the correct folder based on document type
-		const documentType = firstDocument.documentType;
-		const folderPath = getFolderPathForDocumentType(documentType);
+		// Map Horizon document type to APPEAL_DOCUMENT_TYPE and get folder path
+		const horizonDocumentType = firstDocument.documentType;
+		if (!horizonDocumentType) {
+			throw new Error(
+				`Document ${documentId} for case ${caseReference} has no document type - cannot determine folder mapping`
+			);
+		}
+
+		const { appealDocumentType, folderPath } = mapHorizonDocumentTypeAndFolder(horizonDocumentType, context);
+		context.log(`Mapped '${horizonDocumentType}' -> '${appealDocumentType}' (folder: ${folderPath})`);
 
 		// Helper function to get folder ID with caching
-		async function getFolderIdWithCache(caseId: number, path: string | undefined): Promise<number> {
+		async function getFolderIdWithCache(caseId: number, path: string): Promise<number> {
 			const cacheKey = caseId.toString();
 
-			// Initialize cache for this case if not exists
 			if (!caseFolderCache.has(cacheKey)) {
 				caseFolderCache.set(cacheKey, new Map());
 			}
 
 			const caseCache = caseFolderCache.get(cacheKey)!;
 
-			// If no specific folder path, use default folder lookup
-			if (!path) {
-				const defaultCacheKey = 'default';
-				if (caseCache.has(defaultCacheKey)) {
-					return caseCache.get(defaultCacheKey)!;
-				}
-
-				const defaultFolder = await service.sinkDatabaseClient.folder.findFirst({
-					where: { caseId },
-					select: { id: true },
-					orderBy: { id: 'asc' }
-				});
-
-				if (!defaultFolder) {
-					throw new Error(`No folders found for case ${caseReference}. Ensure case folders are created.`);
-				}
-
-				caseCache.set(defaultCacheKey, defaultFolder.id);
-				return defaultFolder.id;
-			}
-
-			// Check cache for specific folder path
 			if (caseCache.has(path)) {
 				return caseCache.get(path)!;
 			}
@@ -126,22 +119,17 @@ export function buildMigrateDocuments(service: FunctionService): MigrationFuncti
 		}
 
 		// Get folder ID using the cached lookup function
-		const folderId = await getFolderIdWithCache(sinkCase.id, folderPath);
-
-		// Log the folder assignment for clarity
-		if (folderPath) {
-			context.log(`Using folder ID ${folderId} for document type '${documentType}' (path: ${folderPath})`);
-		} else {
-			context.log(`Using default folder ID ${folderId} for document type '${documentType}'`);
-		}
+		const folderId = await getFolderIdWithCache(caseId, folderPath);
+		context.log(`Using folder ID ${folderId} for path: ${folderPath}`);
 
 		// Map document to sink database models
 		const documentData = mapDocumentToSink(
 			sourceDocuments,
-			sinkCase.id,
+			caseId,
 			folderId,
 			caseReference,
-			service.documentsContainerName
+			service.documentsContainerName,
+			appealDocumentType
 		);
 
 		// Insert document and versions in a transaction

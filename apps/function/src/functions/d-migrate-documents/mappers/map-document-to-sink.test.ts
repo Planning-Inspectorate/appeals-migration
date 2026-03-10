@@ -17,16 +17,7 @@ const TEST_CASE_ID = 100;
 const TEST_FOLDER_ID = 1;
 const TEST_CASE_REFERENCE = 'APP/Q9999/D/21/1234567';
 const TEST_CONTAINER_NAME = 'appeals-documents';
-
-// Helper function to create mock document with custom document type
-function createMockWithDocumentType(documentType: string) {
-	return [
-		{
-			...mockSingleVersionDocument[0],
-			documentType
-		}
-	];
-}
+const TEST_APPEAL_DOCUMENT_TYPE = 'appellantStatement';
 
 // Helper function to assert basic document structure
 function assertBasicDocumentStructure(result: any, expectedVersionId: number = 1) {
@@ -41,13 +32,23 @@ function assertBasicDocumentStructure(result: any, expectedVersionId: number = 1
 }
 
 // Helper function to call mapDocumentToSink with test constants
-function mapDocumentWithTestParams(mockData: any, containerName: string = TEST_CONTAINER_NAME) {
-	return mapDocumentToSink(mockData, TEST_CASE_ID, TEST_FOLDER_ID, TEST_CASE_REFERENCE, containerName);
+function mapDocumentWithTestParams(
+	mockData: any,
+	appealDocumentType: string = TEST_APPEAL_DOCUMENT_TYPE,
+	containerName: string = TEST_CONTAINER_NAME
+) {
+	return mapDocumentToSink(
+		mockData,
+		TEST_CASE_ID,
+		TEST_FOLDER_ID,
+		TEST_CASE_REFERENCE,
+		containerName,
+		appealDocumentType
+	);
 }
 
 // Helper function to assert complete document version fields
 function assertCompleteDocumentVersion(version: any) {
-	assert.strictEqual(version.documentType, 'Appeal Statement');
 	assert.strictEqual(version.virusCheckStatus, 'scanned');
 	assert.strictEqual(version.origin, 'pins');
 	assert.strictEqual(version.originalFilename, 'original.pdf');
@@ -141,25 +142,30 @@ describe('mapDocumentToSink', () => {
 	});
 
 	test('should set blobStorageContainer from config', () => {
-		const result = mapDocumentWithTestParams(mockSingleVersionDocument, 'test-container');
+		const result = mapDocumentWithTestParams(mockSingleVersionDocument, TEST_APPEAL_DOCUMENT_TYPE, 'test-container');
 		const version = result.versions.create[0];
 
 		assert.strictEqual(version.blobStorageContainer, 'test-container');
 	});
 
-	test('should map Horizon document types to APPEAL_DOCUMENT_TYPE constants', () => {
-		const mockWithHorizonType = createMockWithDocumentType('Appellant Final Comment');
-		const result = mapDocumentWithTestParams(mockWithHorizonType);
+	test('should use provided appealDocumentType', () => {
+		const result = mapDocumentWithTestParams(mockSingleVersionDocument, 'appellantFinalComment');
 		const version = result.versions.create[0];
 
 		assert.strictEqual(version.documentType, 'appellantFinalComment');
 	});
 
-	test('should preserve unmapped document types as-is', () => {
-		const mockWithUnmappedType = createMockWithDocumentType('Unknown Type');
-		const result = mapDocumentWithTestParams(mockWithUnmappedType);
-		const version = result.versions.create[0];
+	test('should sort versions by version number', () => {
+		const unsortedDocs = [
+			{ ...mockSingleVersionDocument[0], version: 3, filename: 'v3.pdf' },
+			{ ...mockSingleVersionDocument[0], version: 1, filename: 'v1.pdf' },
+			{ ...mockSingleVersionDocument[0], version: 2, filename: 'v2.pdf' }
+		];
+		const result = mapDocumentWithTestParams(unsortedDocs);
 
-		assert.strictEqual(version.documentType, 'Unknown Type');
+		assert.strictEqual(result.versions.create[0].version, 1);
+		assert.strictEqual(result.versions.create[1].version, 2);
+		assert.strictEqual(result.versions.create[2].version, 3);
+		assert.strictEqual(result.latestVersionId, 3);
 	});
 });

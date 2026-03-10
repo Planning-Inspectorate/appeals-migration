@@ -45,7 +45,8 @@ describe('d-migrate-documents-impl', () => {
 				filename: 'test.pdf',
 				version: 1,
 				caseReference: 'APP/123',
-				sourceSystem: 'horizon'
+				sourceSystem: 'horizon',
+				documentType: 'Application Form'
 			}
 		];
 
@@ -88,7 +89,8 @@ describe('d-migrate-documents-impl', () => {
 				filename: 'test.pdf',
 				version: 1,
 				caseReference: 'APP/123',
-				sourceSystem: 'horizon'
+				sourceSystem: 'horizon',
+				documentType: 'Application Form'
 			}
 		];
 
