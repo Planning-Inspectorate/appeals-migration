@@ -134,8 +134,39 @@ const HORIZON_TO_APPEAL_DOCUMENT_TYPE: Record<string, AppealDocumentType> = {
 };
 
 /**
+ * Document types that go into the representation folder (representationAttachments subfolder)
+ * These are the main evidence documents submitted during the representation phase
+ */
+const REPRESENTATION_ATTACHMENT_TYPES: AppealDocumentType[] = [
+	// Confirmed representation attachment types
+	APPEAL_DOCUMENT_TYPE.APPELLANT_FINAL_COMMENT,
+	APPEAL_DOCUMENT_TYPE.APPELLANT_PROOF_OF_EVIDENCE,
+	APPEAL_DOCUMENT_TYPE.APPELLANT_WITNESSES_EVIDENCE,
+	APPEAL_DOCUMENT_TYPE.INTERESTED_PARTY_COMMENT,
+	APPEAL_DOCUMENT_TYPE.LPA_FINAL_COMMENT,
+	APPEAL_DOCUMENT_TYPE.LPA_PROOF_OF_EVIDENCE,
+	APPEAL_DOCUMENT_TYPE.LPA_STATEMENT,
+	APPEAL_DOCUMENT_TYPE.LPA_WITNESSES_EVIDENCE,
+	APPEAL_DOCUMENT_TYPE.RULE_6_PROOF_OF_EVIDENCE,
+	APPEAL_DOCUMENT_TYPE.RULE_6_STATEMENT,
+	APPEAL_DOCUMENT_TYPE.RULE_6_WITNESSES_EVIDENCE,
+
+	// Known APPEAL_DOCUMENT_TYPE constants with tentative representation folder placement
+	// These need proper folder mappings to be confirmed during migration
+	APPEAL_DOCUMENT_TYPE.CONSERVATION_DOCUMENTS,
+	APPEAL_DOCUMENT_TYPE.DELEGATED_REPORT,
+	APPEAL_DOCUMENT_TYPE.DEFINITIVE_MAP_AND_STATEMENT_EXTRACT,
+	APPEAL_DOCUMENT_TYPE.GROUND_H_SUPPORTING,
+	APPEAL_DOCUMENT_TYPE.GROUND_I_SUPPORTING,
+	APPEAL_DOCUMENT_TYPE.GROUND_J_SUPPORTING,
+	APPEAL_DOCUMENT_TYPE.GROUND_K_SUPPORTING,
+	APPEAL_DOCUMENT_TYPE.PLAN_SHOWING_EXTENT_OF_ORDER
+];
+
+/**
  * Mapping from APPEAL_DOCUMENT_TYPE constants to folder paths
  * Based on database schema folder structure
+ * Note: Representation types are handled separately via REPRESENTATION_ATTACHMENT_TYPES
  */
 const DOCUMENT_TYPE_TO_FOLDER: Record<AppealDocumentType, FolderPath> = {
 	// appellant-case folder
@@ -218,7 +249,8 @@ const DOCUMENT_TYPE_TO_FOLDER: Record<AppealDocumentType, FolderPath> = {
 	// appeal-decision folder
 	[APPEAL_DOCUMENT_TYPE.CASE_DECISION_LETTER]: 'appeal-decision',
 
-	// representation folder
+	// representation folder - these are handled by REPRESENTATION_ATTACHMENT_TYPES logic first
+	// Included here for type safety completeness
 	[APPEAL_DOCUMENT_TYPE.APPELLANT_FINAL_COMMENT]: 'representation',
 	[APPEAL_DOCUMENT_TYPE.APPELLANT_PROOF_OF_EVIDENCE]: 'representation',
 	[APPEAL_DOCUMENT_TYPE.APPELLANT_WITNESSES_EVIDENCE]: 'representation',
@@ -230,9 +262,6 @@ const DOCUMENT_TYPE_TO_FOLDER: Record<AppealDocumentType, FolderPath> = {
 	[APPEAL_DOCUMENT_TYPE.RULE_6_PROOF_OF_EVIDENCE]: 'representation',
 	[APPEAL_DOCUMENT_TYPE.RULE_6_STATEMENT]: 'representation',
 	[APPEAL_DOCUMENT_TYPE.RULE_6_WITNESSES_EVIDENCE]: 'representation',
-
-	// Unmapped types - default to representation folder (representationAttachments subfolder)
-	// These need proper folder mappings to be confirmed
 	[APPEAL_DOCUMENT_TYPE.CONSERVATION_DOCUMENTS]: 'representation',
 	[APPEAL_DOCUMENT_TYPE.DELEGATED_REPORT]: 'representation',
 	[APPEAL_DOCUMENT_TYPE.DEFINITIVE_MAP_AND_STATEMENT_EXTRACT]: 'representation',
@@ -261,12 +290,18 @@ export function mapHorizonDocumentTypeAndFolder(
 
 	let appealDocumentType = HORIZON_TO_APPEAL_DOCUMENT_TYPE[normalizedType];
 
-	// Fallback to UNCATEGORISED for unmapped Horizon types (migration resilience)
+	// Fallback to UNCATEGORISED for completely unknown Horizon types (migration resilience)
 	if (!appealDocumentType) {
 		appealDocumentType = APPEAL_DOCUMENT_TYPE.UNCATEGORISED;
 		logger?.warn(`Unmapped Horizon document type '${horizonDocumentType}' - defaulting to UNCATEGORISED`);
 	}
 
+	// Check if it's a representation attachment type first
+	if (REPRESENTATION_ATTACHMENT_TYPES.includes(appealDocumentType)) {
+		return { appealDocumentType, folderPath: 'representation' };
+	}
+
+	// Otherwise check the main mapping
 	const folderPath = DOCUMENT_TYPE_TO_FOLDER[appealDocumentType];
 	if (!folderPath) {
 		throw new Error(`No folder path mapping found for document type: ${appealDocumentType}`);

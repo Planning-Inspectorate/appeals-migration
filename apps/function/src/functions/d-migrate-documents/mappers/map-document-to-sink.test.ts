@@ -87,6 +87,9 @@ describe('mapDocumentToSink', () => {
 
 		assert.strictEqual(result.versions.create.length, 3);
 		assert.strictEqual(result.versions.create[0].version, 1);
+		assert.strictEqual(result.versions.create[1].version, 2);
+		assert.strictEqual(result.versions.create[2].version, 3);
+		assert.strictEqual(result.latestVersionId, 3);
 	});
 
 	test('should throw error when sourceDocuments array is empty', () => {
