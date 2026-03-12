@@ -1,6 +1,7 @@
 import type { DocumentToMigrate } from '@pins/appeals-migration-database/src/client/client.ts';
 import type { FunctionService } from '../../service.ts';
 import type { MigrationFunction } from '../../types.ts';
+import { getFolderIdWithCache } from './helpers/get-folder-id-with-cache.ts';
 import { buildBlobStoragePath } from './helpers/map-case-reference-for-storage.ts';
 import { mapHorizonDocumentTypeAndFolder } from './helpers/map-document-type-to-folder.ts';
 import { mapDocumentToSink } from './mappers/map-document-to-sink.ts';
@@ -84,42 +85,14 @@ export function buildMigrateDocuments(service: FunctionService): MigrationFuncti
 		const { appealDocumentType, folderPath } = mapHorizonDocumentTypeAndFolder(horizonDocumentType, context);
 		context.log(`Mapped '${horizonDocumentType}' -> '${appealDocumentType}' (folder: ${folderPath})`);
 
-		// Helper function to get folder ID with caching
-		async function getFolderIdWithCache(caseId: number, path: string): Promise<number> {
-			const cacheKey = caseId.toString();
-
-			if (!caseFolderCache.has(cacheKey)) {
-				caseFolderCache.set(cacheKey, new Map());
-			}
-
-			const caseCache = caseFolderCache.get(cacheKey)!;
-
-			if (caseCache.has(path)) {
-				return caseCache.get(path)!;
-			}
-
-			// Query folder from database
-			const folder = await service.sinkDatabaseClient.folder.findFirst({
-				where: {
-					caseId,
-					path
-				},
-				select: { id: true }
-			});
-
-			if (!folder) {
-				throw new Error(
-					`Folder not found for case ${caseReference} with path ${path}. Ensure case folders are created.`
-				);
-			}
-
-			// Cache the result
-			caseCache.set(path, folder.id);
-			return folder.id;
-		}
-
 		// Get folder ID using the cached lookup function
-		const folderId = await getFolderIdWithCache(caseId, folderPath);
+		const folderId = await getFolderIdWithCache(
+			caseId,
+			folderPath,
+			service.sinkDatabaseClient,
+			caseReference,
+			caseFolderCache
+		);
 		context.log(`Using folder ID ${folderId} for path: ${folderPath}`);
 
 		// Map document to sink database models
