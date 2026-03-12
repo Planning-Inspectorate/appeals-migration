@@ -167,6 +167,7 @@ const REPRESENTATION_ATTACHMENT_TYPES: AppealDocumentType[] = [
  * Mapping from APPEAL_DOCUMENT_TYPE constants to folder paths
  * Based on database schema folder structure
  * Note: Representation types are handled separately via REPRESENTATION_ATTACHMENT_TYPES
+ * Final folder path format is: stage/documentType
  */
 const DOCUMENT_TYPE_TO_FOLDER: Record<AppealDocumentType, FolderPath> = {
 	// appellant-case folder
@@ -298,14 +299,17 @@ export function mapHorizonDocumentTypeAndFolder(
 
 	// Check if it's a representation attachment type first
 	if (REPRESENTATION_ATTACHMENT_TYPES.includes(appealDocumentType)) {
-		return { appealDocumentType, folderPath: 'representation' };
+		return { appealDocumentType, folderPath: 'representation/representationAttachments' };
 	}
 
-	// Otherwise check the main mapping
-	const folderPath = DOCUMENT_TYPE_TO_FOLDER[appealDocumentType];
-	if (!folderPath) {
+	// Otherwise check the main mapping and construct full folder path
+	const stage = DOCUMENT_TYPE_TO_FOLDER[appealDocumentType];
+	if (!stage) {
 		throw new Error(`No folder path mapping found for document type: ${appealDocumentType}`);
 	}
+
+	// Construct full folder path: stage/documentType
+	const folderPath = `${stage}/${appealDocumentType}`;
 
 	return { appealDocumentType, folderPath };
 }
