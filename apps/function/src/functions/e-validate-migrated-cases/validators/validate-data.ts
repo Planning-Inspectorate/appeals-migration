@@ -417,6 +417,25 @@ function validateServiceUser(
 	);
 }
 
+function validateServiceUserMatches<T>(
+	sourceUsers: AppealServiceUser[],
+	sinkItems: T[],
+	getSinkUser: (item: T) => { email: string | null; firstName: string | null } | null | undefined
+): boolean {
+	if (sourceUsers.length !== sinkItems.length) return false;
+
+	for (const source of sourceUsers) {
+		const mapped = mapServiceUser(source);
+		const match = sinkItems.find((item) => {
+			const sinkUser = getSinkUser(item);
+			return sinkUser?.email === mapped.email && sinkUser?.firstName === mapped.firstName;
+		});
+		if (!match) return false;
+	}
+
+	return true;
+}
+
 function validateServiceUsers(serviceUsers: AppealServiceUser[], sink: SinkCase): boolean {
 	const appellant = serviceUsers.find((user) => getServiceUserRole(user).isAppellant);
 	const agent = serviceUsers.find((user) => getServiceUserRole(user).isAgent);
@@ -431,23 +450,9 @@ function validateServiceUsers(serviceUsers: AppealServiceUser[], sink: SinkCase)
 	const sinkInterestedPartyReps = sink.representations.filter(
 		(r) => r.representationType === APPEAL_REPRESENTATION_TYPE.COMMENT && r.represented
 	);
-	if (interestedParties.length !== sinkInterestedPartyReps.length) return false;
-	for (const ip of interestedParties) {
-		const mapped = mapServiceUser(ip);
-		const match = sinkInterestedPartyReps.find(
-			(r) => r.represented && r.represented.email === mapped.email && r.represented.firstName === mapped.firstName
-		);
-		if (!match) return false;
-	}
+	if (!validateServiceUserMatches(interestedParties, sinkInterestedPartyReps, (r) => r.represented)) return false;
 
-	if (rule6Parties.length !== sink.appealRule6Parties.length) return false;
-	for (const r6 of rule6Parties) {
-		const mapped = mapServiceUser(r6);
-		const match = sink.appealRule6Parties.find(
-			(r) => r.serviceUser && r.serviceUser.email === mapped.email && r.serviceUser.firstName === mapped.firstName
-		);
-		if (!match) return false;
-	}
+	if (!validateServiceUserMatches(rule6Parties, sink.appealRule6Parties, (r) => r.serviceUser)) return false;
 
 	return true;
 }
