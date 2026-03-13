@@ -76,4 +76,8 @@ export class FunctionService {
 	get serviceBusParallelism() {
 		return this.#config.functions.dispatcher.serviceBusParallelism;
 	}
+
+	get documentsContainerName() {
+		return this.#config.manageAppeals.documents.containerName;
+	}
 }
