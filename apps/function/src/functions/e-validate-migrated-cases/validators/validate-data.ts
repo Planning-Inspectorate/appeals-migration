@@ -484,52 +484,42 @@ export function validateData(
 		errors.push(createValidationError(sourceModel, sourceField, `Expected '${expected}' got '${actual}'`));
 	}
 
-	// Validate case reference
 	if (sinkCase.reference !== source.caseReference) {
 		addError('caseReference', source.caseReference ?? 'null', sinkCase.reference);
 	}
 
-	// Validate submission ID
 	if (!compareMappedString(source.submissionId, sinkCase.submissionId)) {
 		addError('submissionId', source.submissionId ?? 'null', sinkCase.submissionId ?? 'null');
 	}
 
-	// Validate case type
 	if (!compareMappedString(source.caseType, sinkCase.appealType?.key)) {
 		addError('caseType', source.caseType ?? 'null', sinkCase.appealType?.key ?? 'null');
 	}
 
-	// Validate case procedure
 	if (!compareMappedString(source.caseProcedure, sinkCase.procedureType?.key)) {
 		addError('caseProcedure', source.caseProcedure ?? 'null', sinkCase.procedureType?.key ?? 'null');
 	}
 
-	// Validate LPA code
 	if (!compareMappedString(source.lpaCode, sinkCase.lpa?.lpaCode)) {
 		addError('lpaCode', source.lpaCode ?? 'null', sinkCase.lpa?.lpaCode ?? 'null');
 	}
 
-	// Validate case officer ID
 	if (!compareMappedString(source.caseOfficerId, sinkCase.caseOfficer?.azureAdUserId)) {
 		addError('caseOfficerId', source.caseOfficerId ?? 'null', sinkCase.caseOfficer?.azureAdUserId ?? 'null');
 	}
 
-	// Validate inspector ID
 	if (!compareMappedString(source.inspectorId, sinkCase.inspector?.azureAdUserId)) {
 		addError('inspectorId', source.inspectorId ?? 'null', sinkCase.inspector?.azureAdUserId ?? 'null');
 	}
 
-	// Validate PADS SAP ID
 	if (!compareMappedString(source.padsSapId, sinkCase.padsInspector?.sapId)) {
 		addError('padsSapId', source.padsSapId ?? 'null', sinkCase.padsInspector?.sapId ?? 'null');
 	}
 
-	// Validate application reference
 	if (!compareMappedString(source.applicationReference, sinkCase.applicationReference)) {
 		addError('applicationReference', source.applicationReference ?? 'null', sinkCase.applicationReference ?? 'null');
 	}
 
-	// Validate dates
 	const dateFields = [
 		{ source: source.caseCreatedDate, sink: sinkCase.caseCreatedDate, name: 'caseCreatedDate' },
 		{ source: source.caseUpdatedDate, sink: sinkCase.caseUpdatedDate, name: 'caseUpdatedDate' },
@@ -545,7 +535,6 @@ export function validateData(
 		}
 	});
 
-	// Validate complex objects
 	if (!validateParentAppeals(source, sinkCase.parentAppeals)) {
 		errors.push(createValidationError(sourceModel, 'parentAppeals', 'Parent appeals validation failed'));
 	}
@@ -606,7 +595,6 @@ export function validateData(
 		errors.push(createValidationError(sourceModel, 'serviceUsers', 'Service users validation failed'));
 	}
 
-	// Return validation result
 	if (errors.length === 0) {
 		return {
 			isValid: true,
