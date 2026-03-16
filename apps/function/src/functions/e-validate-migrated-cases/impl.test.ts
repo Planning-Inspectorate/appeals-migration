@@ -42,8 +42,12 @@ describe('buildValidateMigratedCases', () => {
 			data: { caseReference: 'CASE-001' }
 		}));
 		sink.fetchSinkCaseDetails.mock.mockImplementationOnce(() => ({ reference: 'CASE-001' }));
-		validators.validateData.mock.mockImplementationOnce(() => true);
-		validators.validateDocuments.mock.mockImplementationOnce(() => true);
+		validators.validateData.mock.mockImplementationOnce(() => ({ isValid: true, errors: [], dataValidated: true }));
+		validators.validateDocuments.mock.mockImplementationOnce(() => ({
+			isValid: true,
+			errors: [],
+			documentsValidated: true
+		}));
 
 		const handler = buildValidateMigratedCases(service, source, sink, validators);
 		await handler({ caseReference: 'CASE-001' }, context);
@@ -53,7 +57,9 @@ describe('buildValidateMigratedCases', () => {
 			where: { caseReference: 'CASE-001' },
 			data: {
 				dataValidated: true,
-				documentsValidated: true
+				dataValidationErrors: null,
+				documentsValidated: true,
+				documentValidationErrors: null
 			}
 		});
 	});
@@ -70,8 +76,14 @@ describe('buildValidateMigratedCases', () => {
 			data: { caseReference: 'CASE-002' }
 		}));
 		sink.fetchSinkCaseDetails.mock.mockImplementationOnce(() => ({ reference: 'CASE-002' }));
-		validators.validateData.mock.mockImplementationOnce(() => true);
-		validators.validateDocuments.mock.mockImplementationOnce(() => false);
+		validators.validateData.mock.mockImplementationOnce(() => ({ isValid: true, errors: [], dataValidated: true }));
+		validators.validateDocuments.mock.mockImplementationOnce(() => ({
+			isValid: false,
+			errors: [
+				{ sourceModel: 'AppealDocument', sourceField: 'validation', error: 'Document validation not yet implemented' }
+			],
+			documentsValidated: false
+		}));
 
 		const handler = buildValidateMigratedCases(service, source, sink, validators);
 		await handler({ caseReference: 'CASE-002' }, context);
@@ -80,7 +92,10 @@ describe('buildValidateMigratedCases', () => {
 			where: { caseReference: 'CASE-002' },
 			data: {
 				dataValidated: true,
-				documentsValidated: false
+				dataValidationErrors: null,
+				documentsValidated: false,
+				documentValidationErrors:
+					'[{"sourceModel":"AppealDocument","sourceField":"validation","error":"Document validation not yet implemented"}]'
 			}
 		});
 	});
@@ -138,5 +153,87 @@ describe('buildValidateMigratedCases', () => {
 		const handler = buildValidateMigratedCases(service, source, sink, validators);
 
 		await assert.rejects(() => handler({ caseReference: 'CASE-001' }, context), error);
+	});
+
+	test('saves validation errors when data validation fails', async () => {
+		const service = newService();
+		const source = newSource();
+		const sink = newSink();
+		const validators = newValidators();
+		const context = { log: mock.fn() };
+
+		source.fetchSourceCaseDetails.mock.mockImplementationOnce(() => ({
+			type: 'has',
+			data: { caseReference: 'CASE-003' }
+		}));
+		sink.fetchSinkCaseDetails.mock.mockImplementationOnce(() => ({ reference: 'CASE-003' }));
+		validators.validateData.mock.mockImplementationOnce(() => ({
+			isValid: false,
+			errors: [
+				{ sourceModel: 'AppealHas', sourceField: 'caseReference', error: "Expected 'CASE-003' got 'CASE-999'" },
+				{ sourceModel: 'AppealHas', sourceField: 'caseType', error: "Expected 'Householder' got 'Full'" }
+			],
+			dataValidated: false
+		}));
+		validators.validateDocuments.mock.mockImplementationOnce(() => ({
+			isValid: true,
+			errors: [],
+			documentsValidated: true
+		}));
+
+		const handler = buildValidateMigratedCases(service, source, sink, validators);
+		await handler({ caseReference: 'CASE-003' }, context);
+
+		assert.deepStrictEqual(service.databaseClient.caseToMigrate.update.mock.calls[0].arguments[0], {
+			where: { caseReference: 'CASE-003' },
+			data: {
+				dataValidated: false,
+				dataValidationErrors:
+					'[{"sourceModel":"AppealHas","sourceField":"caseReference","error":"Expected \'CASE-003\' got \'CASE-999\'"},{"sourceModel":"AppealHas","sourceField":"caseType","error":"Expected \'Householder\' got \'Full\'"}]',
+				documentsValidated: true,
+				documentValidationErrors: null
+			}
+		});
+	});
+
+	test('saves both data and document validation errors when both fail', async () => {
+		const service = newService();
+		const source = newSource();
+		const sink = newSink();
+		const validators = newValidators();
+		const context = { log: mock.fn() };
+
+		source.fetchSourceCaseDetails.mock.mockImplementationOnce(() => ({
+			type: 's78',
+			data: { caseReference: 'CASE-004' }
+		}));
+		sink.fetchSinkCaseDetails.mock.mockImplementationOnce(() => ({ reference: 'CASE-004' }));
+		validators.validateData.mock.mockImplementationOnce(() => ({
+			isValid: false,
+			errors: [{ sourceModel: 'AppealS78', sourceField: 'caseReference', error: "Expected 'CASE-004' got 'CASE-888'" }],
+			dataValidated: false
+		}));
+		validators.validateDocuments.mock.mockImplementationOnce(() => ({
+			isValid: false,
+			errors: [
+				{ sourceModel: 'AppealDocument', sourceField: 'validation', error: 'Document validation not yet implemented' }
+			],
+			documentsValidated: false
+		}));
+
+		const handler = buildValidateMigratedCases(service, source, sink, validators);
+		await handler({ caseReference: 'CASE-004' }, context);
+
+		assert.deepStrictEqual(service.databaseClient.caseToMigrate.update.mock.calls[0].arguments[0], {
+			where: { caseReference: 'CASE-004' },
+			data: {
+				dataValidated: false,
+				dataValidationErrors:
+					'[{"sourceModel":"AppealS78","sourceField":"caseReference","error":"Expected \'CASE-004\' got \'CASE-888\'"}]',
+				documentsValidated: false,
+				documentValidationErrors:
+					'[{"sourceModel":"AppealDocument","sourceField":"validation","error":"Document validation not yet implemented"}]'
+			}
+		});
 	});
 });

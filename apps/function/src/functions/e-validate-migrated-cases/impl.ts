@@ -72,17 +72,21 @@ export function buildValidateMigratedCases(
 			throw new Error(`Case ${caseReference} not found in sink database`);
 		}
 
-		const dataValidated = validators.validateData(sourceCase, sinkCase, sourceEvents, sourceServiceUsers);
-		context.log(`Case ${caseReference} data validation result: ${dataValidated}`);
+		const dataValidationResult = validators.validateData(sourceCase, sinkCase, sourceEvents, sourceServiceUsers);
+		context.log(`Case ${caseReference} data validation result: ${dataValidationResult.isValid}`);
 
-		const documentsValidated = await validators.validateDocuments(sourceDocuments, sinkDatabase);
-		context.log(`Case ${caseReference} documents validation result: ${documentsValidated}`);
+		const documentsValidationResult = await validators.validateDocuments(sourceDocuments, sinkDatabase);
+		context.log(`Case ${caseReference} documents validation result: ${documentsValidationResult.isValid}`);
 
 		await migrationDatabase.caseToMigrate.update({
 			where: { caseReference },
 			data: {
-				dataValidated,
-				documentsValidated
+				dataValidated: dataValidationResult.dataValidated,
+				dataValidationErrors:
+					dataValidationResult.errors.length > 0 ? JSON.stringify(dataValidationResult.errors) : null,
+				documentsValidated: documentsValidationResult.documentsValidated,
+				documentValidationErrors:
+					documentsValidationResult.errors.length > 0 ? JSON.stringify(documentsValidationResult.errors) : null
 			}
 		});
 

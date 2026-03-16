@@ -11,12 +11,12 @@ import {
 import { validateData } from './validate-data.ts';
 
 const validate = (source, sink, events = [], serviceUsers = []) =>
-	validateData({ type: 'has', data: source }, sink, events, serviceUsers);
+	validateData({ type: 'has', data: source }, sink, events, serviceUsers).isValid;
 
 describe('validateData', () => {
 	test('returns true for fully matching HAS and S78 case', () => {
 		assert.strictEqual(validate(createSource(), createSink()), true);
-		assert.strictEqual(validateData({ type: 's78', data: createSource() }, createSink(), [], []), true);
+		assert.strictEqual(validateData({ type: 's78', data: createSource() }, createSink(), [], []).isValid, true);
 	});
 
 	test('returns false for scalar field mismatch', () => {
@@ -228,8 +228,8 @@ describe('validateData', () => {
 	test('validates representations (S78 only)', () => {
 		const source = createSource({ appellantStatementSubmittedDate: '2024-04-01T00:00:00.000Z' });
 		const sink = createSink({ representations: [{ representationType: 'appellant_statement' }] });
-		assert.strictEqual(validateData({ type: 's78', data: source }, sink, [], []), true);
-		assert.strictEqual(validateData({ type: 's78', data: source }, createSink(), [], []), false);
+		assert.strictEqual(validateData({ type: 's78', data: source }, sink, [], []).isValid, true);
+		assert.strictEqual(validateData({ type: 's78', data: source }, createSink(), [], []).isValid, false);
 		assert.strictEqual(validate(createSource(), sink), false);
 	});
 
@@ -238,8 +238,8 @@ describe('validateData', () => {
 			enforcementAppealGroundsDetails: '[{"appealGroundLetter":"a","groundFacts":"test facts"}]'
 		});
 		const sink = createSink({ appealGrounds: [{ ground: { groundRef: 'a' }, factsForGround: 'test facts' }] });
-		assert.strictEqual(validateData({ type: 's78', data: source }, sink, [], []), true);
-		assert.strictEqual(validateData({ type: 's78', data: source }, createSink(), [], []), false);
+		assert.strictEqual(validateData({ type: 's78', data: source }, sink, [], []).isValid, true);
+		assert.strictEqual(validateData({ type: 's78', data: source }, createSink(), [], []).isValid, false);
 		assert.strictEqual(validate(createSource(), sink), false);
 	});
 
@@ -487,5 +487,37 @@ describe('validateData', () => {
 			validate(source, createSink({ parentAppeals: [{ parentRef: 'WRONG', childRef: 'CASE-001' }] })),
 			false
 		);
+	});
+
+	test('collects detailed validation errors', () => {
+		const source = createSource({ caseReference: 'APP/123', caseType: 'Householder' });
+		const sink = createSink({ reference: 'APP/456', appealType: { key: 'Full' } });
+
+		const result = validateData({ type: 'has', data: source }, sink);
+
+		assert.strictEqual(result.isValid, false);
+		assert.strictEqual(result.dataValidated, false);
+		assert.ok(result.errors.length > 0);
+
+		// Check specific error details
+		const referenceError = result.errors.find((e) => e.sourceField === 'caseReference');
+		assert.ok(referenceError);
+		assert.strictEqual(referenceError.sourceModel, 'AppealHas');
+		assert.ok(referenceError.error.includes('APP/123'));
+		assert.ok(referenceError.error.includes('APP/456'));
+
+		const typeError = result.errors.find((e) => e.sourceField === 'caseType');
+		assert.ok(typeError);
+		assert.strictEqual(typeError.sourceModel, 'AppealHas');
+		assert.ok(typeError.error.includes('Householder'));
+		assert.ok(typeError.error.includes('Full'));
+	});
+
+	test('returns success result with no errors for valid data', () => {
+		const result = validateData({ type: 'has', data: createSource() }, createSink());
+
+		assert.strictEqual(result.isValid, true);
+		assert.strictEqual(result.dataValidated, true);
+		assert.strictEqual(result.errors.length, 0);
 	});
 });
