@@ -10,6 +10,8 @@ import { getServiceUserRole, mapServiceUser } from '../../b-migrate-data/mappers
 import { APPEAL_REPRESENTATION_TYPE } from '../../b-migrate-data/mappers/map-source-to-sink.ts';
 import { parseDateOrUndefined, parseJsonArray, parseNumber, stringOrUndefined } from '../../shared/helpers/index.ts';
 import type { fetchSinkCaseDetails } from '../sink/case-details.ts';
+import type { DataValidationResult, ValidationError } from '../types/validation-types.ts';
+import { createValidationError } from '../types/validation-types.ts';
 
 export type SourceCase = { type: 'has'; data: AppealHas } | { type: 's78'; data: AppealS78 };
 type SinkCase = NonNullable<Awaited<ReturnType<typeof fetchSinkCaseDetails>>>;
@@ -467,39 +469,150 @@ export function validateData(
 	sinkCase: SinkCase,
 	events: AppealEvent[] = [],
 	serviceUsers: AppealServiceUser[] = []
-): boolean {
+): DataValidationResult {
 	const source = sourceCase.data;
+	const errors: ValidationError[] = [];
+	const sourceModel = sourceCase.type === 'has' ? 'AppealHas' : 'AppealS78';
 
-	return (
-		sinkCase.reference === source.caseReference &&
-		compareMappedString(source.submissionId, sinkCase.submissionId) &&
-		compareMappedString(source.caseType, sinkCase.appealType?.key) &&
-		compareMappedString(source.caseProcedure, sinkCase.procedureType?.key) &&
-		compareMappedString(source.lpaCode, sinkCase.lpa?.lpaCode) &&
-		compareMappedString(source.caseOfficerId, sinkCase.caseOfficer?.azureAdUserId) &&
-		compareMappedString(source.inspectorId, sinkCase.inspector?.azureAdUserId) &&
-		compareMappedString(source.padsSapId, sinkCase.padsInspector?.sapId) &&
-		validateParentAppeals(source, sinkCase.parentAppeals) &&
-		compareMappedString(source.applicationReference, sinkCase.applicationReference) &&
-		compareMappedDate(source.caseCreatedDate, sinkCase.caseCreatedDate) &&
-		compareMappedDate(source.caseUpdatedDate, sinkCase.caseUpdatedDate) &&
-		compareMappedDate(source.caseValidDate, sinkCase.caseValidDate) &&
-		compareMappedDate(source.caseExtensionDate, sinkCase.caseExtensionDate) &&
-		compareMappedDate(source.caseStartedDate, sinkCase.caseStartedDate) &&
-		compareMappedDate(source.casePublishedDate, sinkCase.casePublishedDate) &&
-		validateAppealTimetable(source, sinkCase.appealTimetable) &&
-		validateAllocation(source, sinkCase.allocation) &&
-		validateAppealStatus(source, sinkCase.appealStatus) &&
-		validateSpecialisms(source, sinkCase.specialisms) &&
-		validateAddress(source, sinkCase.address) &&
-		validateInspectorDecision(source, sinkCase.inspectorDecision) &&
-		validateAppellantCase(source, sinkCase.appellantCase) &&
-		validateChildAppeals(source, sinkCase.childAppeals) &&
-		validateNeighbouringSites(source, sinkCase.neighbouringSites) &&
-		validateLpaQuestionnaire(source, sinkCase.lpaQuestionnaire) &&
-		validateRepresentations(source, sinkCase.representations) &&
-		validateAppealGrounds(source, sinkCase.appealGrounds) &&
-		validateEvents(events, sinkCase) &&
-		validateServiceUsers(serviceUsers, sinkCase)
-	);
+	// Helper function to add validation errors
+	function addError(sourceField: string, expected: string, actual: string) {
+		errors.push(createValidationError(sourceModel, sourceField, `Expected '${expected}' got '${actual}'`));
+	}
+
+	// Validate case reference
+	if (sinkCase.reference !== source.caseReference) {
+		addError('caseReference', source.caseReference ?? 'null', sinkCase.reference);
+	}
+
+	// Validate submission ID
+	if (!compareMappedString(source.submissionId, sinkCase.submissionId)) {
+		addError('submissionId', source.submissionId ?? 'null', sinkCase.submissionId ?? 'null');
+	}
+
+	// Validate case type
+	if (!compareMappedString(source.caseType, sinkCase.appealType?.key)) {
+		addError('caseType', source.caseType ?? 'null', sinkCase.appealType?.key ?? 'null');
+	}
+
+	// Validate case procedure
+	if (!compareMappedString(source.caseProcedure, sinkCase.procedureType?.key)) {
+		addError('caseProcedure', source.caseProcedure ?? 'null', sinkCase.procedureType?.key ?? 'null');
+	}
+
+	// Validate LPA code
+	if (!compareMappedString(source.lpaCode, sinkCase.lpa?.lpaCode)) {
+		addError('lpaCode', source.lpaCode ?? 'null', sinkCase.lpa?.lpaCode ?? 'null');
+	}
+
+	// Validate case officer ID
+	if (!compareMappedString(source.caseOfficerId, sinkCase.caseOfficer?.azureAdUserId)) {
+		addError('caseOfficerId', source.caseOfficerId ?? 'null', sinkCase.caseOfficer?.azureAdUserId ?? 'null');
+	}
+
+	// Validate inspector ID
+	if (!compareMappedString(source.inspectorId, sinkCase.inspector?.azureAdUserId)) {
+		addError('inspectorId', source.inspectorId ?? 'null', sinkCase.inspector?.azureAdUserId ?? 'null');
+	}
+
+	// Validate PADS SAP ID
+	if (!compareMappedString(source.padsSapId, sinkCase.padsInspector?.sapId)) {
+		addError('padsSapId', source.padsSapId ?? 'null', sinkCase.padsInspector?.sapId ?? 'null');
+	}
+
+	// Validate application reference
+	if (!compareMappedString(source.applicationReference, sinkCase.applicationReference)) {
+		addError('applicationReference', source.applicationReference ?? 'null', sinkCase.applicationReference ?? 'null');
+	}
+
+	// Validate dates
+	const dateFields = [
+		{ source: source.caseCreatedDate, sink: sinkCase.caseCreatedDate, name: 'caseCreatedDate' },
+		{ source: source.caseUpdatedDate, sink: sinkCase.caseUpdatedDate, name: 'caseUpdatedDate' },
+		{ source: source.caseValidDate, sink: sinkCase.caseValidDate, name: 'caseValidDate' },
+		{ source: source.caseExtensionDate, sink: sinkCase.caseExtensionDate, name: 'caseExtensionDate' },
+		{ source: source.caseStartedDate, sink: sinkCase.caseStartedDate, name: 'caseStartedDate' },
+		{ source: source.casePublishedDate, sink: sinkCase.casePublishedDate, name: 'casePublishedDate' }
+	];
+
+	dateFields.forEach(({ source, sink, name }) => {
+		if (!compareMappedDate(source, sink)) {
+			addError(name, String(source ?? 'null'), String(sink ?? 'null'));
+		}
+	});
+
+	// Validate complex objects
+	if (!validateParentAppeals(source, sinkCase.parentAppeals)) {
+		errors.push(createValidationError(sourceModel, 'parentAppeals', 'Parent appeals validation failed'));
+	}
+
+	if (!validateAppealTimetable(source, sinkCase.appealTimetable)) {
+		errors.push(createValidationError(sourceModel, 'appealTimetable', 'Appeal timetable validation failed'));
+	}
+
+	if (!validateAllocation(source, sinkCase.allocation)) {
+		errors.push(createValidationError(sourceModel, 'allocation', 'Allocation validation failed'));
+	}
+
+	if (!validateAppealStatus(source, sinkCase.appealStatus)) {
+		errors.push(createValidationError(sourceModel, 'appealStatus', 'Appeal status validation failed'));
+	}
+
+	if (!validateSpecialisms(source, sinkCase.specialisms)) {
+		errors.push(createValidationError(sourceModel, 'specialisms', 'Specialisms validation failed'));
+	}
+
+	if (!validateAddress(source, sinkCase.address)) {
+		errors.push(createValidationError(sourceModel, 'address', 'Address validation failed'));
+	}
+
+	if (!validateInspectorDecision(source, sinkCase.inspectorDecision)) {
+		errors.push(createValidationError(sourceModel, 'inspectorDecision', 'Inspector decision validation failed'));
+	}
+
+	if (!validateAppellantCase(source, sinkCase.appellantCase)) {
+		errors.push(createValidationError(sourceModel, 'appellantCase', 'Appellant case validation failed'));
+	}
+
+	if (!validateChildAppeals(source, sinkCase.childAppeals)) {
+		errors.push(createValidationError(sourceModel, 'childAppeals', 'Child appeals validation failed'));
+	}
+
+	if (!validateNeighbouringSites(source, sinkCase.neighbouringSites)) {
+		errors.push(createValidationError(sourceModel, 'neighbouringSites', 'Neighbouring sites validation failed'));
+	}
+
+	if (!validateLpaQuestionnaire(source, sinkCase.lpaQuestionnaire)) {
+		errors.push(createValidationError(sourceModel, 'lpaQuestionnaire', 'LPA questionnaire validation failed'));
+	}
+
+	if (!validateRepresentations(source, sinkCase.representations)) {
+		errors.push(createValidationError(sourceModel, 'representations', 'Representations validation failed'));
+	}
+
+	if (!validateAppealGrounds(source, sinkCase.appealGrounds)) {
+		errors.push(createValidationError(sourceModel, 'appealGrounds', 'Appeal grounds validation failed'));
+	}
+
+	if (!validateEvents(events, sinkCase)) {
+		errors.push(createValidationError(sourceModel, 'events', 'Events validation failed'));
+	}
+
+	if (!validateServiceUsers(serviceUsers, sinkCase)) {
+		errors.push(createValidationError(sourceModel, 'serviceUsers', 'Service users validation failed'));
+	}
+
+	// Return validation result
+	if (errors.length === 0) {
+		return {
+			isValid: true,
+			errors: [],
+			dataValidated: true
+		};
+	} else {
+		return {
+			isValid: false,
+			errors,
+			dataValidated: false
+		};
+	}
 }
