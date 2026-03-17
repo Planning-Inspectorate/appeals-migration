@@ -80,57 +80,35 @@ function validateAllocation(source: AppealHas | AppealS78, sink: SinkCase['alloc
 	return sink.level === source.allocationLevel && compareMappedNumber(source.allocationBand, sink.band);
 }
 
+function addStatusIfDateExists(
+	expected: Array<{ status: string; createdAt: Date | undefined }>,
+	status: string,
+	date: string | Date | null | undefined
+): void {
+	const parsedDate = parseDateOrUndefined(date);
+	if (parsedDate !== undefined) {
+		expected.push({ status, createdAt: parsedDate });
+	}
+}
+
 function validateAppealStatus(source: AppealHas | AppealS78, sinkStatuses: SinkCase['appealStatus']): boolean {
 	const expected: Array<{ status: string; createdAt: Date | undefined }> = [];
 
-	if (source.caseStatus) {
-		expected.push({
-			status: source.caseStatus,
-			createdAt: parseDateOrUndefined(source.caseUpdatedDate)
-		});
-	}
+	const statusMappings: Array<{ status: string; dateField: string | Date | null | undefined }> = [
+		{ status: source.caseStatus || '', dateField: source.caseUpdatedDate },
+		{ status: APPEAL_CASE_STATUS.READY_TO_START, dateField: source.caseValidationDate },
+		{ status: APPEAL_CASE_STATUS.EVENT, dateField: source.lpaQuestionnairePublishedDate },
+		{ status: APPEAL_CASE_STATUS.WITHDRAWN, dateField: source.caseWithdrawnDate },
+		{ status: APPEAL_CASE_STATUS.TRANSFERRED, dateField: source.caseTransferredDate },
+		{ status: APPEAL_CASE_STATUS.CLOSED, dateField: source.transferredCaseClosedDate },
+		{ status: APPEAL_CASE_STATUS.COMPLETE, dateField: source.caseCompletedDate }
+	];
 
-	if (source.caseValidationDate) {
-		expected.push({
-			status: APPEAL_CASE_STATUS.READY_TO_START,
-			createdAt: parseDateOrUndefined(source.caseValidationDate)
-		});
-	}
-
-	if (source.lpaQuestionnairePublishedDate) {
-		expected.push({
-			status: APPEAL_CASE_STATUS.EVENT,
-			createdAt: parseDateOrUndefined(source.lpaQuestionnairePublishedDate)
-		});
-	}
-
-	if (source.caseWithdrawnDate) {
-		expected.push({
-			status: APPEAL_CASE_STATUS.WITHDRAWN,
-			createdAt: parseDateOrUndefined(source.caseWithdrawnDate)
-		});
-	}
-
-	if (source.caseTransferredDate) {
-		expected.push({
-			status: APPEAL_CASE_STATUS.TRANSFERRED,
-			createdAt: parseDateOrUndefined(source.caseTransferredDate)
-		});
-	}
-
-	if (source.transferredCaseClosedDate) {
-		expected.push({
-			status: APPEAL_CASE_STATUS.CLOSED,
-			createdAt: parseDateOrUndefined(source.transferredCaseClosedDate)
-		});
-	}
-
-	if (source.caseCompletedDate) {
-		expected.push({
-			status: APPEAL_CASE_STATUS.COMPLETE,
-			createdAt: parseDateOrUndefined(source.caseCompletedDate)
-		});
-	}
+	statusMappings.forEach(({ status, dateField }) => {
+		if (status) {
+			addStatusIfDateExists(expected, status, dateField);
+		}
+	});
 
 	if (sinkStatuses.length !== expected.length) return false;
 
@@ -149,15 +127,40 @@ function validateSpecialisms(source: AppealHas | AppealS78, sinkSpecialisms: Sin
 	);
 }
 
+function compareAddressFields(
+	sourceLine1: string | null | undefined,
+	sourceLine2: string | null | undefined,
+	sourceTown: string | null | undefined,
+	sourceCounty: string | null | undefined,
+	sourcePostcode: string | null | undefined,
+	sinkAddress: {
+		addressLine1: string | null;
+		addressLine2: string | null;
+		addressTown: string | null;
+		addressCounty: string | null;
+		postcode: string | null;
+	} | null
+): boolean {
+	if (!sinkAddress) return false;
+	return (
+		compareMappedString(sourceLine1, sinkAddress.addressLine1) &&
+		compareMappedString(sourceLine2, sinkAddress.addressLine2) &&
+		compareMappedString(sourceTown, sinkAddress.addressTown) &&
+		compareMappedString(sourceCounty, sinkAddress.addressCounty) &&
+		compareMappedString(sourcePostcode, sinkAddress.postcode)
+	);
+}
+
 function validateAddress(source: AppealHas | AppealS78, sink: SinkCase['address']): boolean {
 	if (!source.siteAddressLine1) return !sink;
 	if (!sink) return false;
-	return (
-		sink.addressLine1 === source.siteAddressLine1 &&
-		compareMappedString(source.siteAddressLine2, sink.addressLine2) &&
-		compareMappedString(source.siteAddressTown, sink.addressTown) &&
-		compareMappedString(source.siteAddressCounty, sink.addressCounty) &&
-		compareMappedString(source.siteAddressPostcode, sink.postcode)
+	return compareAddressFields(
+		source.siteAddressLine1,
+		source.siteAddressLine2,
+		source.siteAddressTown,
+		source.siteAddressCounty,
+		source.siteAddressPostcode,
+		sink
 	);
 }
 
@@ -297,16 +300,22 @@ function validateDesignatedSiteNames(
 function validateRepresentations(source: AppealHas | AppealS78, sinkReps: SinkCase['representations']): boolean {
 	const s78 = source as AppealS78;
 	const expected: string[] = [];
-	const addIfDate = (type: string, date: string | null | undefined) => {
-		if (parseDateOrUndefined(date)) expected.push(type);
-	};
-	addIfDate(APPEAL_REPRESENTATION_TYPE.APPELLANT_FINAL_COMMENT, s78.appellantCommentsSubmittedDate);
-	addIfDate(APPEAL_REPRESENTATION_TYPE.APPELLANT_STATEMENT, s78.appellantStatementSubmittedDate);
-	addIfDate(APPEAL_REPRESENTATION_TYPE.APPELLANT_PROOFS_EVIDENCE, s78.appellantProofsSubmittedDate);
-	addIfDate(APPEAL_REPRESENTATION_TYPE.LPA_FINAL_COMMENT, s78.lpaCommentsSubmittedDate);
-	addIfDate(APPEAL_REPRESENTATION_TYPE.LPA_PROOFS_EVIDENCE, s78.lpaProofsSubmittedDate);
-	addIfDate(APPEAL_REPRESENTATION_TYPE.LPA_STATEMENT, s78.lpaStatementSubmittedDate);
-	// Exclude 'comment' type representations - those are interested parties validated separately
+
+	const representationMappings: Array<{ type: string; dateField: string | null | undefined }> = [
+		{ type: APPEAL_REPRESENTATION_TYPE.APPELLANT_FINAL_COMMENT, dateField: s78.appellantCommentsSubmittedDate },
+		{ type: APPEAL_REPRESENTATION_TYPE.APPELLANT_STATEMENT, dateField: s78.appellantStatementSubmittedDate },
+		{ type: APPEAL_REPRESENTATION_TYPE.APPELLANT_PROOFS_EVIDENCE, dateField: s78.appellantProofsSubmittedDate },
+		{ type: APPEAL_REPRESENTATION_TYPE.LPA_FINAL_COMMENT, dateField: s78.lpaCommentsSubmittedDate },
+		{ type: APPEAL_REPRESENTATION_TYPE.LPA_PROOFS_EVIDENCE, dateField: s78.lpaProofsSubmittedDate },
+		{ type: APPEAL_REPRESENTATION_TYPE.LPA_STATEMENT, dateField: s78.lpaStatementSubmittedDate }
+	];
+
+	representationMappings.forEach(({ type, dateField }) => {
+		if (parseDateOrUndefined(dateField)) {
+			expected.push(type);
+		}
+	});
+
 	const nonCommentReps = sinkReps.filter((r) => r.representationType !== APPEAL_REPRESENTATION_TYPE.COMMENT);
 	if (expected.length !== nonCommentReps.length) return false;
 	return expected.every((type) => nonCommentReps.some((r) => r.representationType === type));
@@ -344,12 +353,13 @@ function validateEventAddress(
 ): boolean {
 	if (!mappedAddress && !sinkAddress) return true;
 	if (!mappedAddress || !sinkAddress) return false;
-	return (
-		compareMappedString(mappedAddress.addressLine1, sinkAddress.addressLine1) &&
-		compareMappedString(mappedAddress.addressLine2, sinkAddress.addressLine2) &&
-		compareMappedString(mappedAddress.addressTown, sinkAddress.addressTown) &&
-		compareMappedString(mappedAddress.addressCounty, sinkAddress.addressCounty) &&
-		compareMappedString(mappedAddress.postcode, sinkAddress.postcode)
+	return compareAddressFields(
+		mappedAddress.addressLine1,
+		mappedAddress.addressLine2,
+		mappedAddress.addressTown,
+		mappedAddress.addressCounty,
+		mappedAddress.postcode,
+		sinkAddress
 	);
 }
 
@@ -469,6 +479,32 @@ function validateParentAppeals(source: AppealHas | AppealS78, sinkParentAppeals:
 	return parent.parentRef === source.leadCaseReference && parent.childRef === source.caseReference;
 }
 
+type FieldValidator<T = any, U = any> = {
+	fieldName: string;
+	sourceValue: T;
+	sinkValue: U;
+	compare: (source: T, sink: U) => boolean;
+};
+
+function validateField<T, U>(validator: FieldValidator<T, U>, sourceModel: string, errors: ValidationError[]): void {
+	if (!validator.compare(validator.sourceValue, validator.sinkValue)) {
+		const expected = String(validator.sourceValue ?? 'null');
+		const actual = String(validator.sinkValue ?? 'null');
+		errors.push(createValidationError(sourceModel, validator.fieldName, `Expected '${expected}' got '${actual}'`));
+	}
+}
+
+function runComplexValidation(
+	validationFn: () => boolean,
+	fieldName: string,
+	sourceModel: string,
+	errors: ValidationError[]
+): void {
+	if (!validationFn()) {
+		errors.push(createValidationError(sourceModel, fieldName, `${fieldName} validation failed`));
+	}
+}
+
 export function validateData(
 	sourceCase: SourceCase,
 	sinkCase: SinkCase,
@@ -479,133 +515,132 @@ export function validateData(
 	const errors: ValidationError[] = [];
 	const sourceModel = sourceCase.type === 'has' ? 'AppealHas' : 'AppealS78';
 
-	// Helper function to add validation errors
-	function addError(sourceField: string, expected: string, actual: string) {
-		errors.push(createValidationError(sourceModel, sourceField, `Expected '${expected}' got '${actual}'`));
-	}
-
-	if (sinkCase.reference !== source.caseReference) {
-		addError('caseReference', source.caseReference ?? 'null', sinkCase.reference);
-	}
-
-	if (!compareMappedString(source.submissionId, sinkCase.submissionId)) {
-		addError('submissionId', source.submissionId ?? 'null', sinkCase.submissionId ?? 'null');
-	}
-
-	if (!compareMappedString(source.caseType, sinkCase.appealType?.key)) {
-		addError('caseType', source.caseType ?? 'null', sinkCase.appealType?.key ?? 'null');
-	}
-
-	if (!compareMappedString(source.caseProcedure, sinkCase.procedureType?.key)) {
-		addError('caseProcedure', source.caseProcedure ?? 'null', sinkCase.procedureType?.key ?? 'null');
-	}
-
-	if (!compareMappedString(source.lpaCode, sinkCase.lpa?.lpaCode)) {
-		addError('lpaCode', source.lpaCode ?? 'null', sinkCase.lpa?.lpaCode ?? 'null');
-	}
-
-	if (!compareMappedString(source.caseOfficerId, sinkCase.caseOfficer?.azureAdUserId)) {
-		addError('caseOfficerId', source.caseOfficerId ?? 'null', sinkCase.caseOfficer?.azureAdUserId ?? 'null');
-	}
-
-	if (!compareMappedString(source.inspectorId, sinkCase.inspector?.azureAdUserId)) {
-		addError('inspectorId', source.inspectorId ?? 'null', sinkCase.inspector?.azureAdUserId ?? 'null');
-	}
-
-	if (!compareMappedString(source.padsSapId, sinkCase.padsInspector?.sapId)) {
-		addError('padsSapId', source.padsSapId ?? 'null', sinkCase.padsInspector?.sapId ?? 'null');
-	}
-
-	if (!compareMappedString(source.applicationReference, sinkCase.applicationReference)) {
-		addError('applicationReference', source.applicationReference ?? 'null', sinkCase.applicationReference ?? 'null');
-	}
-
-	const dateFields = [
-		{ source: source.caseCreatedDate, sink: sinkCase.caseCreatedDate, name: 'caseCreatedDate' },
-		{ source: source.caseUpdatedDate, sink: sinkCase.caseUpdatedDate, name: 'caseUpdatedDate' },
-		{ source: source.caseValidDate, sink: sinkCase.caseValidDate, name: 'caseValidDate' },
-		{ source: source.caseExtensionDate, sink: sinkCase.caseExtensionDate, name: 'caseExtensionDate' },
-		{ source: source.caseStartedDate, sink: sinkCase.caseStartedDate, name: 'caseStartedDate' },
-		{ source: source.casePublishedDate, sink: sinkCase.casePublishedDate, name: 'casePublishedDate' }
+	const stringFieldValidators: FieldValidator<string | null | undefined, string | null | undefined>[] = [
+		{
+			fieldName: 'caseReference',
+			sourceValue: source.caseReference,
+			sinkValue: sinkCase.reference,
+			compare: (s, k) => s === k
+		},
+		{
+			fieldName: 'submissionId',
+			sourceValue: source.submissionId,
+			sinkValue: sinkCase.submissionId,
+			compare: compareMappedString
+		},
+		{
+			fieldName: 'caseType',
+			sourceValue: source.caseType,
+			sinkValue: sinkCase.appealType?.key,
+			compare: compareMappedString
+		},
+		{
+			fieldName: 'caseProcedure',
+			sourceValue: source.caseProcedure,
+			sinkValue: sinkCase.procedureType?.key,
+			compare: compareMappedString
+		},
+		{
+			fieldName: 'lpaCode',
+			sourceValue: source.lpaCode,
+			sinkValue: sinkCase.lpa?.lpaCode,
+			compare: compareMappedString
+		},
+		{
+			fieldName: 'caseOfficerId',
+			sourceValue: source.caseOfficerId,
+			sinkValue: sinkCase.caseOfficer?.azureAdUserId,
+			compare: compareMappedString
+		},
+		{
+			fieldName: 'inspectorId',
+			sourceValue: source.inspectorId,
+			sinkValue: sinkCase.inspector?.azureAdUserId,
+			compare: compareMappedString
+		},
+		{
+			fieldName: 'padsSapId',
+			sourceValue: source.padsSapId,
+			sinkValue: sinkCase.padsInspector?.sapId,
+			compare: compareMappedString
+		},
+		{
+			fieldName: 'applicationReference',
+			sourceValue: source.applicationReference,
+			sinkValue: sinkCase.applicationReference,
+			compare: compareMappedString
+		}
 	];
 
-	dateFields.forEach(({ source, sink, name }) => {
-		if (!compareMappedDate(source, sink)) {
-			addError(name, String(source ?? 'null'), String(sink ?? 'null'));
+	stringFieldValidators.forEach((validator) => validateField(validator, sourceModel, errors));
+
+	const dateFieldValidators: FieldValidator<string | Date | null | undefined, Date | null | undefined>[] = [
+		{
+			fieldName: 'caseCreatedDate',
+			sourceValue: source.caseCreatedDate,
+			sinkValue: sinkCase.caseCreatedDate,
+			compare: compareMappedDate
+		},
+		{
+			fieldName: 'caseUpdatedDate',
+			sourceValue: source.caseUpdatedDate,
+			sinkValue: sinkCase.caseUpdatedDate,
+			compare: compareMappedDate
+		},
+		{
+			fieldName: 'caseValidDate',
+			sourceValue: source.caseValidDate,
+			sinkValue: sinkCase.caseValidDate,
+			compare: compareMappedDate
+		},
+		{
+			fieldName: 'caseExtensionDate',
+			sourceValue: source.caseExtensionDate,
+			sinkValue: sinkCase.caseExtensionDate,
+			compare: compareMappedDate
+		},
+		{
+			fieldName: 'caseStartedDate',
+			sourceValue: source.caseStartedDate,
+			sinkValue: sinkCase.caseStartedDate,
+			compare: compareMappedDate
+		},
+		{
+			fieldName: 'casePublishedDate',
+			sourceValue: source.casePublishedDate,
+			sinkValue: sinkCase.casePublishedDate,
+			compare: compareMappedDate
 		}
-	});
+	];
 
-	if (!validateParentAppeals(source, sinkCase.parentAppeals)) {
-		errors.push(createValidationError(sourceModel, 'parentAppeals', 'Parent appeals validation failed'));
-	}
+	dateFieldValidators.forEach((validator) => validateField(validator, sourceModel, errors));
 
-	if (!validateAppealTimetable(source, sinkCase.appealTimetable)) {
-		errors.push(createValidationError(sourceModel, 'appealTimetable', 'Appeal timetable validation failed'));
-	}
+	const complexValidations: Array<{ fn: () => boolean; fieldName: string }> = [
+		{ fn: () => validateParentAppeals(source, sinkCase.parentAppeals), fieldName: 'parentAppeals' },
+		{ fn: () => validateAppealTimetable(source, sinkCase.appealTimetable), fieldName: 'appealTimetable' },
+		{ fn: () => validateAllocation(source, sinkCase.allocation), fieldName: 'allocation' },
+		{ fn: () => validateAppealStatus(source, sinkCase.appealStatus), fieldName: 'appealStatus' },
+		{ fn: () => validateSpecialisms(source, sinkCase.specialisms), fieldName: 'specialisms' },
+		{ fn: () => validateAddress(source, sinkCase.address), fieldName: 'address' },
+		{ fn: () => validateInspectorDecision(source, sinkCase.inspectorDecision), fieldName: 'inspectorDecision' },
+		{ fn: () => validateAppellantCase(source, sinkCase.appellantCase), fieldName: 'appellantCase' },
+		{ fn: () => validateChildAppeals(source, sinkCase.childAppeals), fieldName: 'childAppeals' },
+		{ fn: () => validateNeighbouringSites(source, sinkCase.neighbouringSites), fieldName: 'neighbouringSites' },
+		{ fn: () => validateLpaQuestionnaire(source, sinkCase.lpaQuestionnaire), fieldName: 'lpaQuestionnaire' },
+		{ fn: () => validateRepresentations(source, sinkCase.representations), fieldName: 'representations' },
+		{ fn: () => validateAppealGrounds(source, sinkCase.appealGrounds), fieldName: 'appealGrounds' },
+		{ fn: () => validateEvents(events, sinkCase), fieldName: 'events' },
+		{ fn: () => validateServiceUsers(serviceUsers, sinkCase), fieldName: 'serviceUsers' }
+	];
 
-	if (!validateAllocation(source, sinkCase.allocation)) {
-		errors.push(createValidationError(sourceModel, 'allocation', 'Allocation validation failed'));
-	}
+	complexValidations.forEach((validation) =>
+		runComplexValidation(validation.fn, validation.fieldName, sourceModel, errors)
+	);
 
-	if (!validateAppealStatus(source, sinkCase.appealStatus)) {
-		errors.push(createValidationError(sourceModel, 'appealStatus', 'Appeal status validation failed'));
-	}
-
-	if (!validateSpecialisms(source, sinkCase.specialisms)) {
-		errors.push(createValidationError(sourceModel, 'specialisms', 'Specialisms validation failed'));
-	}
-
-	if (!validateAddress(source, sinkCase.address)) {
-		errors.push(createValidationError(sourceModel, 'address', 'Address validation failed'));
-	}
-
-	if (!validateInspectorDecision(source, sinkCase.inspectorDecision)) {
-		errors.push(createValidationError(sourceModel, 'inspectorDecision', 'Inspector decision validation failed'));
-	}
-
-	if (!validateAppellantCase(source, sinkCase.appellantCase)) {
-		errors.push(createValidationError(sourceModel, 'appellantCase', 'Appellant case validation failed'));
-	}
-
-	if (!validateChildAppeals(source, sinkCase.childAppeals)) {
-		errors.push(createValidationError(sourceModel, 'childAppeals', 'Child appeals validation failed'));
-	}
-
-	if (!validateNeighbouringSites(source, sinkCase.neighbouringSites)) {
-		errors.push(createValidationError(sourceModel, 'neighbouringSites', 'Neighbouring sites validation failed'));
-	}
-
-	if (!validateLpaQuestionnaire(source, sinkCase.lpaQuestionnaire)) {
-		errors.push(createValidationError(sourceModel, 'lpaQuestionnaire', 'LPA questionnaire validation failed'));
-	}
-
-	if (!validateRepresentations(source, sinkCase.representations)) {
-		errors.push(createValidationError(sourceModel, 'representations', 'Representations validation failed'));
-	}
-
-	if (!validateAppealGrounds(source, sinkCase.appealGrounds)) {
-		errors.push(createValidationError(sourceModel, 'appealGrounds', 'Appeal grounds validation failed'));
-	}
-
-	if (!validateEvents(events, sinkCase)) {
-		errors.push(createValidationError(sourceModel, 'events', 'Events validation failed'));
-	}
-
-	if (!validateServiceUsers(serviceUsers, sinkCase)) {
-		errors.push(createValidationError(sourceModel, 'serviceUsers', 'Service users validation failed'));
-	}
-
-	if (errors.length === 0) {
-		return {
-			isValid: true,
-			errors: [],
-			dataValidated: true
-		};
-	} else {
-		return {
-			isValid: false,
-			errors,
-			dataValidated: false
-		};
-	}
+	const isValid = errors.length === 0;
+	return {
+		isValid,
+		errors,
+		dataValidated: isValid
+	};
 }
