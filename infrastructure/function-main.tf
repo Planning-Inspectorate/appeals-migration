@@ -38,6 +38,21 @@ module "function_main" {
   app_settings = {
     SERVICE_BUS_CONNECTION_STRING = "${var.manage_appeals_config.service_bus_name}.servicebus.windows.net"
     SQL_CONNECTION_STRING         = local.key_vault_refs["sql-app-connection-string"]
+
+    BUFFER_PER_WORKER     = var.apps_config.migration.buffer_per_worker
+    MAXIMUM_PARALLELISM   = var.apps_config.migration.maximum_parallelism
+    DISPATCHER_END_HOUR   = var.apps_config.migration.dispatcher_start_hour
+    DISPATCHER_START_HOUR = var.apps_config.migration.dispatcher_end_hour
+
+    HORIZON_WEB_BASE_URL    = local.key_vault_refs["horizon-web-base-url"]
+    HORIZON_WEB_USERNAME    = local.key_vault_refs["horizon-web-username"]
+    HORIZON_WEB_PASSWORD    = local.key_vault_refs["horizon-web-password"]
+    HORIZON_WEB_DNS_MAPPING = local.key_vault_refs["horizon-web-dns-mapping"]
+
+    MANAGE_APPEALS_DOCUMENTS_ACCOUNT_NAME   = var.manage_appeals_config.documents_account_name
+    MANAGE_APPEALS_DOCUMENTS_CONTAINER_NAME = var.manage_appeals_config.documents_container_name
+    MANAGE_APPEALS_SQL_CONNECTION_STRING    = ""
+    ODW_CURATED_SQL_CONNECTION_STRING       = ""
   }
 }
 
