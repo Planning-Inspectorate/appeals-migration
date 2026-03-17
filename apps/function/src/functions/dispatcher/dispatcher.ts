@@ -1,5 +1,6 @@
 import type { InvocationContext, Timer, TimerHandler } from '@azure/functions';
 import type { Prisma } from '@pins/appeals-migration-database/src/client/client.ts';
+import { withRetry } from '@pins/appeals-migration-lib/util/retry.ts';
 import chunk from 'lodash.chunk';
 import type { FunctionService } from '../../service.ts';
 import type { StepIdField } from '../../types.ts';
@@ -29,27 +30,29 @@ async function getItemsToMigrate(
 	service: FunctionService,
 	dispatchCount: number
 ): Promise<ItemToMigrate[]> {
-	return service.databaseClient.$transaction(async (transaction) => {
-		const selected: ItemToMigrate[] =
-			config.queueItemType === 'case'
-				? await transaction.caseToMigrate.findMany({
-						where: config.where as Prisma.CaseToMigrateWhereInput,
-						take: dispatchCount
-					})
-				: await transaction.documentToMigrate.findMany({
-						where: config.where as Prisma.DocumentToMigrateWhereInput,
-						take: dispatchCount
-					});
+	return withRetry(() =>
+		service.databaseClient.$transaction(async (transaction) => {
+			const selected: ItemToMigrate[] =
+				config.queueItemType === 'case'
+					? await transaction.caseToMigrate.findMany({
+							where: config.where as Prisma.CaseToMigrateWhereInput,
+							take: dispatchCount
+						})
+					: await transaction.documentToMigrate.findMany({
+							where: config.where as Prisma.DocumentToMigrateWhereInput,
+							take: dispatchCount
+						});
 
-		const ids = selected.map((row) => getStepId(row, config.stepIdField));
-		for (const idsChunk of chunk(ids, service.migrationStepUpdateChunkSize)) {
-			await transaction.migrationStep.updateMany({
-				where: { id: { in: idsChunk } },
-				data: { status: stepStatus.queued }
-			});
-		}
-		return selected;
-	});
+			const ids = selected.map((row) => getStepId(row, config.stepIdField));
+			for (const idsChunk of chunk(ids, service.migrationStepUpdateChunkSize)) {
+				await transaction.migrationStep.updateMany({
+					where: { id: { in: idsChunk } },
+					data: { status: stepStatus.queued }
+				});
+			}
+			return selected;
+		})
+	);
 }
 
 async function dispatch(config: DispatchConfig, service: FunctionService, context: InvocationContext): Promise<void> {
@@ -109,31 +112,37 @@ async function drain(config: DispatchConfig, service: FunctionService, context: 
 				break;
 			}
 
-			await databaseClient.migrationStep.updateMany({
-				where: {
-					id: {
-						in: messages.map((message) => getStepId(message.body as ItemToMigrate, config.stepIdField))
-					}
-				},
-				data: { status: stepStatus.waiting }
-			});
+			await withRetry(() =>
+				databaseClient.migrationStep.updateMany({
+					where: {
+						id: {
+							in: messages.map((message) => getStepId(message.body as ItemToMigrate, config.stepIdField))
+						}
+					},
+					data: { status: stepStatus.waiting }
+				})
+			);
 
 			if (config.queueName === 'documents-step') {
 				const caseReferences = [...new Set(messages.map((message) => (message.body as ItemToMigrate).caseReference))];
-				const cases = await databaseClient.caseToMigrate.findMany({
-					where: { caseReference: { in: caseReferences } },
-					select: { documentsStepId: true }
-				});
+				const cases = await withRetry(() =>
+					databaseClient.caseToMigrate.findMany({
+						where: { caseReference: { in: caseReferences } },
+						select: { documentsStepId: true }
+					})
+				);
 
 				const ids = cases.map((caseToMigrate) => caseToMigrate.documentsStepId);
 				for (const idsChunk of chunk(ids, service.migrationStepUpdateChunkSize)) {
-					await databaseClient.migrationStep.updateMany({
-						where: {
-							id: { in: idsChunk },
-							status: stepStatus.processing
-						},
-						data: { status: stepStatus.waiting }
-					});
+					await withRetry(() =>
+						databaseClient.migrationStep.updateMany({
+							where: {
+								id: { in: idsChunk },
+								status: stepStatus.processing
+							},
+							data: { status: stepStatus.waiting }
+						})
+					);
 				}
 			}
 

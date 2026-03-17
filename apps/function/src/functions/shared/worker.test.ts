@@ -3,7 +3,9 @@ import { app } from '@azure/functions';
 import assert from 'node:assert';
 import { describe, mock, test } from 'node:test';
 import { stepStatus } from '../../types.ts';
-import { createWorker } from './worker.ts';
+import { createWorker, handleMigration } from './worker.ts';
+
+const createPrismaError = (code) => Object.assign(new Error(`Prisma error ${code}`), { code });
 
 describe('createWorker', () => {
 	const newContext = () => ({
@@ -261,5 +263,83 @@ describe('createWorker', () => {
 		assert.strictEqual(service.databaseClient.$queryRaw.mock.callCount(), 1);
 		assert.strictEqual(service.databaseClient.caseToMigrate.findUnique.mock.callCount(), 1);
 		assert.strictEqual(service.databaseClient.migrationStep.update.mock.callCount(), 2);
+	});
+});
+
+describe('handleMigration retry behavior', () => {
+	const newContext = () => ({ log: mock.fn(), error: mock.fn(), invocationId: 'test-invocation-id' });
+	const newService = () => {
+		const databaseClient = {
+			documentToMigrate: { count: mock.fn(async () => 1) },
+			caseToMigrate: { findUnique: mock.fn(async () => null) },
+			migrationStep: { update: mock.fn(), updateMany: mock.fn() },
+			$queryRaw: mock.fn(async () => []),
+			$transaction: mock.fn(async (callback) => callback(databaseClient))
+		};
+		return { databaseClient };
+	};
+
+	test('retries transaction on transient error and succeeds', async () => {
+		const service = newService();
+		let callCount = 0;
+		service.databaseClient.$transaction.mock.mockImplementation(async (callback) => {
+			if (++callCount === 1) throw createPrismaError('P1001');
+			return callback(service.databaseClient);
+		});
+
+		await handleMigration(
+			service,
+			'test-worker',
+			mock.fn(async () => {}),
+			'dataStepId',
+			{ caseReference: 'CASE-001', dataStepId: 100 },
+			newContext()
+		);
+
+		assert.strictEqual(service.databaseClient.$transaction.mock.callCount(), 3);
+	});
+
+	test('does not retry on non-retryable error', async () => {
+		const service = newService();
+		service.databaseClient.$transaction.mock.mockImplementation(async () => {
+			throw createPrismaError('P2002');
+		});
+
+		await assert.rejects(
+			() =>
+				handleMigration(
+					service,
+					'test-worker',
+					mock.fn(async () => {}),
+					'dataStepId',
+					{ caseReference: 'CASE-002', dataStepId: 101 },
+					newContext()
+				),
+			(error) => error.code === 'P2002'
+		);
+
+		assert.strictEqual(service.databaseClient.$transaction.mock.callCount(), 1);
+	});
+
+	test('throws after max retry attempts exhausted', async () => {
+		const service = newService();
+		service.databaseClient.$transaction.mock.mockImplementation(async () => {
+			throw createPrismaError('P1008');
+		});
+
+		await assert.rejects(
+			() =>
+				handleMigration(
+					service,
+					'test-worker',
+					mock.fn(async () => {}),
+					'dataStepId',
+					{ caseReference: 'CASE-003', dataStepId: 102 },
+					newContext()
+				),
+			(error) => error.code === 'P1008'
+		);
+
+		assert.strictEqual(service.databaseClient.$transaction.mock.callCount(), 3);
 	});
 });
