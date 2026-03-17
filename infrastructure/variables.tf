@@ -31,6 +31,16 @@ variable "environment" {
   type        = string
 }
 
+variable "manage_appeals_config" {
+  description = "Config for the manage appeals (back office) system"
+  type = object({
+    database_name       = string
+    network_name        = string
+    resource_group_name = string
+    service_bus_name    = string
+  })
+}
+
 variable "monitoring_config" {
   description = "Config for monitoring"
   type = object({
