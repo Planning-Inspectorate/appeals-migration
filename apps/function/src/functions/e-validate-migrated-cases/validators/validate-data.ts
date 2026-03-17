@@ -635,7 +635,6 @@ export function validateData(
 	const isValid = errors.length === 0;
 	return {
 		isValid,
-		errors,
-		dataValidated: isValid
+		errors
 	};
 }

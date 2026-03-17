@@ -9,14 +9,9 @@ export interface ValidationResult {
 	errors: ValidationError[];
 }
 
-export interface DataValidationResult extends ValidationResult {
-	/** Legacy boolean compatibility */
-	dataValidated: boolean;
-}
+export type DataValidationResult = ValidationResult;
 
-export interface DocumentValidationResult extends ValidationResult {
-	documentsValidated: boolean;
-}
+export type DocumentValidationResult = ValidationResult;
 
 export function createValidationError(sourceModel: string, sourceField: string, error: string): ValidationError {
 	return {

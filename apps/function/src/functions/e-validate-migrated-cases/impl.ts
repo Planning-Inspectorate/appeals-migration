@@ -81,10 +81,10 @@ export function buildValidateMigratedCases(
 		await migrationDatabase.caseToMigrate.update({
 			where: { caseReference },
 			data: {
-				dataValidated: dataValidationResult.dataValidated,
+				dataValidated: dataValidationResult.isValid,
 				dataValidationErrors:
 					dataValidationResult.errors.length > 0 ? JSON.stringify(dataValidationResult.errors) : null,
-				documentsValidated: documentsValidationResult.documentsValidated,
+				documentsValidated: documentsValidationResult.isValid,
 				documentValidationErrors:
 					documentsValidationResult.errors.length > 0 ? JSON.stringify(documentsValidationResult.errors) : null
 			}

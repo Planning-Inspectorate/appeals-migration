@@ -496,7 +496,6 @@ describe('validateData', () => {
 		const result = validateData({ type: 'has', data: source }, sink);
 
 		assert.strictEqual(result.isValid, false);
-		assert.strictEqual(result.dataValidated, false);
 		assert.ok(result.errors.length > 0);
 
 		// Check specific error details
@@ -517,7 +516,6 @@ describe('validateData', () => {
 		const result = validateData({ type: 'has', data: createSource() }, createSink());
 
 		assert.strictEqual(result.isValid, true);
-		assert.strictEqual(result.dataValidated, true);
 		assert.strictEqual(result.errors.length, 0);
 	});
 });
