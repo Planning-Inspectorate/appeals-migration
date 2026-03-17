@@ -28,7 +28,7 @@ app.timer('dispatcher', {
 createWorker(
 	service,
 	'b-migrate-data',
-	'data-step',
+	'appeals-migration-migrate-data',
 	buildMigrateData(service),
 	'dataStepId'
 );
@@ -36,7 +36,7 @@ createWorker(
 createWorker(
 	service,
 	'c-list-documents-to-migrate',
-	'document-list-step',
+	'appeals-migration-list-documents-to-migrate',
 	buildListDocumentsToMigrate(service),
 	'documentListStepId'
 );
@@ -45,7 +45,7 @@ createWorker(
 createWorker(
 	service,
 	'd-migrate-documents',
-	'documents-step',
+	'appeals-migration-migrate-documents',
 	buildMigrateDocuments(service),
 	'migrationStepId'
 );
@@ -53,7 +53,7 @@ createWorker(
 createWorker(
 	service,
 	'e-validate-migrated-cases',
-	'validation-step',
+	'appeals-migration-validate-migrated-cases',
 	buildValidateMigratedCases(service),
 	'validationStepId'
 );
