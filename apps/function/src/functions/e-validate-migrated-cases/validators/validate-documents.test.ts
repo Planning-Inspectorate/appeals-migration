@@ -11,7 +11,6 @@ describe('validateDocuments', () => {
 		const result = await validateDocuments(documents, sinkDatabase);
 
 		assert.strictEqual(result.isValid, false);
-		assert.strictEqual(result.documentsValidated, false);
 		assert.strictEqual(result.errors.length, 1);
 		assert.strictEqual(result.errors[0].sourceModel, 'AppealDocument');
 		assert.strictEqual(result.errors[0].sourceField, 'validation');
@@ -25,7 +24,6 @@ describe('validateDocuments', () => {
 		const result = await validateDocuments(documents, sinkDatabase);
 
 		assert.strictEqual(result.isValid, false);
-		assert.strictEqual(result.documentsValidated, false);
 		assert.strictEqual(result.errors.length, 1);
 	});
 });

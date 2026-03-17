@@ -19,7 +19,6 @@ export async function validateDocuments(
 
 	return {
 		isValid: false,
-		errors,
-		documentsValidated: false
+		errors
 	};
 }
