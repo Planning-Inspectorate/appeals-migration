@@ -1,6 +1,7 @@
 import type { InvocationContext } from '@azure/functions';
 import { app } from '@azure/functions';
 import type { Prisma } from '@pins/appeals-migration-database/src/client/client.ts';
+import { withRetry } from '@pins/appeals-migration-lib/util/retry.ts';
 import type { FunctionService } from '../../service.ts';
 import { stepStatus, type ItemToMigrate, type MigrationFunction, type StepIdField } from '../../types.ts';
 import { getStepId } from './step-id.ts';
@@ -82,20 +83,22 @@ export async function handleMigration(
 	const isDocumentStep = stepIdField === 'migrationStepId';
 	const stepId = getStepId(itemToMigrate, stepIdField);
 
-	await service.databaseClient.$transaction(async (transaction) => {
-		await transaction.migrationStep.update({
-			where: { id: stepId },
-			data: {
-				status: stepStatus.processing,
-				invocationId: context.invocationId,
-				startedAt: new Date()
-			}
-		});
+	await withRetry(() =>
+		service.databaseClient.$transaction(async (transaction) => {
+			await transaction.migrationStep.update({
+				where: { id: stepId },
+				data: {
+					status: stepStatus.processing,
+					invocationId: context.invocationId,
+					startedAt: new Date()
+				}
+			});
 
-		if (isDocumentStep) {
-			await startCaseDocumentsStepIfWaiting(transaction, itemToMigrate);
-		}
-	});
+			if (isDocumentStep) {
+				await startCaseDocumentsStepIfWaiting(transaction, itemToMigrate);
+			}
+		})
+	);
 
 	const { status, errorMessage } = await migrationFunction(itemToMigrate, context)
 		.then(() => ({ status: stepStatus.complete, errorMessage: null }))
@@ -107,16 +110,18 @@ export async function handleMigration(
 			};
 		});
 
-	await service.databaseClient.$transaction(async (transaction) => {
-		await transaction.migrationStep.update({
-			where: { id: stepId },
-			data: { status, errorMessage, completedAt: new Date() }
-		});
+	await withRetry(() =>
+		service.databaseClient.$transaction(async (transaction) => {
+			await transaction.migrationStep.update({
+				where: { id: stepId },
+				data: { status, errorMessage, completedAt: new Date() }
+			});
 
-		if (isDocumentStep) {
-			await completeCaseDocumentsStepIfFinished(transaction, itemToMigrate);
-		}
-	});
+			if (isDocumentStep) {
+				await completeCaseDocumentsStepIfFinished(transaction, itemToMigrate);
+			}
+		})
+	);
 }
 
 export function createWorker(
