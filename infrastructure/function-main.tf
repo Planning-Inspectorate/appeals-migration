@@ -27,7 +27,6 @@ module "function_main" {
     subnet_id           = azurerm_subnet.main.id
   }
 
-
   # monitoring
   action_group_ids            = local.action_group_ids
   app_insights_instrument_key = azurerm_application_insights.main.instrumentation_key
@@ -37,7 +36,8 @@ module "function_main" {
   # settings
   function_node_version = var.apps_config.functions_node_version
   app_settings = {
-    SQL_CONNECTION_STRING = local.key_vault_refs["sql-app-connection-string"]
+    SERVICE_BUS_CONNECTION_STRING = "${var.manage_appeals_config.service_bus_name}.servicebus.windows.net"
+    SQL_CONNECTION_STRING         = local.key_vault_refs["sql-app-connection-string"]
   }
 }
 
