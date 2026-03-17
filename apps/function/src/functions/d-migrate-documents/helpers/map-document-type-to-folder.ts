@@ -2,7 +2,14 @@ import { APPEAL_DOCUMENT_TYPE } from '@planning-inspectorate/data-model';
 
 type AppealDocumentType = (typeof APPEAL_DOCUMENT_TYPE)[keyof typeof APPEAL_DOCUMENT_TYPE];
 
-type FolderPath = 'appellant-case' | 'lpa-questionnaire' | 'representation' | 'costs' | 'internal' | 'appeal-decision';
+type FolderPath =
+	| 'appellant-case'
+	| 'lpa-questionnaire'
+	| 'representation'
+	| 'costs'
+	| 'internal'
+	| 'appeal-decision'
+	| 'cancellation';
 
 /**
  * Mapping from Horizon document types (source database) to APPEAL_DOCUMENT_TYPE constants
@@ -249,6 +256,9 @@ const DOCUMENT_TYPE_TO_FOLDER: Record<AppealDocumentType, FolderPath> = {
 
 	// appeal-decision folder
 	[APPEAL_DOCUMENT_TYPE.CASE_DECISION_LETTER]: 'appeal-decision',
+
+	// cancellation folder
+	[APPEAL_DOCUMENT_TYPE.LPA_ENFORCEMENT_NOTICE_WITHDRAWAL]: 'cancellation',
 
 	// representation folder - these are handled by REPRESENTATION_ATTACHMENT_TYPES logic first
 	// Included here for type safety completeness
