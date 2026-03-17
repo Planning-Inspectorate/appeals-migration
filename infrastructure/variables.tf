@@ -11,6 +11,13 @@ variable "apps_config" {
       zone_balancing_enabled   = bool
     })
     functions_node_version = number
+
+    migration = object({
+      buffer_per_worker     = number
+      maximum_parallelism   = number
+      dispatcher_start_hour = number
+      dispatcher_end_hour   = number
+    })
   })
 }
 
@@ -34,10 +41,12 @@ variable "environment" {
 variable "manage_appeals_config" {
   description = "Config for the manage appeals (back office) system"
   type = object({
-    database_name       = string
-    network_name        = string
-    resource_group_name = string
-    service_bus_name    = string
+    database_name            = string
+    documents_account_name   = string
+    documents_container_name = string
+    network_name             = string
+    resource_group_name      = string
+    service_bus_name         = string
   })
 }
 

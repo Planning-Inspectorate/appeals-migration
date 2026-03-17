@@ -7,6 +7,13 @@ apps_config = {
   }
 
   functions_node_version = 22
+
+  migration = {
+    buffer_per_worker     = 500
+    maximum_parallelism   = 5
+    dispatcher_start_hour = 6
+    dispatcher_end_hour   = 22
+  }
 }
 
 common_config = {
