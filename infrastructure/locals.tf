@@ -35,7 +35,8 @@ locals {
     },
     {
       "manage-appeals-sql-app-connection-string" = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.manage_appeals_sql_connection_string.versionless_id})"
-      "sql-app-connection-string" = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.sql_app_connection_string.versionless_id})"
+      "sql-app-connection-string"                = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.sql_app_connection_string.versionless_id})"
+      "odw-sql-app-connection-string"            = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.odw_sql_connection_string.versionless_id})"
     }
   )
 }

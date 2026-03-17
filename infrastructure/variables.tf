@@ -59,6 +59,20 @@ variable "monitoring_config" {
   })
 }
 
+variable "odw_config" {
+  description = "Config for ODW resources - Service Bus integration"
+  type = object({
+    data_lake_storage_account_id  = string
+    data_lake_resource_group_name = string
+    network_resource_group_name   = string
+    network_name                  = string
+    subscription_id               = string
+    synapse_ssql_endpoint         = string
+    resource_group_name           = string
+  })
+  default = null
+}
+
 variable "sql_config" {
   description = "Config for SQL Server and DB"
   type = object({

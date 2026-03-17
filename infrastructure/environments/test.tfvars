@@ -40,6 +40,16 @@ monitoring_config = {
   log_daily_cap  = 0.1
 }
 
+odw_config = {
+  data_lake_storage_account_id  = "pinsstodwtestukswic3ai"
+  data_lake_resource_group_name = "pins-rg-data-odw-test-uks"
+  network_resource_group_name   = "pins-rg-network-odw-test-uks"
+  network_name                  = "vnet-odw-test-uks"
+  subscription_id               = "6b18ba9d-2399-48b5-a834-e0f267be122d"
+  resource_group_name           = "pins-rg-ingestion-odw-test-uks"
+  synapse_ssql_endpoint         = "pins-synw-odw-test-uks-ondemand.sql.azuresynapse.net"
+}
+
 sql_config = {
   admin = {
     login_username = "pins-appeals-migration-sql-test"
