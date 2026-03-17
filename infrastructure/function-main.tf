@@ -52,7 +52,7 @@ module "function_main" {
     MANAGE_APPEALS_DOCUMENTS_ACCOUNT_NAME   = var.manage_appeals_config.documents_account_name
     MANAGE_APPEALS_DOCUMENTS_CONTAINER_NAME = var.manage_appeals_config.documents_container_name
     MANAGE_APPEALS_SQL_CONNECTION_STRING    = local.key_vault_refs["manage-appeals-sql-app-connection-string"]
-    ODW_CURATED_SQL_CONNECTION_STRING       = ""
+    ODW_CURATED_SQL_CONNECTION_STRING       = local.key_vault_refs["odw-sql-app-connection-string"]
   }
 }
 
