@@ -28,9 +28,11 @@ common_config = {
 environment = "test"
 
 manage_appeals_config = {
-  network_name        = "pins-vnet-appeals-bo-test"
-  resource_group_name = "pins-rg-appeals-bo-test"
-  service_bus_name    = "pins-sb-appeals-bo-test"
+  database_server_name = "pins-sql-appeals-bo-primary-test"
+  database_name        = "pins-sqldb-appeals-bo-test"
+  network_name         = "pins-vnet-appeals-bo-test"
+  resource_group_name  = "pins-rg-appeals-bo-test"
+  service_bus_name     = "pins-sb-appeals-bo-test"
 }
 
 monitoring_config = {

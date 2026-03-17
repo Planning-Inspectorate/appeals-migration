@@ -21,9 +21,11 @@ common_config = {
 environment = "prod"
 
 manage_appeals_config = {
-  network_name        = "pins-vnet-appeals-bo-prod"
-  resource_group_name = "pins-rg-appeals-bo-prod"
-  service_bus_name    = "pins-sb-appeals-bo-prod"
+  database_server_name = "pins-sql-appeals-bo-primary-prod"
+  database_name        = "pins-sqldb-appeals-bo-prod"
+  network_name         = "pins-vnet-appeals-bo-prod"
+  resource_group_name  = "pins-rg-appeals-bo-prod"
+  service_bus_name     = "pins-sb-appeals-bo-prod"
 }
 
 monitoring_config = {

@@ -41,6 +41,7 @@ variable "environment" {
 variable "manage_appeals_config" {
   description = "Config for the manage appeals (back office) system"
   type = object({
+    database_server_name     = string
     database_name            = string
     documents_account_name   = string
     documents_container_name = string

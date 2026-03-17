@@ -30,3 +30,22 @@ resource "azurerm_role_assignment" "document_read_write" {
   role_definition_name = "Storage Blob Data Contributor"
   principal_id         = module.function_main.principal_id
 }
+
+# SQL
+resource "azurerm_key_vault_secret" "manage_appeals_sql_connection_string" {
+  # checkov:skip=CKV_AZURE_41: TODO: Secret rotation
+  key_vault_id = azurerm_key_vault.main.id
+  name         = "manage-appeals-sql-connection-string"
+  value = join(
+    ";",
+    [
+      "sqlserver://${var.manage_appeals_config.database_server_name}.database.windows.net",
+      "database=${var.manage_appeals_config.database_name}",
+      "authentication=DefaultAzureCredential",
+      "trustServerCertificate=false"
+    ]
+  )
+  content_type = "connection-string"
+
+  tags = local.tags
+}
