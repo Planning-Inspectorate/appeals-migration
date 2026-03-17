@@ -34,6 +34,7 @@ locals {
       for k, v in azurerm_key_vault_secret.manual_secrets : k => "@Microsoft.KeyVault(SecretUri=${v.versionless_id})"
     },
     {
+      "manage-appeals-sql-app-connection-string" = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.manage_appeals_sql_connection_string.versionless_id})"
       "sql-app-connection-string" = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.sql_app_connection_string.versionless_id})"
     }
   )
