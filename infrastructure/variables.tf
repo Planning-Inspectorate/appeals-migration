@@ -30,6 +30,7 @@ variable "common_config" {
       its      = string
       info_sec = string
     })
+    vnet_name = string
   })
 }
 
