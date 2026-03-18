@@ -46,4 +46,5 @@ export interface SinkDocumentClient {
 export interface SinkDocumentUploadClient {
 	uploadStream(stream: Readable): Promise<unknown>;
 	getProperties(): Promise<BlobGetPropertiesHeaders>;
+	exists(): Promise<boolean>;
 }

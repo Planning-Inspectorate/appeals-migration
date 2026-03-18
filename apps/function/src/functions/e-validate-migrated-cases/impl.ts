@@ -75,7 +75,7 @@ export function buildValidateMigratedCases(
 		const dataValidated = validators.validateData(sourceCase, sinkCase, sourceEvents, sourceServiceUsers);
 		context.log(`Case ${caseReference} data validation result: ${dataValidated}`);
 
-		const documentsValidated = await validators.validateDocuments(sourceDocuments, sinkDatabase);
+		const documentsValidated = await validators.validateDocuments(sourceDocuments, service.sinkDocumentClient);
 		context.log(`Case ${caseReference} documents validation result: ${documentsValidated}`);
 
 		await migrationDatabase.caseToMigrate.update({
