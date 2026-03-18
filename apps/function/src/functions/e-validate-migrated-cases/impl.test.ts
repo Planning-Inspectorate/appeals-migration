@@ -11,7 +11,8 @@ describe('buildValidateMigratedCases', () => {
 			}
 		},
 		sourceDatabaseClient: { db: 'source' },
-		sinkDatabaseClient: { db: 'sink' }
+		sinkDatabaseClient: { db: 'sink' },
+		sinkDocumentClient: { client: 'blob' }
 	});
 
 	const newSource = () => ({
@@ -43,10 +44,7 @@ describe('buildValidateMigratedCases', () => {
 		}));
 		sink.fetchSinkCaseDetails.mock.mockImplementationOnce(() => ({ reference: 'CASE-001' }));
 		validators.validateData.mock.mockImplementationOnce(() => ({ isValid: true, errors: [] }));
-		validators.validateDocuments.mock.mockImplementationOnce(() => ({
-			isValid: true,
-			errors: []
-		}));
+		validators.validateDocuments.mock.mockImplementationOnce(() => true);
 
 		const handler = buildValidateMigratedCases(service, source, sink, validators);
 		await handler({ caseReference: 'CASE-001' }, context);
@@ -57,8 +55,7 @@ describe('buildValidateMigratedCases', () => {
 			data: {
 				dataValidated: true,
 				dataValidationErrors: null,
-				documentsValidated: true,
-				documentValidationErrors: null
+				documentsValidated: true
 			}
 		});
 	});
@@ -76,12 +73,7 @@ describe('buildValidateMigratedCases', () => {
 		}));
 		sink.fetchSinkCaseDetails.mock.mockImplementationOnce(() => ({ reference: 'CASE-002' }));
 		validators.validateData.mock.mockImplementationOnce(() => ({ isValid: true, errors: [] }));
-		validators.validateDocuments.mock.mockImplementationOnce(() => ({
-			isValid: false,
-			errors: [
-				{ sourceModel: 'AppealDocument', sourceField: 'validation', error: 'Document validation not yet implemented' }
-			]
-		}));
+		validators.validateDocuments.mock.mockImplementationOnce(() => false);
 
 		const handler = buildValidateMigratedCases(service, source, sink, validators);
 		await handler({ caseReference: 'CASE-002' }, context);
@@ -91,9 +83,7 @@ describe('buildValidateMigratedCases', () => {
 			data: {
 				dataValidated: true,
 				dataValidationErrors: null,
-				documentsValidated: false,
-				documentValidationErrors:
-					'[{"sourceModel":"AppealDocument","sourceField":"validation","error":"Document validation not yet implemented"}]'
+				documentsValidated: false
 			}
 		});
 	});
@@ -172,10 +162,7 @@ describe('buildValidateMigratedCases', () => {
 				{ sourceModel: 'AppealHas', sourceField: 'caseType', error: "Expected 'Householder' got 'Full'" }
 			]
 		}));
-		validators.validateDocuments.mock.mockImplementationOnce(() => ({
-			isValid: true,
-			errors: []
-		}));
+		validators.validateDocuments.mock.mockImplementationOnce(() => true);
 
 		const handler = buildValidateMigratedCases(service, source, sink, validators);
 		await handler({ caseReference: 'CASE-003' }, context);
@@ -186,8 +173,7 @@ describe('buildValidateMigratedCases', () => {
 				dataValidated: false,
 				dataValidationErrors:
 					'[{"sourceModel":"AppealHas","sourceField":"caseReference","error":"Expected \'CASE-003\' got \'CASE-999\'"},{"sourceModel":"AppealHas","sourceField":"caseType","error":"Expected \'Householder\' got \'Full\'"}]',
-				documentsValidated: true,
-				documentValidationErrors: null
+				documentsValidated: true
 			}
 		});
 	});
@@ -208,12 +194,7 @@ describe('buildValidateMigratedCases', () => {
 			isValid: false,
 			errors: [{ sourceModel: 'AppealS78', sourceField: 'caseReference', error: "Expected 'CASE-004' got 'CASE-888'" }]
 		}));
-		validators.validateDocuments.mock.mockImplementationOnce(() => ({
-			isValid: false,
-			errors: [
-				{ sourceModel: 'AppealDocument', sourceField: 'validation', error: 'Document validation not yet implemented' }
-			]
-		}));
+		validators.validateDocuments.mock.mockImplementationOnce(() => false);
 
 		const handler = buildValidateMigratedCases(service, source, sink, validators);
 		await handler({ caseReference: 'CASE-004' }, context);
@@ -224,9 +205,7 @@ describe('buildValidateMigratedCases', () => {
 				dataValidated: false,
 				dataValidationErrors:
 					'[{"sourceModel":"AppealS78","sourceField":"caseReference","error":"Expected \'CASE-004\' got \'CASE-888\'"}]',
-				documentsValidated: false,
-				documentValidationErrors:
-					'[{"sourceModel":"AppealDocument","sourceField":"validation","error":"Document validation not yet implemented"}]'
+				documentsValidated: false
 			}
 		});
 	});
