@@ -1,24 +1,55 @@
-import type { PrismaClient as SinkPrismaClient } from '@pins/manage-appeals-database/src/client/client.ts';
 import type { AppealDocument } from '@pins/odw-curated-database/src/client/client.ts';
-import type { DocumentValidationResult, ValidationError } from '../types/validation-types.ts';
-import { createValidationError } from '../types/validation-types.ts';
+import type { SinkDocumentClient } from '../../../types.ts';
+import { buildBlobStoragePath } from '../../d-migrate-documents/helpers/map-case-reference-for-storage.ts';
 
-// TODO: Real implementation is a separate ticket
 export async function validateDocuments(
 	documents: AppealDocument[],
-	sinkDatabase: SinkPrismaClient
-): Promise<DocumentValidationResult> {
-	// Use parameters minimally to pass ESLint checks
-	console.debug('Stub validateDocuments called with:', documents.length, 'documents');
-	console.debug('Sink database client available:', !!sinkDatabase);
+	sinkDocumentClient: SinkDocumentClient
+): Promise<boolean> {
+	if (documents.length === 0) {
+		return true;
+	}
 
-	// For now, return a failure with a generic error since this is a stub
-	const errors: ValidationError[] = [
-		createValidationError('AppealDocument', 'validation', 'Document validation not yet implemented')
-	];
+	for (const doc of documents) {
+		const caseReference = doc.caseReference;
+		const documentId = doc.documentId;
+		const version = doc.version ?? 1;
+		const filename = doc.filename;
 
-	return {
-		isValid: false,
-		errors
-	};
+		if (!caseReference || !filename) {
+			console.warn(`Document ${documentId} missing caseReference or filename`);
+			return false;
+		}
+
+		const blobPath = buildBlobStoragePath(caseReference, documentId, version, filename);
+		const blobClient = sinkDocumentClient.getBlockBlobClient(blobPath);
+		const exists = await blobClient.exists();
+
+		if (!exists) {
+			console.warn(`Document not found in blob storage: ${blobPath}`);
+			return false;
+		}
+
+		const properties = await blobClient.getProperties();
+
+		if (doc.size !== null && properties.contentLength !== doc.size) {
+			console.warn(`Document ${blobPath} size mismatch: expected ${doc.size}, got ${properties.contentLength}`);
+			return false;
+		}
+
+		if (doc.mime && properties.contentType !== doc.mime) {
+			console.warn(`Document ${blobPath} MIME mismatch: expected ${doc.mime}, got ${properties.contentType}`);
+			return false;
+		}
+
+		if (doc.fileMD5 && properties.contentMD5) {
+			const blobMD5 = Buffer.from(properties.contentMD5).toString('hex');
+			if (blobMD5 !== doc.fileMD5) {
+				console.warn(`Document ${blobPath} MD5 mismatch: expected ${doc.fileMD5}, got ${blobMD5}`);
+				return false;
+			}
+		}
+	}
+
+	return true;
 }

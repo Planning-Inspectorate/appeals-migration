@@ -55,6 +55,7 @@ export function buildValidateMigratedCases(
 
 		const sourceDatabase = service.sourceDatabaseClient;
 		const sinkDatabase = service.sinkDatabaseClient;
+		const sinkDocumentClient = service.sinkDocumentClient;
 		const migrationDatabase = service.databaseClient;
 
 		const [sourceCase, sinkCase, sourceDocuments, sourceEvents, sourceServiceUsers] = await Promise.all([
@@ -76,8 +77,8 @@ export function buildValidateMigratedCases(
 		const dataValidationResult = validators.validateData(sourceCase, sinkCase, sourceEvents, sourceServiceUsers);
 		context.log(`Case ${caseReference} data validation result: ${dataValidationResult.isValid}`);
 
-		const documentsValidationResult = await validators.validateDocuments(sourceDocuments, sinkDatabase);
-		context.log(`Case ${caseReference} documents validation result: ${documentsValidationResult.isValid}`);
+		const documentsValidated = await validators.validateDocuments(sourceDocuments, sinkDocumentClient);
+		context.log(`Case ${caseReference} documents validation result: ${documentsValidated}`);
 
 		await withRetry(() =>
 			migrationDatabase.caseToMigrate.update({
@@ -86,9 +87,7 @@ export function buildValidateMigratedCases(
 					dataValidated: dataValidationResult.isValid,
 					dataValidationErrors:
 						dataValidationResult.errors.length > 0 ? JSON.stringify(dataValidationResult.errors) : null,
-					documentsValidated: documentsValidationResult.isValid,
-					documentValidationErrors:
-						documentsValidationResult.errors.length > 0 ? JSON.stringify(documentsValidationResult.errors) : null
+					documentsValidated
 				}
 			})
 		);
