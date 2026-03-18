@@ -23,6 +23,7 @@ common_config = {
     its      = "pins-ag-odt-its-test"
     info_sec = "pins-ag-odt-info-sec-test"
   }
+  vnet_name = "pins-vnet-common-test-ukw-001"
 }
 
 environment = "test"

@@ -16,6 +16,7 @@ common_config = {
     its      = "pins-ag-odt-its-prod"
     info_sec = "pins-ag-odt-info-sec-prod"
   }
+  vnet_name = "pins-vnet-common-prod-ukw-001"
 }
 
 environment = "prod"

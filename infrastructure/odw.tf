@@ -22,6 +22,26 @@ resource "azurerm_virtual_network_peering" "odw_to_migration" {
   provider = azurerm.odw
 }
 
+# peer to common VNET - which is where the Synapse SQL private endpoint is connected to
+data "azurerm_virtual_network" "common" {
+  name                = var.common_config.vnet_name
+  resource_group_name = var.common_config.resource_group_name
+}
+
+resource "azurerm_virtual_network_peering" "migration_to_common" {
+  name                      = "${local.org}-peer-${local.service_name}-to-common-${var.environment}"
+  remote_virtual_network_id = data.azurerm_virtual_network.common.id
+  resource_group_name       = azurerm_virtual_network.main.resource_group_name
+  virtual_network_name      = azurerm_virtual_network.main.name
+}
+
+resource "azurerm_virtual_network_peering" "common_to_migration" {
+  name                      = "${local.org}-peer-common-to-${local.service_name}-${var.environment}"
+  remote_virtual_network_id = azurerm_virtual_network.main.id
+  resource_group_name       = var.common_config.resource_group_name
+  virtual_network_name      = var.common_config.vnet_name
+}
+
 # RBAC
 data "azurerm_storage_account" "odw_data_lake" {
   name                = var.odw_config.data_lake_storage_account_id
