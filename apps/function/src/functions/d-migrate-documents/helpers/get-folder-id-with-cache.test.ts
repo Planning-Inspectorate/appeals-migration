@@ -1,28 +1,29 @@
 // @ts-nocheck
 import type { PrismaClient as SinkPrismaClient } from '@pins/manage-appeals-database/src/client/client.ts';
 import assert from 'node:assert';
-import { describe, test } from 'node:test';
+import { describe, mock, test } from 'node:test';
 import { getFolderIdWithCache } from './get-folder-id-with-cache.ts';
 
 describe('getFolderIdWithCache', () => {
 	test('should return cached folder ID on second call', async () => {
+		const findFirstMock = mock.fn(async () => ({ id: 123 }));
 		const mockDatabaseClient = {
 			folder: {
-				findFirst: async () => ({ id: 123 })
+				findFirst: findFirstMock
 			}
 		} as unknown as SinkPrismaClient;
 
 		const folderCache = new Map<string, Map<string, number>>();
 
-		// First call should query database
 		const result1 = await getFolderIdWithCache(100, 'appellant-case', mockDatabaseClient, 'APP/123', folderCache);
 
 		assert.strictEqual(result1, 123);
+		assert.strictEqual(findFirstMock.mock.callCount(), 1);
 
-		// Second call should use cache (no additional database query)
 		const result2 = await getFolderIdWithCache(100, 'appellant-case', mockDatabaseClient, 'APP/123', folderCache);
 
 		assert.strictEqual(result2, 123);
+		assert.strictEqual(findFirstMock.mock.callCount(), 1);
 	});
 
 	test('should query database for different folder paths', async () => {

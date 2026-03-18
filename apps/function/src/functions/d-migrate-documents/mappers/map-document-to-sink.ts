@@ -1,5 +1,6 @@
 import type { Prisma } from '@pins/manage-appeals-database/src/client/client.d.ts';
 import type { AppealDocument } from '@pins/odw-curated-database/src/client/client.ts';
+import { APPEAL_REDACTED_STATUS } from '@planning-inspectorate/data-model';
 import { parseDateOrUndefined } from '../../shared/helpers/index.ts';
 import { buildBlobStoragePath } from '../helpers/map-case-reference-for-storage.ts';
 
@@ -73,8 +74,12 @@ export function mapDocumentToSink(
 			dateReceived: parseDateOrUndefined(doc.dateReceived),
 			isDeleted: false,
 			isLateEntry: false, // Placeholder - will be mapped in full implementation
-			redactionStatusId: 1 // Placeholder - no source mapping available
-		} satisfies Prisma.DocumentVersionUncheckedCreateWithoutDocumentInput;
+			redactionStatus: {
+				connect: {
+					key: APPEAL_REDACTED_STATUS.NO_REDACTION_REQUIRED
+				}
+			}
+		} satisfies Prisma.DocumentVersionCreateWithoutLatestVersionInput;
 	});
 
 	// Latest version is the last one after sorting
