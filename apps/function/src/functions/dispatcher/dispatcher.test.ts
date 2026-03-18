@@ -4,6 +4,8 @@ import { describe, mock, test } from 'node:test';
 import { stepStatus } from '../../types.ts';
 import { buildDispatcher } from './dispatcher.ts';
 
+const createPrismaError = (code) => Object.assign(new Error(`Prisma error ${code}`), { code });
+
 describe('buildDispatcher', () => {
 	const newContext = () => ({
 		log: mock.fn(),
@@ -482,6 +484,92 @@ describe('buildDispatcher', () => {
 				where: { id: { in: [400] }, status: stepStatus.processing },
 				data: { status: stepStatus.waiting }
 			});
+		});
+
+		test('retries database operations on transient error', async () => {
+			const receiver = newReceiver();
+			let receiveCalled = false;
+			receiver.receiveMessages.mock.mockImplementation(async () => {
+				if (receiveCalled) return [];
+				receiveCalled = true;
+				return [{ body: { caseReference: 'CASE-001', dataStepId: 5 } }];
+			});
+
+			const service = newDrainService();
+			service.serviceBusClient.createReceiver.mock.mockImplementation(() => receiver);
+			let updateCallCount = 0;
+			service.databaseClient.migrationStep.updateMany.mock.mockImplementation(async () => {
+				if (++updateCallCount === 1) throw createPrismaError('P1001');
+				return { count: 1 };
+			});
+
+			await buildDispatcher(service)({}, newContext());
+
+			assert.ok(service.databaseClient.migrationStep.updateMany.mock.callCount() >= 2);
+		});
+
+		test('does not retry on non-retryable error', async () => {
+			const receiver = newReceiver();
+			let receiveCalled = false;
+			receiver.receiveMessages.mock.mockImplementation(async () => {
+				if (receiveCalled) return [];
+				receiveCalled = true;
+				return [{ body: { caseReference: 'CASE-002', dataStepId: 6 } }];
+			});
+
+			const service = newDrainService();
+			service.serviceBusClient.createReceiver.mock.mockImplementation(() => receiver);
+			service.databaseClient.migrationStep.updateMany.mock.mockImplementation(async () => {
+				throw createPrismaError('P2002');
+			});
+
+			await assert.rejects(
+				() => buildDispatcher(service)({}, newContext()),
+				(error) => error.code === 'P2002'
+			);
+
+			assert.strictEqual(service.databaseClient.migrationStep.updateMany.mock.callCount(), 1);
+		});
+	});
+
+	describe('dispatch mode retry behavior', () => {
+		test('retries transaction on transient error', async () => {
+			const batch = newBatch();
+			batch.count = 1;
+			const sender = newSender();
+			sender.createMessageBatch.mock.mockImplementation(async () => batch);
+
+			const transaction = {
+				caseToMigrate: { findMany: mock.fn(async () => [{ caseReference: 'CASE-001', dataStepId: 1 }]) },
+				documentToMigrate: { findMany: mock.fn(async () => []) },
+				migrationStep: { updateMany: mock.fn() }
+			};
+
+			const service = newService({ activeMessageCount: 0, queueTarget: 10 });
+			let callCount = 0;
+			service.databaseClient.$transaction.mock.mockImplementation(async (callback) => {
+				if (++callCount === 1) throw createPrismaError('P1008');
+				return callback(transaction);
+			});
+			service.serviceBusClient.createSender.mock.mockImplementation(() => sender);
+
+			await buildDispatcher(service)({}, newContext());
+
+			assert.ok(service.databaseClient.$transaction.mock.callCount() >= 2);
+		});
+
+		test('throws after max retry attempts exhausted', async () => {
+			const service = newService({ activeMessageCount: 0, queueTarget: 10 });
+			service.databaseClient.$transaction.mock.mockImplementation(async () => {
+				throw createPrismaError('P2034');
+			});
+
+			await assert.rejects(
+				() => buildDispatcher(service)({}, newContext()),
+				(error) => error.code === 'P2034'
+			);
+
+			assert.strictEqual(service.databaseClient.$transaction.mock.callCount(), 3);
 		});
 	});
 });

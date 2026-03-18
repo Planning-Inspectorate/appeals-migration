@@ -1,15 +1,22 @@
 import type { DocumentToMigrate } from '@pins/appeals-migration-database/src/client/client.ts';
 import type { FunctionService } from '../../service.ts';
 import type { MigrationFunction } from '../../types.ts';
+import { getFolderIdWithCache } from './helpers/get-folder-id-with-cache.ts';
 import { buildBlobStoragePath } from './helpers/map-case-reference-for-storage.ts';
+import { mapHorizonDocumentTypeAndFolder } from './helpers/map-document-type-to-folder.ts';
 import { mapDocumentToSink } from './mappers/map-document-to-sink.ts';
 import { fetchDocumentDetails } from './source/fetch-document-details.ts';
 import { validateSourceDocuments } from './validators/validate-source-documents.ts';
 
 export function buildMigrateDocuments(service: FunctionService): MigrationFunction {
+	// Cache folders per case to avoid repeated database queries during bulk migrations
+	const caseFolderCache = new Map<string, Map<string, number>>();
+	// Cache case IDs to avoid repeated lookups
+	const caseIdCache = new Map<string, number>();
+
 	return async (itemToMigrate, context) => {
 		const documentToMigrate = itemToMigrate as DocumentToMigrate;
-		const { documentId } = documentToMigrate;
+		const { documentId, caseReference } = documentToMigrate;
 
 		context.log(`Migrating document: ${documentId}`);
 
@@ -20,7 +27,6 @@ export function buildMigrateDocuments(service: FunctionService): MigrationFuncti
 		validateSourceDocuments(sourceDocuments, documentId);
 
 		const firstDocument = sourceDocuments[0];
-		const caseReference = firstDocument.caseReference!;
 
 		context.log(`Found ${sourceDocuments.length} version(s) for document ${documentId}`);
 
@@ -28,8 +34,6 @@ export function buildMigrateDocuments(service: FunctionService): MigrationFuncti
 		for (const doc of sourceDocuments) {
 			const versionId = doc.version ?? 1;
 			const filename = doc.filename!;
-
-			// Determine blob storage path
 			const blobStoragePath = buildBlobStoragePath(caseReference, documentId, versionId, filename);
 
 			context.log(`Copying document version ${versionId} to: ${blobStoragePath}`);
@@ -39,37 +43,67 @@ export function buildMigrateDocuments(service: FunctionService): MigrationFuncti
 				const { filename: fetchedFilename, stream } = await service.sourceDocumentClient.getDocument(documentId, {
 					version: versionId > 1 ? versionId : undefined
 				});
-				const blobClient = service.sinkDocumentClient.getBlockBlobClient(blobStoragePath);
-				await blobClient.uploadStream(stream);
-				context.log(`Successfully uploaded version ${versionId}: ${fetchedFilename}`);
+
+				const sinkBlobClient = service.sinkDocumentClient.getBlockBlobClient(blobStoragePath);
+				await sinkBlobClient.uploadStream(stream);
+
+				context.log(`Successfully copied document version ${versionId} (${fetchedFilename})`);
 			} catch (error) {
-				context.error(`Failed to upload document version ${versionId}:`, error);
+				context.error(`Failed to copy document version ${versionId}: ${error}`);
 				throw error;
 			}
 		}
 
-		// Check if case exists in sink database and get case ID
-		const sinkCase = await service.sinkDatabaseClient.appeal.findUnique({
-			where: { reference: caseReference },
-			select: { id: true }
-		});
+		// Check if case exists in sink database and get case ID (with caching)
+		let caseId = caseIdCache.get(caseReference);
 
-		if (!sinkCase) {
-			context.log(
-				`Case ${caseReference} does not exist in sink database - document will be inserted when case is migrated`
-			);
-			// Note: The case-exists behaviour will be defined in a separate ticket
-			throw new Error(`Case ${caseReference} not found in sink database. Migrate the case first.`);
+		if (!caseId) {
+			const sinkCase = await service.sinkDatabaseClient.appeal.findUnique({
+				where: { reference: caseReference },
+				select: { id: true }
+			});
+
+			if (!sinkCase) {
+				context.log(
+					`Case ${caseReference} does not exist in sink database - document will be inserted when case is migrated`
+				);
+				throw new Error(`Case ${caseReference} not found in sink database. Migrate the case first.`);
+			}
+
+			caseId = sinkCase.id;
+			caseIdCache.set(caseReference, caseId);
 		}
 
-		context.log(`Found case ${caseReference} with ID: ${sinkCase.id}`);
+		// Map Horizon document type to APPEAL_DOCUMENT_TYPE and get folder path
+		const horizonDocumentType = firstDocument.documentType;
+		if (!horizonDocumentType) {
+			throw new Error(
+				`Document ${documentId} for case ${caseReference} has no document type - cannot determine folder mapping`
+			);
+		}
 
-		// TODO: Determine the correct folder ID based on document type/stage
-		// For now, using a placeholder folder ID of 1
-		const folderId = 1;
+		const { appealDocumentType, folderPath } = mapHorizonDocumentTypeAndFolder(horizonDocumentType, context);
+		context.log(`Mapped '${horizonDocumentType}' -> '${appealDocumentType}' (folder: ${folderPath})`);
+
+		// Get folder ID using the cached lookup function
+		const folderId = await getFolderIdWithCache(
+			caseId,
+			folderPath,
+			service.sinkDatabaseClient,
+			caseReference,
+			caseFolderCache
+		);
+		context.log(`Using folder ID ${folderId} for path: ${folderPath}`);
 
 		// Map document to sink database models
-		const documentData = mapDocumentToSink(sourceDocuments, sinkCase.id, folderId, caseReference);
+		const documentData = mapDocumentToSink(
+			sourceDocuments,
+			caseId,
+			folderId,
+			caseReference,
+			service.documentsContainerName,
+			appealDocumentType
+		);
 
 		// Insert document and versions in a transaction
 		await service.sinkDatabaseClient.$transaction(async (tx) => {

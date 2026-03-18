@@ -18,6 +18,9 @@ describe('d-migrate-documents-impl', () => {
 				document: {
 					create: mock.fn()
 				},
+				folder: {
+					findFirst: mock.fn(() => Promise.resolve({ id: 1 }))
+				},
 				$transaction: mock.fn()
 			},
 			sourceDocumentClient: {
@@ -42,7 +45,8 @@ describe('d-migrate-documents-impl', () => {
 				filename: 'test.pdf',
 				version: 1,
 				caseReference: 'APP/123',
-				sourceSystem: 'horizon'
+				sourceSystem: 'horizon',
+				documentType: 'Application Form'
 			}
 		];
 
@@ -54,7 +58,7 @@ describe('d-migrate-documents-impl', () => {
 			Promise.resolve({ stream: {}, filename: 'test.pdf' })
 		);
 		service.sinkDocumentClient.getBlockBlobClient.mock.mockImplementationOnce(() => ({
-			uploadStream: () => Promise.resolve()
+			uploadStream: (stream: any) => Promise.resolve()
 		}));
 		service.sinkDatabaseClient.$transaction.mock.mockImplementationOnce((fn) => fn(service.sinkDatabaseClient));
 		service.sinkDatabaseClient.document.create.mock.mockImplementationOnce(() =>
@@ -85,7 +89,8 @@ describe('d-migrate-documents-impl', () => {
 				filename: 'test.pdf',
 				version: 1,
 				caseReference: 'APP/123',
-				sourceSystem: 'horizon'
+				sourceSystem: 'horizon',
+				documentType: 'Application Form'
 			}
 		];
 
@@ -97,7 +102,7 @@ describe('d-migrate-documents-impl', () => {
 			Promise.resolve({ stream: {}, filename: 'test.pdf' })
 		);
 		service.sinkDocumentClient.getBlockBlobClient.mock.mockImplementationOnce(() => ({
-			uploadStream: () => Promise.resolve()
+			uploadStream: (stream: any) => Promise.resolve()
 		}));
 
 		const handler = buildMigrateDocuments(service);
