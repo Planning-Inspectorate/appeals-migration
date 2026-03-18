@@ -11,12 +11,7 @@ describe('buildValidateMigratedCases', () => {
 			}
 		},
 		sourceDatabaseClient: { db: 'source' },
-		sinkDatabaseClient: { db: 'sink' },
-		sinkDocumentClient: {
-			getBlockBlobClient: mock.fn(() => ({
-				exists: mock.fn(() => Promise.resolve(true))
-			}))
-		}
+		sinkDatabaseClient: { db: 'sink' }
 	});
 
 	const newSource = () => ({
