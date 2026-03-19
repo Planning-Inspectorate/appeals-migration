@@ -1,3 +1,4 @@
+import { withRetry } from '@pins/appeals-migration-lib/util/retry.ts';
 import type { PrismaClient as SinkPrismaClient } from '@pins/manage-appeals-database/src/client/client.ts';
 
 /**
@@ -38,13 +39,15 @@ export async function getFolderIdWithCache(
 	}
 
 	// Query folder from database
-	const folder = await databaseClient.folder.findFirst({
-		where: {
-			caseId,
-			path
-		},
-		select: { id: true }
-	});
+	const folder = await withRetry(() =>
+		databaseClient.folder.findFirst({
+			where: {
+				caseId,
+				path
+			},
+			select: { id: true }
+		})
+	);
 
 	if (!folder) {
 		throw new Error(`Folder not found for case ${caseReference} with path ${path}. Ensure case folders are created.`);

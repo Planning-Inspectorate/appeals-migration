@@ -1,4 +1,5 @@
 import type { CaseToMigrate } from '@pins/appeals-migration-database/src/client/client.ts';
+import { withRetry } from '@pins/appeals-migration-lib/util/retry.ts';
 import type { FunctionService } from '../../service.ts';
 import type { MigrationFunction } from '../../types.ts';
 import { fetchEventDetails } from '../b-migrate-data/source/event-details.ts';
@@ -78,17 +79,19 @@ export function buildValidateMigratedCases(
 		const documentsValidationResult = await validators.validateDocuments(sourceDocuments, sinkDatabase);
 		context.log(`Case ${caseReference} documents validation result: ${documentsValidationResult.isValid}`);
 
-		await migrationDatabase.caseToMigrate.update({
-			where: { caseReference },
-			data: {
-				dataValidated: dataValidationResult.isValid,
-				dataValidationErrors:
-					dataValidationResult.errors.length > 0 ? JSON.stringify(dataValidationResult.errors) : null,
-				documentsValidated: documentsValidationResult.isValid,
-				documentValidationErrors:
-					documentsValidationResult.errors.length > 0 ? JSON.stringify(documentsValidationResult.errors) : null
-			}
-		});
+		await withRetry(() =>
+			migrationDatabase.caseToMigrate.update({
+				where: { caseReference },
+				data: {
+					dataValidated: dataValidationResult.isValid,
+					dataValidationErrors:
+						dataValidationResult.errors.length > 0 ? JSON.stringify(dataValidationResult.errors) : null,
+					documentsValidated: documentsValidationResult.isValid,
+					documentValidationErrors:
+						documentsValidationResult.errors.length > 0 ? JSON.stringify(documentsValidationResult.errors) : null
+				}
+			})
+		);
 
 		context.log(`Case ${caseReference} validation results saved`);
 	};
