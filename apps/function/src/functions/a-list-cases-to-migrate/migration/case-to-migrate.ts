@@ -1,4 +1,5 @@
 import type { PrismaClient as MigrationPrismaClient } from '@pins/appeals-migration-database';
+import { withRetry } from '@pins/appeals-migration-lib/util/retry.ts';
 
 export async function upsertCaseReferences(
 	migrationDatabase: MigrationPrismaClient,
@@ -7,16 +8,18 @@ export async function upsertCaseReferences(
 	if (caseReferences.length === 0) return;
 
 	for (const ref of caseReferences) {
-		await migrationDatabase.caseToMigrate.upsert({
-			where: { caseReference: ref },
-			update: {},
-			create: {
-				caseReference: ref,
-				DataStep: { create: {} },
-				DocumentListStep: { create: {} },
-				DocumentsStep: { create: {} },
-				ValidationStep: { create: {} }
-			}
-		});
+		await withRetry(() =>
+			migrationDatabase.caseToMigrate.upsert({
+				where: { caseReference: ref },
+				update: {},
+				create: {
+					caseReference: ref,
+					DataStep: { create: {} },
+					DocumentListStep: { create: {} },
+					DocumentsStep: { create: {} },
+					ValidationStep: { create: {} }
+				}
+			})
+		);
 	}
 }

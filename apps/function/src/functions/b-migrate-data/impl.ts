@@ -1,3 +1,4 @@
+import { withRetry } from '@pins/appeals-migration-lib/util/retry.ts';
 import type { FunctionService } from '../../service.ts';
 import type { MigrationFunction } from '../../types.ts';
 import { mapSourceToSinkAppeal } from './mappers/map-source-to-sink.ts';
@@ -46,11 +47,13 @@ export function buildMigrateData(
 		const caseReference = caseToMigrate.caseReference;
 		context.log(`Processing case: ${caseReference}`);
 
-		const [incompleteReasons, invalidReasons, lpaIncompleteReasons] = await Promise.all([
-			sinkDatabase.appellantCaseIncompleteReason.findMany(),
-			sinkDatabase.appellantCaseInvalidReason.findMany(),
-			sinkDatabase.lPAQuestionnaireIncompleteReason.findMany()
-		]);
+		const [incompleteReasons, invalidReasons, lpaIncompleteReasons] = await withRetry(() =>
+			Promise.all([
+				sinkDatabase.appellantCaseIncompleteReason.findMany(),
+				sinkDatabase.appellantCaseInvalidReason.findMany(),
+				sinkDatabase.lPAQuestionnaireIncompleteReason.findMany()
+			])
+		);
 
 		const validationReasonLookups = {
 			incomplete: new Map(incompleteReasons.map((reason) => [reason.name, reason.id])),

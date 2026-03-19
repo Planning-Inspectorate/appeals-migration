@@ -1,4 +1,5 @@
 import type { DocumentToMigrate } from '@pins/appeals-migration-database/src/client/client.ts';
+import { withRetry } from '@pins/appeals-migration-lib/util/retry.ts';
 import type { FunctionService } from '../../service.ts';
 import type { MigrationFunction } from '../../types.ts';
 import { getFolderIdWithCache } from './helpers/get-folder-id-with-cache.ts';
@@ -106,18 +107,20 @@ export function buildMigrateDocuments(service: FunctionService): MigrationFuncti
 		);
 
 		// Insert document and versions in a transaction
-		await service.sinkDatabaseClient.$transaction(async (tx) => {
-			const createdDocument = await tx.document.create({
-				data: documentData,
-				include: {
-					versions: true
-				}
-			});
+		await withRetry(() =>
+			service.sinkDatabaseClient.$transaction(async (tx) => {
+				const createdDocument = await tx.document.create({
+					data: documentData,
+					include: {
+						versions: true
+					}
+				});
 
-			context.log(
-				`Successfully created document ${createdDocument.guid} with ${createdDocument.versions.length} version(s)`
-			);
-		});
+				context.log(
+					`Successfully created document ${createdDocument.guid} with ${createdDocument.versions.length} version(s)`
+				);
+			})
+		);
 
 		context.log(`Document migration complete for ${documentId}`);
 	};
