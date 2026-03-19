@@ -12,6 +12,7 @@ export function createSourceDatabaseMock() {
 
 export function createSinkDatabaseMock() {
 	return {
-		appeal: { findUnique: mock.fn() }
+		appeal: { findUnique: mock.fn() },
+		document: { findMany: mock.fn() }
 	};
 }

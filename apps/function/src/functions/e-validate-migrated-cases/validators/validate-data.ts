@@ -16,11 +16,14 @@ import { createValidationError } from '../types/validation-types.ts';
 export type SourceCase = { type: 'has'; data: AppealHas } | { type: 's78'; data: AppealS78 };
 type SinkCase = NonNullable<Awaited<ReturnType<typeof fetchSinkCaseDetails>>>;
 
-function compareMappedString(sourceValue: string | null | undefined, sinkValue: string | null | undefined): boolean {
+export function compareMappedString(
+	sourceValue: string | null | undefined,
+	sinkValue: string | null | undefined
+): boolean {
 	return stringOrUndefined(sourceValue) === (sinkValue ?? undefined);
 }
 
-function compareMappedDate(
+export function compareMappedDate(
 	sourceValue: string | Date | null | undefined,
 	sinkValue: string | Date | null | undefined
 ): boolean {
@@ -31,7 +34,7 @@ function compareMappedDate(
 	return mapped.getTime() === sinkDate.getTime();
 }
 
-function compareMappedNumber(
+export function compareMappedNumber(
 	sourceValue: Parameters<typeof parseNumber>[0],
 	sinkValue: number | null | undefined
 ): boolean {
