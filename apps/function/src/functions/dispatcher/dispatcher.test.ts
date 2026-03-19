@@ -4,6 +4,9 @@ import { describe, mock, test } from 'node:test';
 import { stepStatus } from '../../types.ts';
 import { buildDispatcher } from './dispatcher.ts';
 
+// Enable stale claim recovery for tests
+process.env.ENABLE_STALE_CLAIM_RECOVERY = 'true';
+
 const createPrismaError = (code) => Object.assign(new Error(`Prisma error ${code}`), { code });
 
 describe('buildDispatcher', () => {

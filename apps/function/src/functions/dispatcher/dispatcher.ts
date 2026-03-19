@@ -230,8 +230,10 @@ export function buildDispatcher(service: FunctionService): TimerHandler {
 	];
 
 	return async (timer: Timer, context: InvocationContext): Promise<void> => {
-		// Reclaim stale steps before dispatching
-		await reclaimStaleSteps(service, context);
+		// Reclaim stale steps before dispatching (feature flag for deployment safety)
+		if (process.env.ENABLE_STALE_CLAIM_RECOVERY === 'true') {
+			await reclaimStaleSteps(service, context);
+		}
 
 		const action = isEndOfWindow(service) ? drain : dispatch;
 		context.log(`mode: ${action.name}`);
