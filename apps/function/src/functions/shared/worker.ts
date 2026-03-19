@@ -83,6 +83,7 @@ export async function handleMigration(
 	const isDocumentStep = stepIdField === 'migrationStepId';
 	const stepId = getStepId(itemToMigrate, stepIdField);
 
+	const claimTime = new Date();
 	await withRetry(() =>
 		service.databaseClient.$transaction(async (transaction) => {
 			await transaction.migrationStep.update({
@@ -90,7 +91,8 @@ export async function handleMigration(
 				data: {
 					status: stepStatus.processing,
 					invocationId: context.invocationId,
-					startedAt: new Date()
+					startedAt: claimTime,
+					claimedAt: claimTime
 				}
 			});
 
