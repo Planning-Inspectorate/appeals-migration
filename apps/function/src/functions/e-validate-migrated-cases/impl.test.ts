@@ -23,12 +23,14 @@ describe('buildValidateMigratedCases', () => {
 	});
 
 	const newSink = () => ({
-		fetchSinkCaseDetails: mock.fn()
+		fetchSinkCaseDetails: mock.fn(),
+		fetchSinkDocuments: mock.fn(() => [])
 	});
 
 	const newValidators = () => ({
 		validateData: mock.fn(),
-		validateDocuments: mock.fn()
+		validateDocuments: mock.fn(),
+		validateDocumentMetadata: mock.fn()
 	});
 
 	test('saves validation results when both data and documents pass', async () => {
@@ -45,6 +47,7 @@ describe('buildValidateMigratedCases', () => {
 		sink.fetchSinkCaseDetails.mock.mockImplementationOnce(() => ({ reference: 'CASE-001' }));
 		validators.validateData.mock.mockImplementationOnce(() => ({ isValid: true, errors: [] }));
 		validators.validateDocuments.mock.mockImplementationOnce(() => true);
+		validators.validateDocumentMetadata.mock.mockImplementationOnce(() => true);
 
 		const handler = buildValidateMigratedCases(service, source, sink, validators);
 		await handler({ caseReference: 'CASE-001' }, context);
@@ -73,7 +76,8 @@ describe('buildValidateMigratedCases', () => {
 		}));
 		sink.fetchSinkCaseDetails.mock.mockImplementationOnce(() => ({ reference: 'CASE-002' }));
 		validators.validateData.mock.mockImplementationOnce(() => ({ isValid: true, errors: [] }));
-		validators.validateDocuments.mock.mockImplementationOnce(() => false);
+		validators.validateDocuments.mock.mockImplementationOnce(() => true);
+		validators.validateDocumentMetadata.mock.mockImplementationOnce(() => false);
 
 		const handler = buildValidateMigratedCases(service, source, sink, validators);
 		await handler({ caseReference: 'CASE-002' }, context);
@@ -163,6 +167,7 @@ describe('buildValidateMigratedCases', () => {
 			]
 		}));
 		validators.validateDocuments.mock.mockImplementationOnce(() => true);
+		validators.validateDocumentMetadata.mock.mockImplementationOnce(() => true);
 
 		const handler = buildValidateMigratedCases(service, source, sink, validators);
 		await handler({ caseReference: 'CASE-003' }, context);
@@ -194,7 +199,8 @@ describe('buildValidateMigratedCases', () => {
 			isValid: false,
 			errors: [{ sourceModel: 'AppealS78', sourceField: 'caseReference', error: "Expected 'CASE-004' got 'CASE-888'" }]
 		}));
-		validators.validateDocuments.mock.mockImplementationOnce(() => false);
+		validators.validateDocuments.mock.mockImplementationOnce(() => true);
+		validators.validateDocumentMetadata.mock.mockImplementationOnce(() => false);
 
 		const handler = buildValidateMigratedCases(service, source, sink, validators);
 		await handler({ caseReference: 'CASE-004' }, context);
