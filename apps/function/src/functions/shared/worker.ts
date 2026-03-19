@@ -86,14 +86,25 @@ export async function handleMigration(
 	const claimTime = new Date();
 	await withRetry(() =>
 		service.databaseClient.$transaction(async (transaction) => {
+			const updateData: {
+				status: string;
+				invocationId: string;
+				startedAt: Date;
+				claimedAt?: Date;
+			} = {
+				status: stepStatus.processing,
+				invocationId: context.invocationId,
+				startedAt: claimTime
+			};
+
+			// Only set claimedAt if feature flag is enabled (requires DB migration)
+			if (process.env.ENABLE_STALE_CLAIM_RECOVERY === 'true') {
+				updateData.claimedAt = claimTime;
+			}
+
 			await transaction.migrationStep.update({
 				where: { id: stepId },
-				data: {
-					status: stepStatus.processing,
-					invocationId: context.invocationId,
-					startedAt: claimTime,
-					claimedAt: claimTime
-				}
+				data: updateData
 			});
 
 			if (isDocumentStep) {
