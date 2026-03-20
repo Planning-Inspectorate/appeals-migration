@@ -132,7 +132,7 @@ export function createWorker(
 	stepIdField: StepIdField
 ): void {
 	app.serviceBusQueue(name, {
-		connection: 'SERVICE_BUS_CONNECTION_STRING',
+		connection: 'ServiceBusConnection',
 		queueName,
 		handler: async (itemToMigrate: ItemToMigrate, context: InvocationContext): Promise<void> => {
 			await handleMigration(service, name, migrationFunction, stepIdField, itemToMigrate, context);

@@ -54,7 +54,7 @@ describe('createWorker', () => {
 
 		assert.deepStrictEqual(registered, {
 			name: 'test-worker',
-			connection: 'SERVICE_BUS_CONNECTION_STRING',
+			connection: 'ServiceBusConnection',
 			queueName: 'test-queue'
 		});
 	});
