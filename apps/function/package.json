@@ -18,6 +18,7 @@
   "private": true,
   "dependencies": {
     "@azure/functions": "*",
+    "@azure/identity": "*",
     "@azure/service-bus": "*",
     "@azure/storage-blob": "*",
     "@pins/appeals-migration-database": "^0.0.0",
