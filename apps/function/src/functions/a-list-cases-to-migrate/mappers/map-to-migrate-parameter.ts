@@ -27,5 +27,11 @@ export function mapToMigrateParameterToWhere(
 		where.caseDecisionOutcomeDate = decisionDateRange;
 	}
 
+	where.caseReference = {
+		not: {
+			startsWith: '6'
+		}
+	};
+
 	return where;
 }
