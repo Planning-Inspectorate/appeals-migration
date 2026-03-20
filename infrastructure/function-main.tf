@@ -36,8 +36,9 @@ module "function_main" {
   # settings
   function_node_version = var.apps_config.functions_node_version
   app_settings = {
-    SERVICE_BUS_CONNECTION_STRING = "${var.manage_appeals_config.service_bus_name}.servicebus.windows.net"
-    SQL_CONNECTION_STRING         = local.key_vault_refs["sql-app-connection-string"]
+    SERVICE_BUS_CONNECTION_STRING                          = "${var.manage_appeals_config.service_bus_name}.servicebus.windows.net"
+    SERVICE_BUS_CONNECTION_STRING__fullyQualifiedNamespace = "${var.manage_appeals_config.service_bus_name}.servicebus.windows.net"
+    SQL_CONNECTION_STRING                                  = local.key_vault_refs["sql-app-connection-string"]
 
     BUFFER_PER_WORKER     = var.apps_config.migration.buffer_per_worker
     MAXIMUM_PARALLELISM   = var.apps_config.migration.maximum_parallelism
