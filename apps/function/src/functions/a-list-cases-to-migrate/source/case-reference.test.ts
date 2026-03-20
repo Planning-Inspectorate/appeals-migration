@@ -61,4 +61,24 @@ describe('fetchCaseReferences', () => {
 		const result = await fetchCaseReferences(sourceDatabase, {}, {});
 		assert.deepStrictEqual(result, []);
 	});
+
+	test('filters out Manage Appeals cases (references starting with 6)', async () => {
+		const sourceDatabase = newSourceDatabase();
+
+		sourceDatabase.appealHas.findMany.mock.mockImplementationOnce(() => [
+			{ caseReference: 'CASE-001' },
+			{ caseReference: '6123456' },
+			{ caseReference: 'CASE-002' },
+			{ caseReference: '6789012' }
+		]);
+
+		sourceDatabase.appealS78.findMany.mock.mockImplementationOnce(() => [
+			{ caseReference: '6345678' },
+			{ caseReference: 'CASE-003' },
+			{ caseReference: '6999999' }
+		]);
+
+		const result = await fetchCaseReferences(sourceDatabase, {}, {});
+		assert.deepStrictEqual(result, ['CASE-001', 'CASE-002', 'CASE-003']);
+	});
 });
