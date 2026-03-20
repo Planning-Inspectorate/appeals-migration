@@ -4,10 +4,6 @@ function isValidCaseReference(ref: string | null | undefined): ref is string {
 	return ref !== null && ref !== undefined && ref !== '';
 }
 
-function isHorizonCaseReference(ref: string): boolean {
-	return !ref.startsWith('6');
-}
-
 export async function fetchCaseReferences(
 	sourceDatabase: SourcePrismaClient,
 	hasWhere: Prisma.AppealHasWhereInput,
@@ -23,8 +19,8 @@ export async function fetchCaseReferences(
 		select: { caseReference: true }
 	});
 
-	const refs = [...hasRows.map((r) => r.caseReference), ...s78Rows.map((r) => r.caseReference)]
-		.filter(isValidCaseReference)
-		.filter(isHorizonCaseReference);
+	const refs = [...hasRows.map((r) => r.caseReference), ...s78Rows.map((r) => r.caseReference)].filter(
+		isValidCaseReference
+	);
 	return Array.from(new Set(refs));
 }
