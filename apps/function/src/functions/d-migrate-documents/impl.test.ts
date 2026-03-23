@@ -18,6 +18,9 @@ describe('d-migrate-documents-impl', () => {
 				document: {
 					create: mock.fn()
 				},
+				folder: {
+					findFirst: mock.fn(() => Promise.resolve({ id: 1 }))
+				},
 				$transaction: mock.fn()
 			},
 			sourceDocumentClient: {
@@ -42,7 +45,8 @@ describe('d-migrate-documents-impl', () => {
 				filename: 'test.pdf',
 				version: 1,
 				caseReference: 'APP/123',
-				sourceSystem: 'horizon'
+				sourceSystem: 'horizon',
+				documentType: 'Application Form'
 			}
 		];
 
@@ -54,7 +58,7 @@ describe('d-migrate-documents-impl', () => {
 			Promise.resolve({ stream: {}, filename: 'test.pdf' })
 		);
 		service.sinkDocumentClient.getBlockBlobClient.mock.mockImplementationOnce(() => ({
-			uploadStream: () => Promise.resolve()
+			uploadStream: (stream: any) => Promise.resolve()
 		}));
 		service.sinkDatabaseClient.$transaction.mock.mockImplementationOnce((fn) => fn(service.sinkDatabaseClient));
 		service.sinkDatabaseClient.document.create.mock.mockImplementationOnce(() =>
@@ -85,7 +89,8 @@ describe('d-migrate-documents-impl', () => {
 				filename: 'test.pdf',
 				version: 1,
 				caseReference: 'APP/123',
-				sourceSystem: 'horizon'
+				sourceSystem: 'horizon',
+				documentType: 'Application Form'
 			}
 		];
 
@@ -97,12 +102,51 @@ describe('d-migrate-documents-impl', () => {
 			Promise.resolve({ stream: {}, filename: 'test.pdf' })
 		);
 		service.sinkDocumentClient.getBlockBlobClient.mock.mockImplementationOnce(() => ({
-			uploadStream: () => Promise.resolve()
+			uploadStream: (stream: any) => Promise.resolve()
 		}));
 
 		const handler = buildMigrateDocuments(service);
 		await assert.rejects(() => handler({ documentId: 'doc-123', caseReference: 'APP/123' }, context), {
 			message: 'Case APP/123 not found in sink database. Migrate the case first.'
 		});
+	});
+
+	test('should throw error when document upload fails', async () => {
+		const service = newService();
+		const context = {
+			log: mock.fn(),
+			error: mock.fn()
+		};
+
+		const mockDocuments = [
+			{
+				documentId: 'doc-123',
+				filename: 'test.pdf',
+				version: 1,
+				caseReference: 'APP/123',
+				sourceSystem: 'horizon'
+			}
+		];
+
+		const uploadError = new Error('Blob storage upload failed');
+
+		service.sourceDatabaseClient.appealDocument.findMany.mock.mockImplementationOnce(() =>
+			Promise.resolve(mockDocuments)
+		);
+		service.sourceDocumentClient.getDocument.mock.mockImplementationOnce(() =>
+			Promise.resolve({ stream: {}, filename: 'test.pdf' })
+		);
+		service.sinkDocumentClient.getBlockBlobClient.mock.mockImplementationOnce(() => ({
+			uploadStream: () => Promise.reject(uploadError)
+		}));
+
+		const handler = buildMigrateDocuments(service);
+		await assert.rejects(() => handler({ documentId: 'doc-123', caseReference: 'APP/123' }, context), uploadError);
+
+		assert.strictEqual(context.error.mock.callCount(), 1);
+		assert.strictEqual(
+			context.error.mock.calls[0].arguments[0],
+			'Failed to copy document version 1: Error: Blob storage upload failed'
+		);
 	});
 });

@@ -18,12 +18,14 @@
   "private": true,
   "dependencies": {
     "@azure/functions": "*",
+    "@azure/identity": "*",
     "@azure/service-bus": "*",
     "@azure/storage-blob": "*",
     "@pins/appeals-migration-database": "^0.0.0",
     "@pins/appeals-migration-lib": "^0.0.0",
     "@pins/manage-appeals-database": "^0.0.0",
     "@pins/odw-curated-database": "^0.0.0",
+    "@planning-inspectorate/data-model": "*",
     "lodash.chunk": "*"
   },
   "imports": {

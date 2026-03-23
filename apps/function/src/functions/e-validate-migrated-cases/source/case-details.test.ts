@@ -1,17 +1,15 @@
 // @ts-nocheck
 import assert from 'node:assert';
-import { describe, mock, test } from 'node:test';
+import { describe, test } from 'node:test';
+import { createSourceDatabaseMock } from '../mock-data/database.ts';
 import { fetchSourceCaseDetails } from './case-details.ts';
 
 describe('fetchSourceCaseDetails', () => {
 	test('returns has case when found in AppealHas', async () => {
-		const sourceDatabase = {
-			appealHas: { findFirst: mock.fn() },
-			appealS78: { findFirst: mock.fn() }
-		};
+		const sourceDatabase = createSourceDatabaseMock();
 
 		const mockHasCase = { caseId: 1, caseReference: 'CASE-001' };
-		sourceDatabase.appealHas.findFirst.mock.mockImplementationOnce(() => mockHasCase);
+		sourceDatabase.appealHas.findFirst.mock.mockImplementationOnce(async () => mockHasCase);
 
 		const result = await fetchSourceCaseDetails(sourceDatabase, 'CASE-001');
 
@@ -19,14 +17,11 @@ describe('fetchSourceCaseDetails', () => {
 	});
 
 	test('returns s78 case when not found in AppealHas but found in AppealS78', async () => {
-		const sourceDatabase = {
-			appealHas: { findFirst: mock.fn() },
-			appealS78: { findFirst: mock.fn() }
-		};
+		const sourceDatabase = createSourceDatabaseMock();
 
 		const mockS78Case = { caseId: 2, caseReference: 'CASE-002' };
-		sourceDatabase.appealHas.findFirst.mock.mockImplementationOnce(() => null);
-		sourceDatabase.appealS78.findFirst.mock.mockImplementationOnce(() => mockS78Case);
+		sourceDatabase.appealHas.findFirst.mock.mockImplementationOnce(async () => null);
+		sourceDatabase.appealS78.findFirst.mock.mockImplementationOnce(async () => mockS78Case);
 
 		const result = await fetchSourceCaseDetails(sourceDatabase, 'CASE-002');
 
@@ -34,13 +29,10 @@ describe('fetchSourceCaseDetails', () => {
 	});
 
 	test('returns null when case not found in either table', async () => {
-		const sourceDatabase = {
-			appealHas: { findFirst: mock.fn() },
-			appealS78: { findFirst: mock.fn() }
-		};
+		const sourceDatabase = createSourceDatabaseMock();
 
-		sourceDatabase.appealHas.findFirst.mock.mockImplementationOnce(() => null);
-		sourceDatabase.appealS78.findFirst.mock.mockImplementationOnce(() => null);
+		sourceDatabase.appealHas.findFirst.mock.mockImplementationOnce(async () => null);
+		sourceDatabase.appealS78.findFirst.mock.mockImplementationOnce(async () => null);
 
 		const result = await fetchSourceCaseDetails(sourceDatabase, 'CASE-999');
 

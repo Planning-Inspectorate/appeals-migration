@@ -16,9 +16,18 @@ common_config = {
     its      = "pins-ag-odt-its-prod"
     info_sec = "pins-ag-odt-info-sec-prod"
   }
+  vnet_name = "pins-vnet-common-prod-ukw-001"
 }
 
 environment = "prod"
+
+manage_appeals_config = {
+  database_server_name = "pins-sql-appeals-bo-primary-prod"
+  database_name        = "pins-sqldb-appeals-bo-prod"
+  network_name         = "pins-vnet-appeals-bo-prod"
+  resource_group_name  = "pins-rg-appeals-bo-prod"
+  service_bus_name     = "pins-sb-appeals-bo-prod"
+}
 
 monitoring_config = {
   alerts_enabled = true

@@ -11,6 +11,13 @@ variable "apps_config" {
       zone_balancing_enabled   = bool
     })
     functions_node_version = number
+
+    migration = object({
+      buffer_per_worker     = number
+      maximum_parallelism   = number
+      dispatcher_start_hour = number
+      dispatcher_end_hour   = number
+    })
   })
 }
 
@@ -23,6 +30,7 @@ variable "common_config" {
       its      = string
       info_sec = string
     })
+    vnet_name = string
   })
 }
 
@@ -31,12 +39,39 @@ variable "environment" {
   type        = string
 }
 
+variable "manage_appeals_config" {
+  description = "Config for the manage appeals (back office) system"
+  type = object({
+    database_server_name     = string
+    database_name            = string
+    documents_account_name   = string
+    documents_container_name = string
+    network_name             = string
+    resource_group_name      = string
+    service_bus_name         = string
+  })
+}
+
 variable "monitoring_config" {
   description = "Config for monitoring"
   type = object({
     alerts_enabled = bool
     log_daily_cap  = number
   })
+}
+
+variable "odw_config" {
+  description = "Config for ODW resources - Service Bus integration"
+  type = object({
+    data_lake_storage_account_id  = string
+    data_lake_resource_group_name = string
+    network_resource_group_name   = string
+    network_name                  = string
+    subscription_id               = string
+    synapse_ssql_endpoint         = string
+    resource_group_name           = string
+  })
+  default = null
 }
 
 variable "sql_config" {

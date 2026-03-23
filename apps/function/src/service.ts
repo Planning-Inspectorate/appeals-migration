@@ -38,8 +38,11 @@ export class FunctionService {
 		this.databaseClient = newDatabaseClient(config.database);
 		this.sourceDatabaseClient = newOdwDatabaseClient(config.sourceDatabase);
 		this.sinkDatabaseClient = newManageAppealsDatabaseClient(config.sinkDatabase);
-		this.serviceBusClient = new ServiceBusClient(config.serviceBus);
-		this.serviceBusAdministrationClient = new ServiceBusAdministrationClient(config.serviceBus);
+		this.serviceBusClient = new ServiceBusClient(config.serviceBus, new DefaultAzureCredential());
+		this.serviceBusAdministrationClient = new ServiceBusAdministrationClient(
+			config.serviceBus,
+			new DefaultAzureCredential()
+		);
 
 		const blobClient = new BlobServiceClient(
 			`https://${config.manageAppeals.documents.accountName}.blob.core.windows.net`,
@@ -75,5 +78,9 @@ export class FunctionService {
 
 	get serviceBusParallelism() {
 		return this.#config.functions.dispatcher.serviceBusParallelism;
+	}
+
+	get documentsContainerName() {
+		return this.#config.manageAppeals.documents.containerName;
 	}
 }

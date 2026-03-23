@@ -1,6 +1,8 @@
 import type { CaseToMigrate } from '@pins/appeals-migration-database/src/client/client.ts';
 import type { FunctionService } from '../../service.ts';
 import type { MigrationFunction } from '../../types.ts';
+import { fetchEventDetails } from '../b-migrate-data/source/event-details.ts';
+import { fetchServiceUsers } from '../b-migrate-data/source/service-users.ts';
 import { fetchSinkCaseDetails } from './sink/case-details.ts';
 import { fetchSourceCaseDetails } from './source/case-details.ts';
 import { fetchSourceDocuments } from './source/documents.ts';
@@ -10,6 +12,8 @@ import { validateDocuments } from './validators/validate-documents.ts';
 type Source = {
 	fetchSourceCaseDetails: typeof fetchSourceCaseDetails;
 	fetchSourceDocuments: typeof fetchSourceDocuments;
+	fetchSourceEvents: typeof fetchEventDetails;
+	fetchSourceServiceUsers: typeof fetchServiceUsers;
 };
 
 type Sink = {
@@ -23,7 +27,9 @@ type Validators = {
 
 const defaultSource: Source = {
 	fetchSourceCaseDetails,
-	fetchSourceDocuments
+	fetchSourceDocuments,
+	fetchSourceEvents: fetchEventDetails,
+	fetchSourceServiceUsers: fetchServiceUsers
 };
 
 const defaultSink: Sink = {
@@ -50,10 +56,12 @@ export function buildValidateMigratedCases(
 		const sinkDatabase = service.sinkDatabaseClient;
 		const migrationDatabase = service.databaseClient;
 
-		const [sourceCase, sinkCase, sourceDocuments] = await Promise.all([
+		const [sourceCase, sinkCase, sourceDocuments, sourceEvents, sourceServiceUsers] = await Promise.all([
 			source.fetchSourceCaseDetails(sourceDatabase, caseReference),
 			sink.fetchSinkCaseDetails(sinkDatabase, caseReference),
-			source.fetchSourceDocuments(sourceDatabase, caseReference)
+			source.fetchSourceDocuments(sourceDatabase, caseReference),
+			source.fetchSourceEvents(sourceDatabase, caseReference),
+			source.fetchSourceServiceUsers(sourceDatabase, caseReference)
 		]);
 
 		if (!sourceCase) {
@@ -64,17 +72,21 @@ export function buildValidateMigratedCases(
 			throw new Error(`Case ${caseReference} not found in sink database`);
 		}
 
-		const dataValidated = validators.validateData(sourceCase, sinkCase);
-		context.log(`Case ${caseReference} data validation result: ${dataValidated}`);
+		const dataValidationResult = validators.validateData(sourceCase, sinkCase, sourceEvents, sourceServiceUsers);
+		context.log(`Case ${caseReference} data validation result: ${dataValidationResult.isValid}`);
 
-		const documentsValidated = await validators.validateDocuments(sourceDocuments, sinkDatabase);
-		context.log(`Case ${caseReference} documents validation result: ${documentsValidated}`);
+		const documentsValidationResult = await validators.validateDocuments(sourceDocuments, sinkDatabase);
+		context.log(`Case ${caseReference} documents validation result: ${documentsValidationResult.isValid}`);
 
 		await migrationDatabase.caseToMigrate.update({
 			where: { caseReference },
 			data: {
-				dataValidated,
-				documentsValidated
+				dataValidated: dataValidationResult.isValid,
+				dataValidationErrors:
+					dataValidationResult.errors.length > 0 ? JSON.stringify(dataValidationResult.errors) : null,
+				documentsValidated: documentsValidationResult.isValid,
+				documentValidationErrors:
+					documentsValidationResult.errors.length > 0 ? JSON.stringify(documentsValidationResult.errors) : null
 			}
 		});
 
