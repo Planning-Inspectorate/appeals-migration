@@ -4,22 +4,37 @@ import { describe, test } from 'node:test';
 import { mapToMigrateParameterToWhere } from './map-to-migrate-parameter.ts';
 
 describe('mapToMigrateParameterToWhere', () => {
-	test('returns {} when no usable filters are provided', () => {
-		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, status: null, procedureType: null }), {});
-		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, status: '', procedureType: '' }), {});
+	test('always includes caseReference filter to exclude Manage Appeals cases', () => {
+		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, status: null, procedureType: null }), {
+			caseReference: {
+				not: {
+					startsWith: '6'
+				}
+			}
+		});
+		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, status: '', procedureType: '' }), {
+			caseReference: {
+				not: {
+					startsWith: '6'
+				}
+			}
+		});
 	});
 
 	test('maps each field when provided', () => {
 		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, status: 'open', procedureType: null }), {
-			caseStatus: 'open'
+			caseStatus: 'open',
+			caseReference: { not: { startsWith: '6' } }
 		});
 
 		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, status: null, procedureType: 'written' }), {
-			caseProcedure: 'written'
+			caseProcedure: 'written',
+			caseReference: { not: { startsWith: '6' } }
 		});
 
 		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, status: null, procedureType: null, lpa: 'ABC' }), {
-			lpaCode: 'ABC'
+			lpaCode: 'ABC',
+			caseReference: { not: { startsWith: '6' } }
 		});
 	});
 
@@ -29,7 +44,8 @@ describe('mapToMigrateParameterToWhere', () => {
 			{
 				caseStatus: 'open',
 				caseProcedure: 'written',
-				lpaCode: 'ABC'
+				lpaCode: 'ABC',
+				caseReference: { not: { startsWith: '6' } }
 			}
 		);
 	});
@@ -37,14 +53,16 @@ describe('mapToMigrateParameterToWhere', () => {
 	test('maps dateReceivedFrom to caseSubmittedDate gte', () => {
 		const dateFrom = new Date('2024-01-01T00:00:00.000Z');
 		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, dateReceivedFrom: dateFrom }), {
-			caseSubmittedDate: { gte: '2024-01-01T00:00:00.000Z' }
+			caseSubmittedDate: { gte: '2024-01-01T00:00:00.000Z' },
+			caseReference: { not: { startsWith: '6' } }
 		});
 	});
 
 	test('maps dateReceivedTo to caseSubmittedDate lte', () => {
 		const dateTo = new Date('2024-12-31T23:59:59.999Z');
 		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, dateReceivedTo: dateTo }), {
-			caseSubmittedDate: { lte: '2024-12-31T23:59:59.999Z' }
+			caseSubmittedDate: { lte: '2024-12-31T23:59:59.999Z' },
+			caseReference: { not: { startsWith: '6' } }
 		});
 	});
 
@@ -57,7 +75,8 @@ describe('mapToMigrateParameterToWhere', () => {
 				caseSubmittedDate: {
 					gte: '2024-01-01T00:00:00.000Z',
 					lte: '2024-12-31T23:59:59.999Z'
-				}
+				},
+				caseReference: { not: { startsWith: '6' } }
 			}
 		);
 	});
@@ -77,7 +96,8 @@ describe('mapToMigrateParameterToWhere', () => {
 				caseSubmittedDate: {
 					gte: '2024-01-01T00:00:00.000Z',
 					lte: '2024-12-31T23:59:59.999Z'
-				}
+				},
+				caseReference: { not: { startsWith: '6' } }
 			}
 		);
 	});
@@ -85,14 +105,16 @@ describe('mapToMigrateParameterToWhere', () => {
 	test('maps decisionDateFrom to caseDecisionOutcomeDate gte', () => {
 		const dateFrom = new Date('2024-01-01T00:00:00.000Z');
 		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, decisionDateFrom: dateFrom }), {
-			caseDecisionOutcomeDate: { gte: '2024-01-01T00:00:00.000Z' }
+			caseDecisionOutcomeDate: { gte: '2024-01-01T00:00:00.000Z' },
+			caseReference: { not: { startsWith: '6' } }
 		});
 	});
 
 	test('maps decisionDateTo to caseDecisionOutcomeDate lte', () => {
 		const dateTo = new Date('2024-12-31T23:59:59.999Z');
 		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, decisionDateTo: dateTo }), {
-			caseDecisionOutcomeDate: { lte: '2024-12-31T23:59:59.999Z' }
+			caseDecisionOutcomeDate: { lte: '2024-12-31T23:59:59.999Z' },
+			caseReference: { not: { startsWith: '6' } }
 		});
 	});
 
@@ -105,7 +127,8 @@ describe('mapToMigrateParameterToWhere', () => {
 				caseDecisionOutcomeDate: {
 					gte: '2024-01-01T00:00:00.000Z',
 					lte: '2024-12-31T23:59:59.999Z'
-				}
+				},
+				caseReference: { not: { startsWith: '6' } }
 			}
 		);
 	});
@@ -133,7 +156,8 @@ describe('mapToMigrateParameterToWhere', () => {
 				caseDecisionOutcomeDate: {
 					gte: '2024-07-01T00:00:00.000Z',
 					lte: '2024-12-31T23:59:59.999Z'
-				}
+				},
+				caseReference: { not: { startsWith: '6' } }
 			}
 		);
 	});
