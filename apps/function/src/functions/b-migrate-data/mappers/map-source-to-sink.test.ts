@@ -709,17 +709,22 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 		assert.strictEqual(appellantCase.knowsAllOwners, undefined);
 	});
 
-	test('throws error when caseSubmittedDate is missing', () => {
+	test('uses placeholder values when required fields are missing', () => {
 		const mockCase: AppealHas = {
 			...mockAppealHasCase,
-			caseSubmittedDate: null
+			caseSubmittedDate: null,
+			applicationDecision: null
 		};
 
-		assert.throws(
-			() => mapSourceToSinkAppeal(mockCase, mockValidationReasonLookups),
-			{ message: /Missing required field caseSubmittedDate/ },
-			'Should throw error when caseSubmittedDate is missing'
-		);
+		const result = mapSourceToSinkAppeal(mockCase, mockValidationReasonLookups);
+
+		assert.ok(result.appellantCase?.create);
+		const appellantCase = result.appellantCase.create;
+
+		// Should use placeholder date when caseSubmittedDate is missing
+		assert.deepStrictEqual(appellantCase.caseSubmittedDate, new Date(0));
+		// Should use placeholder string with case reference when applicationDecision is missing
+		assert.strictEqual(appellantCase.applicationDecision, `Not available ${mockAppealHasCase.caseReference}`);
 	});
 
 	test('parseNumber handles invalid values', () => {

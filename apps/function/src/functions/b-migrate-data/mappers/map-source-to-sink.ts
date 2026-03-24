@@ -602,19 +602,9 @@ function buildAppellantCase(
 		);
 
 	// AppellantCase is required for all appeals, so we always create it
-	const caseSubmittedDate = parseDateOrUndefined(source.caseSubmittedDate);
-	if (!caseSubmittedDate) {
-		throw new Error(
-			`Missing required field caseSubmittedDate for case ${source.caseReference}. Cannot create appellant case without submission date.`
-		);
-	}
-
-	const applicationDecision = stringOrUndefined(source.applicationDecision);
-	if (!applicationDecision) {
-		throw new Error(
-			`Missing required field applicationDecision for case ${source.caseReference}. Cannot create appellant case without application decision.`
-		);
-	}
+	// Use placeholders for missing required fields to allow migration of incomplete cases
+	const caseSubmittedDate = parseDateOrUndefined(source.caseSubmittedDate) ?? new Date(0);
+	const applicationDecision = stringOrUndefined(source.applicationDecision) ?? `Not available ${source.caseReference}`;
 
 	const s78 = source as AppealS78;
 
