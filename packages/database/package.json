@@ -1,0 +1,22 @@
+{
+  "name": "@pins/appeals-migration-database",
+  "version": "0.0.0",
+  "description": "Common sql database access",
+  "private": true,
+  "main": "./src/index.ts",
+  "type": "module",
+  "scripts": {
+    "migrate-dev": "npx prisma migrate dev",
+    "migrate-prod": "npx prisma migrate deploy",
+    "generate": "npx prisma generate",
+    "seed": "npx prisma db seed"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@prisma/adapter-mssql": "*",
+    "@prisma/client": "*"
+  },
+  "devDependencies": {
+    "prisma": "*"
+  }
+}

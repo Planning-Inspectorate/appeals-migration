@@ -1,0 +1,23 @@
+{
+  "name": "@pins/manage-appeals-database",
+  "version": "0.0.0",
+  "description": "Manage appeals sql database access",
+  "private": true,
+  "main": "./src/index.ts",
+  "type": "module",
+  "scripts": {
+    "dev-setup": "npm run fetch-schema && npm run migrate-dev && npm run generate && npm run seed",
+    "fetch-schema": "node src/fetch-schema.ts",
+    "generate": "npx prisma generate",
+    "migrate-dev": "npx prisma migrate dev",
+    "seed": "npx prisma db seed"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@prisma/adapter-mssql": "*",
+    "@prisma/client": "*"
+  },
+  "devDependencies": {
+    "prisma": "*"
+  }
+}

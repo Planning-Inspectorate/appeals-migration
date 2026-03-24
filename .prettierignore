@@ -1,0 +1,8 @@
+node_modules
+package.json
+package-lock.json
+README.md
+*.njk
+.env*
+packages/lib/horizon/api/testing/*.json
+packages/lib/horizon/api/testing/snapshots/*.json

@@ -1,0 +1,10 @@
+{
+	"Envelope": {
+		"Body": {
+			"CaseSearchResponse": {
+				"CaseSearchResult": {
+				}
+			}
+		}
+	}
+}

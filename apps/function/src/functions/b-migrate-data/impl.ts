@@ -1,0 +1,80 @@
+import type { FunctionService } from '../../service.ts';
+import type { MigrationFunction } from '../../types.ts';
+import { mapSourceToSinkAppeal } from './mappers/map-source-to-sink.ts';
+import { upsertAppeal } from './sink/appeal.ts';
+import { fetchCaseDetails } from './source/case-details.ts';
+import { fetchEventDetails } from './source/event-details.ts';
+import { fetchServiceUsers } from './source/service-users.ts';
+
+type Source = {
+	fetchCaseDetails: typeof fetchCaseDetails;
+	fetchEventDetails: typeof fetchEventDetails;
+	fetchServiceUsers: typeof fetchServiceUsers;
+};
+
+type Mappers = {
+	mapSourceToSinkAppeal: typeof mapSourceToSinkAppeal;
+};
+
+type Sink = {
+	upsertAppeal: typeof upsertAppeal;
+};
+
+const defaultSource: Source = {
+	fetchCaseDetails,
+	fetchEventDetails,
+	fetchServiceUsers
+};
+
+const defaultMappers: Mappers = {
+	mapSourceToSinkAppeal
+};
+
+const defaultSink: Sink = {
+	upsertAppeal
+};
+
+export function buildMigrateData(
+	service: FunctionService,
+	source: Source = defaultSource,
+	mappers: Mappers = defaultMappers,
+	sink: Sink = defaultSink
+): MigrationFunction {
+	return async (caseToMigrate, context) => {
+		const sourceDatabase = service.sourceDatabaseClient;
+		const sinkDatabase = service.sinkDatabaseClient;
+		const caseReference = caseToMigrate.caseReference;
+		context.log(`Processing case: ${caseReference}`);
+
+		const [incompleteReasons, invalidReasons, lpaIncompleteReasons] = await Promise.all([
+			sinkDatabase.appellantCaseIncompleteReason.findMany(),
+			sinkDatabase.appellantCaseInvalidReason.findMany(),
+			sinkDatabase.lPAQuestionnaireIncompleteReason.findMany()
+		]);
+
+		const validationReasonLookups = {
+			incomplete: new Map(incompleteReasons.map((reason) => [reason.name, reason.id])),
+			invalid: new Map(invalidReasons.map((reason) => [reason.name, reason.id])),
+			lpaIncomplete: new Map(lpaIncompleteReasons.map((reason) => [reason.name, reason.id]))
+		};
+
+		const caseDetails = await source.fetchCaseDetails(sourceDatabase, caseReference);
+
+		if (!caseDetails) {
+			throw new Error(`Case ${caseReference} not found in source database`);
+		}
+
+		const events = await source.fetchEventDetails(sourceDatabase, caseReference);
+		const serviceUsers = await source.fetchServiceUsers(sourceDatabase, caseReference);
+
+		const mappedAppeal = mappers.mapSourceToSinkAppeal(caseDetails.data, validationReasonLookups, events, serviceUsers);
+
+		const result = await sink.upsertAppeal(sinkDatabase, mappedAppeal);
+
+		if (result.existed) {
+			context.log(`Case ${caseReference} already exists in sink database`);
+		} else {
+			context.log(`Case ${caseReference} successfully migrated to sink database`);
+		}
+	};
+}

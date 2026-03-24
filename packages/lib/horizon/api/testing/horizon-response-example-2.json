@@ -1,0 +1,46 @@
+{
+	"CaseId": {
+		"value": "8718937948"
+	},
+	"Attributes": {
+		"AttributeValue": {
+			"Name": {
+				"value": "Case:Case Type"
+			},
+			"Value": {
+				"value": "Lawful Development Certificate Appeal"
+			}
+		},
+		"AttributeValue": {
+			"Name": {
+				"value": "Case:Procedure"
+			},
+			"Value": {
+				"value": "Written representations"
+			}
+		},
+		"AttributeValue": {
+			"Name": {
+				"value": "Case:Involvement"
+			},
+			"Values": {
+				"AttributeValue": {
+					"Name": {
+						"value": "Case Involvement:Case Involvement:ContactID"
+					},
+					"Value": {
+						"value": "P_1176"
+					}
+				},
+				"AttributeValue": {
+					"Name": {
+						"value": "Case Involvement:Case Involvement:Type Of Involvement"
+					},
+					"Value": {
+						"value": "Appellant"
+					}
+				}
+			}
+		}
+	}
+}

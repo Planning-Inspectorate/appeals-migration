@@ -1,0 +1,41 @@
+// @ts-nocheck
+import assert from 'node:assert';
+import { describe, test } from 'node:test';
+import { createSourceDatabaseMock } from '../mock-data/database.ts';
+import { fetchSourceCaseDetails } from './case-details.ts';
+
+describe('fetchSourceCaseDetails', () => {
+	test('returns has case when found in AppealHas', async () => {
+		const sourceDatabase = createSourceDatabaseMock();
+
+		const mockHasCase = { caseId: 1, caseReference: 'CASE-001' };
+		sourceDatabase.appealHas.findFirst.mock.mockImplementationOnce(async () => mockHasCase);
+
+		const result = await fetchSourceCaseDetails(sourceDatabase, 'CASE-001');
+
+		assert.deepStrictEqual(result, { type: 'has', data: mockHasCase });
+	});
+
+	test('returns s78 case when not found in AppealHas but found in AppealS78', async () => {
+		const sourceDatabase = createSourceDatabaseMock();
+
+		const mockS78Case = { caseId: 2, caseReference: 'CASE-002' };
+		sourceDatabase.appealHas.findFirst.mock.mockImplementationOnce(async () => null);
+		sourceDatabase.appealS78.findFirst.mock.mockImplementationOnce(async () => mockS78Case);
+
+		const result = await fetchSourceCaseDetails(sourceDatabase, 'CASE-002');
+
+		assert.deepStrictEqual(result, { type: 's78', data: mockS78Case });
+	});
+
+	test('returns null when case not found in either table', async () => {
+		const sourceDatabase = createSourceDatabaseMock();
+
+		sourceDatabase.appealHas.findFirst.mock.mockImplementationOnce(async () => null);
+		sourceDatabase.appealS78.findFirst.mock.mockImplementationOnce(async () => null);
+
+		const result = await fetchSourceCaseDetails(sourceDatabase, 'CASE-999');
+
+		assert.strictEqual(result, null);
+	});
+});

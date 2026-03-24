@@ -1,0 +1,50 @@
+data "azurerm_client_config" "current" {}
+
+data "azurerm_monitor_action_group" "common" {
+  for_each = tomap(var.common_config.action_group_names)
+
+  resource_group_name = var.common_config.resource_group_name
+  name                = each.value
+}
+
+data "azurerm_virtual_network" "tooling" {
+  name                = var.tooling_config.network_name
+  resource_group_name = var.tooling_config.network_rg
+
+  provider = azurerm.tooling
+}
+
+data "azurerm_private_dns_zone" "database" {
+  name                = "privatelink.database.windows.net"
+  resource_group_name = var.tooling_config.network_rg
+
+  provider = azurerm.tooling
+}
+
+data "azurerm_private_dns_zone" "app_service" {
+  name                = "privatelink.azurewebsites.net"
+  resource_group_name = var.tooling_config.network_rg
+
+  provider = azurerm.tooling
+}
+
+data "azurerm_private_dns_zone" "key_vault" {
+  name                = "privatelink.vaultcore.azure.net"
+  resource_group_name = var.tooling_config.network_rg
+
+  provider = azurerm.tooling
+}
+
+data "azurerm_private_dns_zone" "service_bus" {
+  name                = "privatelink.servicebus.windows.net"
+  resource_group_name = var.tooling_config.network_rg
+
+  provider = azurerm.tooling
+}
+
+data "azurerm_private_dns_zone" "synapse_sql" {
+  name                = "privatelink.sql.azuresynapse.net"
+  resource_group_name = var.tooling_config.network_rg
+
+  provider = azurerm.tooling
+}
