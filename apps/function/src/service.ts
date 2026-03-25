@@ -91,4 +91,17 @@ export class FunctionService {
 	get reclaimStaleStepsTimeoutMinutes() {
 		return this.#config.functions.reclaimStaleSteps.timeoutMinutes;
 	}
+
+	/**
+	 * Cleanup resources when the service instance is no longer needed
+	 * Should be called after each invocation to prevent resource leaks
+	 */
+	async dispose(): Promise<void> {
+		await Promise.all([
+			this.databaseClient.$disconnect(),
+			this.sourceDatabaseClient.$disconnect(),
+			this.sinkDatabaseClient.$disconnect(),
+			this.serviceBusClient.close()
+		]);
+	}
 }

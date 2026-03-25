@@ -125,17 +125,26 @@ export async function handleMigration(
 }
 
 export function createWorker(
-	service: FunctionService,
 	name: string,
 	queueName: string,
-	migrationFunction: MigrationFunction,
+	migrationFunctionBuilder: (service: FunctionService) => MigrationFunction,
 	stepIdField: StepIdField
 ): void {
 	app.serviceBusQueue(name, {
 		connection: 'ServiceBusConnection',
 		queueName,
 		handler: async (itemToMigrate: ItemToMigrate, context: InvocationContext): Promise<void> => {
-			await handleMigration(service, name, migrationFunction, stepIdField, itemToMigrate, context);
+			// Create a new service instance per invocation for better parallelism
+			const { createService } = await import('../../init.ts');
+			const service = createService();
+			const migrationFunction = migrationFunctionBuilder(service);
+
+			try {
+				await handleMigration(service, name, migrationFunction, stepIdField, itemToMigrate, context);
+			} finally {
+				// Always cleanup resources after invocation to prevent leaks
+				await service.dispose();
+			}
 		}
 	});
 }
