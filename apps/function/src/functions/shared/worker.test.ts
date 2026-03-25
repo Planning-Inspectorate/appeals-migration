@@ -27,20 +27,17 @@ describe('createWorker', () => {
 				updateMany: mock.fn()
 			},
 			$queryRaw: mock.fn(async () => []),
-			$transaction: mock.fn(async (callback) => callback(databaseClient))
+			$transaction: mock.fn(async (callback) => callback(databaseClient)),
+			$disconnect: mock.fn(async () => {})
 		};
 
-		return { databaseClient };
-	};
-
-	const captureHandler = (service, name, queue, migration, field) => {
-		let captured;
-		mock.method(app, 'serviceBusQueue', (_name, options) => {
-			captured = options.handler;
-		});
-		createWorker(service, name, queue, migration, field);
-		app.serviceBusQueue.mock.restore();
-		return captured;
+		return {
+			databaseClient,
+			sourceDatabaseClient: { $disconnect: mock.fn(async () => {}) },
+			sinkDatabaseClient: { $disconnect: mock.fn(async () => {}) },
+			serviceBusClient: { close: mock.fn(async () => {}) },
+			dispose: mock.fn(async () => {})
+		};
 	};
 
 	test('registers a service bus queue handler with correct config', () => {
@@ -49,7 +46,7 @@ describe('createWorker', () => {
 			registered = { name, connection: options.connection, queueName: options.queueName };
 		});
 
-		createWorker(newService(), 'test-worker', 'test-queue', mock.fn(), 'dataStepId');
+		createWorker('test-worker', 'test-queue', () => mock.fn(), 'dataStepId');
 		app.serviceBusQueue.mock.restore();
 
 		assert.deepStrictEqual(registered, {
@@ -62,11 +59,11 @@ describe('createWorker', () => {
 	test('calls migration function with case and context', async () => {
 		const service = newService();
 		const migration = mock.fn(async () => {});
+		const migrationBuilder = mock.fn(() => migration);
 		const context = newContext();
 		const caseToMigrate = { caseReference: 'CASE-001', dataStepId: 10 };
 
-		const handler = captureHandler(service, 'test-worker', 'test-queue', migration, 'dataStepId');
-		await handler(caseToMigrate, context);
+		await handleMigration(service, 'test-worker', migration, 'dataStepId', caseToMigrate, context);
 
 		assert.strictEqual(migration.mock.callCount(), 1);
 		assert.deepStrictEqual(migration.mock.calls[0].arguments, [caseToMigrate, context]);
@@ -78,8 +75,7 @@ describe('createWorker', () => {
 		const context = newContext();
 		const caseToMigrate = { caseReference: 'CASE-001', dataStepId: 10 };
 
-		const handler = captureHandler(service, 'test-worker', 'test-queue', migration, 'dataStepId');
-		await handler(caseToMigrate, context);
+		await handleMigration(service, 'test-worker', migration, 'dataStepId', caseToMigrate, context);
 
 		assert.strictEqual(service.databaseClient.migrationStep.update.mock.callCount(), 2);
 
@@ -104,8 +100,7 @@ describe('createWorker', () => {
 		const context = newContext();
 		const caseToMigrate = { caseReference: 'CASE-ERR', dataStepId: 20 };
 
-		const handler = captureHandler(service, 'test-worker', 'test-queue', migration, 'dataStepId');
-		await handler(caseToMigrate, context);
+		await handleMigration(service, 'test-worker', migration, 'dataStepId', caseToMigrate, context);
 
 		assert.strictEqual(context.error.mock.callCount(), 1);
 		assert.strictEqual(context.error.mock.calls[0].arguments[0], 'Failed in test-worker for case CASE-ERR:');
@@ -125,8 +120,7 @@ describe('createWorker', () => {
 		const context = newContext();
 		const caseToMigrate = { caseReference: 'CASE-001', documentListStepId: 42 };
 
-		const handler = captureHandler(service, 'doc-worker', 'doc-queue', migration, 'documentListStepId');
-		await handler(caseToMigrate, context);
+		await handleMigration(service, 'doc-worker', migration, 'documentListStepId', caseToMigrate, context);
 
 		const processingCall = service.databaseClient.migrationStep.update.mock.calls[0].arguments[0];
 		assert.deepStrictEqual(processingCall.where, { id: 42 });
@@ -147,9 +141,10 @@ describe('createWorker', () => {
 			throw error;
 		});
 
-		const handler = captureHandler(service, 'test-worker', 'test-queue', migration, 'dataStepId');
-
-		await assert.rejects(() => handler(caseToMigrate, context), error);
+		await assert.rejects(
+			() => handleMigration(service, 'test-worker', migration, 'dataStepId', caseToMigrate, context),
+			error
+		);
 	});
 
 	test('marks step failed after migration error', async () => {
@@ -160,8 +155,7 @@ describe('createWorker', () => {
 		const context = newContext();
 		const caseToMigrate = { caseReference: 'CASE-002', documentsStepId: 55 };
 
-		const handler = captureHandler(service, 'docs-worker', 'docs-queue', migration, 'documentsStepId');
-		await handler(caseToMigrate, context);
+		await handleMigration(service, 'docs-worker', migration, 'documentsStepId', caseToMigrate, context);
 
 		const failedCall = service.databaseClient.migrationStep.update.mock.calls[1].arguments[0];
 		assert.deepStrictEqual(failedCall.where, { id: 55 });
@@ -177,8 +171,7 @@ describe('createWorker', () => {
 		const context = newContext();
 		const caseToMigrate = { caseReference: 'CASE-003', dataStepId: 30 };
 
-		const handler = captureHandler(service, 'test-worker', 'test-queue', migration, 'dataStepId');
-		await handler(caseToMigrate, context);
+		await handleMigration(service, 'test-worker', migration, 'dataStepId', caseToMigrate, context);
 
 		const failedCall = service.databaseClient.migrationStep.update.mock.calls[1].arguments[0];
 		assert.strictEqual(failedCall.data.status, stepStatus.failed);
@@ -194,8 +187,7 @@ describe('createWorker', () => {
 		const context = newContext();
 		const migrationItem = { caseReference: 'CASE-010', migrationStepId: 50 };
 
-		const handler = captureHandler(service, 'docs-worker', 'docs-queue', migration, 'migrationStepId');
-		await handler(migrationItem, context);
+		await handleMigration(service, 'docs-worker', migration, 'migrationStepId', migrationItem, context);
 
 		assert.strictEqual(service.databaseClient.documentToMigrate.count.mock.callCount(), 2);
 		assert.strictEqual(service.databaseClient.$queryRaw.mock.callCount(), 1);
@@ -215,8 +207,7 @@ describe('createWorker', () => {
 		const context = newContext();
 		const migrationItem = { caseReference: 'CASE-011', migrationStepId: 51 };
 
-		const handler = captureHandler(service, 'docs-worker', 'docs-queue', migration, 'migrationStepId');
-		await handler(migrationItem, context);
+		await handleMigration(service, 'docs-worker', migration, 'migrationStepId', migrationItem, context);
 
 		assert.strictEqual(service.databaseClient.documentToMigrate.count.mock.callCount(), 1);
 		assert.strictEqual(service.databaseClient.$queryRaw.mock.callCount(), 1);
@@ -236,8 +227,7 @@ describe('createWorker', () => {
 		const context = newContext();
 		const migrationItem = { caseReference: 'CASE-013', migrationStepId: 53 };
 
-		const handler = captureHandler(service, 'docs-worker', 'docs-queue', migration, 'migrationStepId');
-		await handler(migrationItem, context);
+		await handleMigration(service, 'docs-worker', migration, 'migrationStepId', migrationItem, context);
 
 		assert.strictEqual(service.databaseClient.documentToMigrate.count.mock.callCount(), 2);
 		assert.strictEqual(service.databaseClient.$queryRaw.mock.callCount(), 1);
@@ -256,8 +246,7 @@ describe('createWorker', () => {
 		const context = newContext();
 		const migrationItem = { caseReference: 'CASE-012', migrationStepId: 52 };
 
-		const handler = captureHandler(service, 'docs-worker', 'docs-queue', migration, 'migrationStepId');
-		await handler(migrationItem, context);
+		await handleMigration(service, 'docs-worker', migration, 'migrationStepId', migrationItem, context);
 
 		assert.strictEqual(service.databaseClient.documentToMigrate.count.mock.callCount(), 0);
 		assert.strictEqual(service.databaseClient.$queryRaw.mock.callCount(), 1);
@@ -274,9 +263,16 @@ describe('handleMigration retry behavior', () => {
 			caseToMigrate: { findUnique: mock.fn(async () => null) },
 			migrationStep: { update: mock.fn(), updateMany: mock.fn() },
 			$queryRaw: mock.fn(async () => []),
-			$transaction: mock.fn(async (callback) => callback(databaseClient))
+			$transaction: mock.fn(async (callback) => callback(databaseClient)),
+			$disconnect: mock.fn(async () => {})
 		};
-		return { databaseClient };
+		return {
+			databaseClient,
+			sourceDatabaseClient: { $disconnect: mock.fn(async () => {}) },
+			sinkDatabaseClient: { $disconnect: mock.fn(async () => {}) },
+			serviceBusClient: { close: mock.fn(async () => {}) },
+			dispose: mock.fn(async () => {})
+		};
 	};
 
 	test('retries transaction on transient error and succeeds', async () => {

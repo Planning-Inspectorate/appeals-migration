@@ -43,34 +43,30 @@ app.timer('reclaim-stale-steps', {
 
 // prettier-ignore
 createWorker(
-	service,
 	'b-migrate-data',
 	'appeals-migration-migrate-data',
-	buildMigrateData(service),
+	buildMigrateData,
 	'dataStepId'
 );
 
 createWorker(
-	service,
 	'c-list-documents-to-migrate',
 	'appeals-migration-list-documents-to-migrate',
-	buildListDocumentsToMigrate(service),
+	buildListDocumentsToMigrate,
 	'documentListStepId'
 );
 
 // prettier-ignore
 createWorker(
-	service,
 	'd-migrate-documents',
 	'appeals-migration-migrate-documents',
-	buildMigrateDocuments(service),
+	buildMigrateDocuments,
 	'migrationStepId'
 );
 
 createWorker(
-	service,
 	'e-validate-migrated-cases',
 	'appeals-migration-validate-migrated-cases',
-	buildValidateMigratedCases(service),
+	buildValidateMigratedCases,
 	'validationStepId'
 );
