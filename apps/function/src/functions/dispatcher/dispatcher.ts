@@ -25,27 +25,6 @@ async function getDispatchCount(
 	return Math.max(0, service.dispatcherQueueTarget - activeMessageCount);
 }
 
-async function reclaimStaleSteps(service: FunctionService, context: InvocationContext): Promise<void> {
-	const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-
-	const staleSteps = await withRetry(() =>
-		service.databaseClient.migrationStep.updateMany({
-			where: {
-				status: stepStatus.processing,
-				claimedAt: { lt: fiveMinutesAgo }
-			},
-			data: {
-				status: stepStatus.waiting,
-				errorMessage: 'Reclaimed due to stale processing (>5 minutes)'
-			}
-		})
-	);
-
-	if (staleSteps && staleSteps.count > 0) {
-		context.log(`Reclaimed ${staleSteps.count} stale migration steps`);
-	}
-}
-
 async function getItemsToMigrate(
 	config: DispatchConfig,
 	service: FunctionService,
@@ -230,11 +209,6 @@ export function buildDispatcher(service: FunctionService): TimerHandler {
 	];
 
 	return async (timer: Timer, context: InvocationContext): Promise<void> => {
-		// Reclaim stale steps before dispatching (feature flag for deployment safety)
-		if (process.env.ENABLE_STALE_CLAIM_RECOVERY === 'true') {
-			await reclaimStaleSteps(service, context);
-		}
-
 		const action = isEndOfWindow(service) ? drain : dispatch;
 		context.log(`mode: ${action.name}`);
 		for (const config of configs) {

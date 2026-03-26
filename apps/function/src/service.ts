@@ -83,4 +83,12 @@ export class FunctionService {
 	get documentsContainerName() {
 		return this.#config.manageAppeals.documents.containerName;
 	}
+
+	get reclaimStaleStepsSchedule() {
+		return this.#config.functions.reclaimStaleSteps.schedule;
+	}
+
+	get reclaimStaleStepsTimeoutMinutes() {
+		return this.#config.functions.reclaimStaleSteps.timeoutMinutes;
+	}
 }

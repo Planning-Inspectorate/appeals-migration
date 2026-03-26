@@ -7,6 +7,7 @@ import { buildMigrateDocuments } from './d-migrate-documents/impl.ts';
 import { buildDispatcher } from './dispatcher/dispatcher.ts';
 import { buildValidateMigratedCases } from './e-validate-migrated-cases/impl.ts';
 import { buildHealthCheck } from './health-check/impl.ts';
+import { buildReclaimStaleSteps } from './reclaim-stale-steps/impl.ts';
 import { createWorker } from './shared/worker.ts';
 
 const service = initialiseService();
@@ -31,6 +32,13 @@ console.log(`registering 'dispatcher' on schedule ${service.dispatcherSchedule}`
 app.timer('dispatcher', {
 	schedule: service.dispatcherSchedule,
 	handler: buildDispatcher(service)
+});
+
+console.log(`registering 'reclaim-stale-steps' on schedule ${service.reclaimStaleStepsSchedule}`);
+
+app.timer('reclaim-stale-steps', {
+	schedule: service.reclaimStaleStepsSchedule,
+	handler: buildReclaimStaleSteps(service)
 });
 
 // prettier-ignore
