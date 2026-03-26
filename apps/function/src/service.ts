@@ -92,6 +92,10 @@ export class FunctionService {
 		return this.#config.functions.reclaimStaleSteps.timeoutMinutes;
 	}
 
+	get transactionOptions() {
+		return this.#config.databaseTransactionOptions;
+	}
+
 	/**
 	 * Cleanup resources when the service instance is no longer needed
 	 * Should be called after each invocation to prevent resource leaks

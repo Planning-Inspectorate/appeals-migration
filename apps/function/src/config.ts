@@ -5,6 +5,10 @@ export interface Config {
 	database: string;
 	sourceDatabase: string;
 	sinkDatabase: string;
+	databaseTransactionOptions: {
+		maxWait: number;
+		timeout: number;
+	};
 	serviceBus: string;
 	functions: {
 		aListCasesToMigrate: {
@@ -41,6 +45,8 @@ export function loadConfig(): Config {
 	// get values from the environment
 	const {
 		BUFFER_PER_WORKER,
+		DATABASE_TRANSACTION_WAIT_TIME,
+		DATABASE_TRANSACTION_TIMEOUT,
 		DISPATCHER_CADENCE_MINUTES,
 		DISPATCHER_END_HOUR,
 		DISPATCHER_END_MINUTES,
@@ -98,6 +104,10 @@ export function loadConfig(): Config {
 		database: SQL_CONNECTION_STRING!,
 		sourceDatabase: ODW_CURATED_SQL_CONNECTION_STRING!,
 		sinkDatabase: MANAGE_APPEALS_SQL_CONNECTION_STRING!,
+		databaseTransactionOptions: {
+			maxWait: Number(DATABASE_TRANSACTION_WAIT_TIME || 30_000),
+			timeout: Number(DATABASE_TRANSACTION_TIMEOUT || 15_000)
+		},
 		serviceBus: SERVICE_BUS_HOSTNAME!,
 		functions: {
 			aListCasesToMigrate: {
