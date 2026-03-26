@@ -18,6 +18,10 @@ export interface Config {
 			migrationStepUpdateChunkSize: number;
 			serviceBusParallelism: number;
 		};
+		reclaimStaleSteps: {
+			schedule: string;
+			timeoutMinutes: number;
+		};
 	};
 	horizon: HorizonWebClientOptions;
 	manageAppeals: {
@@ -42,6 +46,8 @@ export function loadConfig(): Config {
 		DISPATCHER_END_MINUTES,
 		DISPATCHER_START_HOUR,
 		FUNC_LIST_CASE_TO_MIGRATE_SCHEDULE,
+		FUNC_RECLAIM_STALE_STEPS_SCHEDULE,
+		FUNC_RECLAIM_STALE_STEPS_TIMEOUT_MINUTES,
 		HORIZON_WEB_BASE_URL,
 		HORIZON_WEB_USERNAME,
 		HORIZON_WEB_PASSWORD,
@@ -104,6 +110,10 @@ export function loadConfig(): Config {
 				queueTarget: Math.floor(Number(MAXIMUM_PARALLELISM) * Number(BUFFER_PER_WORKER)),
 				migrationStepUpdateChunkSize: Number(MIGRATION_STEP_UPDATE_CHUNK_SIZE ?? 1000),
 				serviceBusParallelism: Number(SERVICE_BUS_PARALLELISM ?? 50)
+			},
+			reclaimStaleSteps: {
+				schedule: FUNC_RECLAIM_STALE_STEPS_SCHEDULE || '0 */5 * * * *', // default to every 5 minutes
+				timeoutMinutes: Number(FUNC_RECLAIM_STALE_STEPS_TIMEOUT_MINUTES ?? 5)
 			}
 		},
 		horizon: {

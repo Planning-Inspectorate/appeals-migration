@@ -4,9 +4,6 @@ import { describe, mock, test } from 'node:test';
 import { stepStatus } from '../../types.ts';
 import { buildDispatcher } from './dispatcher.ts';
 
-// Enable stale claim recovery for tests
-process.env.ENABLE_STALE_CLAIM_RECOVERY = 'true';
-
 const createPrismaError = (code) => Object.assign(new Error(`Prisma error ${code}`), { code });
 
 describe('buildDispatcher', () => {
@@ -355,10 +352,9 @@ describe('buildDispatcher', () => {
 			await handler({}, context);
 
 			assert.strictEqual(context.log.mock.calls[0].arguments[0], 'mode: drain');
-			// Expect 2 calls: 1 for stale claim recovery, 1 for draining messages
-			assert.strictEqual(service.databaseClient.migrationStep.updateMany.mock.callCount(), 2);
+			assert.strictEqual(service.databaseClient.migrationStep.updateMany.mock.callCount(), 1);
 			assert.strictEqual(
-				service.databaseClient.migrationStep.updateMany.mock.calls[1].arguments[0].data.status,
+				service.databaseClient.migrationStep.updateMany.mock.calls[0].arguments[0].data.status,
 				stepStatus.waiting
 			);
 			assert.strictEqual(receiver.completeMessage.mock.callCount(), 2);
@@ -479,13 +475,13 @@ describe('buildDispatcher', () => {
 			const handler = buildDispatcher(service);
 			await handler({}, context);
 
-			// Expect 3 calls: 1 for stale claim recovery, 1 for draining document messages, 1 for resetting case documents step
-			assert.strictEqual(service.databaseClient.migrationStep.updateMany.mock.callCount(), 3);
-			assert.deepStrictEqual(service.databaseClient.migrationStep.updateMany.mock.calls[1].arguments[0], {
+			// Expect 2 calls: 1 for draining document messages, 1 for resetting case documents step
+			assert.strictEqual(service.databaseClient.migrationStep.updateMany.mock.callCount(), 2);
+			assert.deepStrictEqual(service.databaseClient.migrationStep.updateMany.mock.calls[0].arguments[0], {
 				where: { id: { in: [300] } },
 				data: { status: stepStatus.waiting }
 			});
-			assert.deepStrictEqual(service.databaseClient.migrationStep.updateMany.mock.calls[2].arguments[0], {
+			assert.deepStrictEqual(service.databaseClient.migrationStep.updateMany.mock.calls[1].arguments[0], {
 				where: { id: { in: [400] }, status: stepStatus.processing },
 				data: { status: stepStatus.waiting }
 			});
