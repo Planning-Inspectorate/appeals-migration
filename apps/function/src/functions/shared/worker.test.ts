@@ -253,6 +253,41 @@ describe('createWorker', () => {
 		assert.strictEqual(service.databaseClient.caseToMigrate.findUnique.mock.callCount(), 1);
 		assert.strictEqual(service.databaseClient.migrationStep.update.mock.callCount(), 2);
 	});
+
+	test('dispose is called after successful migration in handler pattern', async () => {
+		const service = newService();
+		const migration = mock.fn(async () => {});
+		const context = newContext();
+		const item = { caseReference: 'CASE-001', dataStepId: 10 };
+
+		try {
+			await handleMigration(service, 'test-worker', migration, 'dataStepId', item, context);
+		} finally {
+			await service.dispose();
+		}
+
+		assert.strictEqual(service.dispose.mock.callCount(), 1);
+		assert.strictEqual(migration.mock.callCount(), 1);
+	});
+
+	test('dispose is called after failed migration in handler pattern', async () => {
+		const service = newService();
+		const migration = mock.fn(async () => {
+			throw new Error('migration failed');
+		});
+		const context = newContext();
+		const item = { caseReference: 'CASE-001', dataStepId: 10 };
+
+		try {
+			await handleMigration(service, 'test-worker', migration, 'dataStepId', item, context);
+		} finally {
+			await service.dispose();
+		}
+
+		assert.strictEqual(service.dispose.mock.callCount(), 1);
+		assert.strictEqual(migration.mock.callCount(), 1);
+		assert.strictEqual(context.error.mock.callCount(), 1);
+	});
 });
 
 describe('handleMigration retry behavior', () => {
