@@ -119,7 +119,7 @@ export function buildMigrateDocuments(service: FunctionService): MigrationFuncti
 				context.log(
 					`Successfully created document ${createdDocument.guid} with ${createdDocument.versions.length} version(s)`
 				);
-			})
+			}, service.transactionOptions)
 		);
 
 		context.log(`Document migration complete for ${documentId}`);

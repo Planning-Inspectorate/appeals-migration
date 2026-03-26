@@ -41,7 +41,7 @@ export function buildListDocumentsToMigrate(
 		await withRetry(() =>
 			migrationDatabase.$transaction(async (tx) => {
 				await migration.upsertDocumentsToMigrate(tx as MigrationPrismaClient, documents);
-			})
+			}, service.transactionOptions)
 		);
 
 		context.log(`Completed document list for case ${caseReference}`);
