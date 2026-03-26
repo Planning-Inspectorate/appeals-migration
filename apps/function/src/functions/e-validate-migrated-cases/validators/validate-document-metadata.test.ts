@@ -6,8 +6,8 @@ import { validateDocumentMetadata } from './validate-document-metadata.ts';
 
 describe('validateDocumentMetadata', () => {
 	test('returns true for matching documents', () => {
-		assert.strictEqual(validateDocumentMetadata([], []), true);
-		assert.strictEqual(validateDocumentMetadata([createSourceDoc()], [createSinkDoc()]), true);
+		assert.strictEqual(validateDocumentMetadata([], []).isValid, true);
+		assert.strictEqual(validateDocumentMetadata([createSourceDoc()], [createSinkDoc()]).isValid, true);
 	});
 
 	test('returns true when multiple versions match', () => {
@@ -18,13 +18,16 @@ describe('validateDocumentMetadata', () => {
 			[createSourceDoc({ version: 1 }), createSourceDoc({ version: 2, filename: 'test-v2.pdf' })],
 			[sinkDoc]
 		);
-		assert.strictEqual(result, true);
+		assert.strictEqual(result.isValid, true);
 	});
 
 	test('returns false for document count mismatch', () => {
-		assert.strictEqual(validateDocumentMetadata([createSourceDoc()], []), false);
-		assert.strictEqual(validateDocumentMetadata([], [createSinkDoc()]), false);
-		assert.strictEqual(validateDocumentMetadata([createSourceDoc({ documentId: null })], [createSinkDoc()]), false);
+		assert.strictEqual(validateDocumentMetadata([createSourceDoc()], []).isValid, false);
+		assert.strictEqual(validateDocumentMetadata([], [createSinkDoc()]).isValid, false);
+		assert.strictEqual(
+			validateDocumentMetadata([createSourceDoc({ documentId: null })], [createSinkDoc()]).isValid,
+			false
+		);
 	});
 
 	test('returns false for version mismatch', () => {
@@ -34,7 +37,7 @@ describe('validateDocumentMetadata', () => {
 			[createSinkDoc({ versions: [createSinkVersion({ version: 99 })] })]
 		];
 		for (const sinkDocs of cases) {
-			assert.strictEqual(validateDocumentMetadata([createSourceDoc()], sinkDocs), false);
+			assert.strictEqual(validateDocumentMetadata([createSourceDoc()], sinkDocs).isValid, false);
 		}
 	});
 
@@ -49,8 +52,18 @@ describe('validateDocumentMetadata', () => {
 		];
 		for (const override of cases) {
 			const sinkDoc = createSinkDoc({ versions: [createSinkVersion(override)] });
-			assert.strictEqual(validateDocumentMetadata([createSourceDoc()], [sinkDoc]), false);
+			assert.strictEqual(validateDocumentMetadata([createSourceDoc()], [sinkDoc]).isValid, false);
 		}
+	});
+
+	test('populates errors with field name, source and sink values on mismatch', () => {
+		const sinkDoc = createSinkDoc({ versions: [createSinkVersion({ fileName: 'different.pdf' })] });
+		const result = validateDocumentMetadata([createSourceDoc()], [sinkDoc]);
+		assert.strictEqual(result.isValid, false);
+		assert.strictEqual(result.errors.length > 0, true);
+		assert.strictEqual(result.errors[0].sourceModel, 'Document');
+		assert.strictEqual(result.errors[0].sourceField, 'Filename');
+		assert.match(result.errors[0].error, /Expected 'test\.pdf' got 'different\.pdf'/);
 	});
 
 	test('handles null values correctly', () => {
@@ -58,7 +71,7 @@ describe('validateDocumentMetadata', () => {
 		const sinkDoc = createSinkDoc({
 			versions: [createSinkVersion({ mime: null, size: null, fileMD5: null, description: null, author: null })]
 		});
-		assert.strictEqual(validateDocumentMetadata([sourceDoc], [sinkDoc]), true);
+		assert.strictEqual(validateDocumentMetadata([sourceDoc], [sinkDoc]).isValid, true);
 	});
 
 	test('validates multiple documents correctly', () => {
@@ -71,11 +84,12 @@ describe('validateDocumentMetadata', () => {
 			validateDocumentMetadata(
 				[createSourceDoc({ documentId: 'doc-1' }), createSourceDoc({ documentId: 'doc-2', filename: 'other.pdf' })],
 				[sinkDoc1, sinkDoc2]
-			),
+			).isValid,
 			true
 		);
 		assert.strictEqual(
-			validateDocumentMetadata([createSourceDoc({ documentId: 'doc-1' })], [createSinkDoc({ guid: 'doc-unknown' })]),
+			validateDocumentMetadata([createSourceDoc({ documentId: 'doc-1' })], [createSinkDoc({ guid: 'doc-unknown' })])
+				.isValid,
 			false
 		);
 	});

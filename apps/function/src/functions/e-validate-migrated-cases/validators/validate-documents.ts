@@ -1,14 +1,18 @@
 import type { AppealDocument } from '@pins/odw-curated-database/src/client/client.ts';
 import type { SinkDocumentClient } from '../../../types.ts';
 import { buildBlobStoragePath } from '../../d-migrate-documents/helpers/map-case-reference-for-storage.ts';
+import type { DocumentValidationResult, ValidationError } from '../types/validation-types.ts';
+import { createValidationError, createValidationFailure, createValidationSuccess } from '../types/validation-types.ts';
 
 export async function validateDocuments(
 	documents: AppealDocument[],
 	sinkDocumentClient: SinkDocumentClient
-): Promise<boolean> {
+): Promise<DocumentValidationResult> {
 	if (documents.length === 0) {
-		return true;
+		return createValidationSuccess();
 	}
+
+	const errors: ValidationError[] = [];
 
 	for (const doc of documents) {
 		const caseReference = doc.caseReference;
@@ -17,8 +21,14 @@ export async function validateDocuments(
 		const filename = doc.filename;
 
 		if (!caseReference || !filename) {
-			console.warn(`Document ${documentId} missing caseReference or filename`);
-			return false;
+			errors.push(
+				createValidationError(
+					'Document',
+					'caseReference/filename',
+					`Document ${documentId} missing caseReference or filename`
+				)
+			);
+			continue;
 		}
 
 		const blobPath = buildBlobStoragePath(caseReference, documentId, version, filename);
@@ -26,30 +36,45 @@ export async function validateDocuments(
 		const exists = await blobClient.exists();
 
 		if (!exists) {
-			console.warn(`Document not found in blob storage: ${blobPath}`);
-			return false;
+			errors.push(createValidationError('Document', 'blobStorage', `Document not found in blob storage: ${blobPath}`));
+			continue;
 		}
 
 		const properties = await blobClient.getProperties();
 
 		if (doc.size !== null && properties.contentLength !== doc.size) {
-			console.warn(`Document ${blobPath} size mismatch: expected ${doc.size}, got ${properties.contentLength}`);
-			return false;
+			errors.push(
+				createValidationError(
+					'Document',
+					'size',
+					`Document ${blobPath} size mismatch: expected ${doc.size}, got ${properties.contentLength}`
+				)
+			);
 		}
 
 		if (doc.mime && properties.contentType !== doc.mime) {
-			console.warn(`Document ${blobPath} MIME mismatch: expected ${doc.mime}, got ${properties.contentType}`);
-			return false;
+			errors.push(
+				createValidationError(
+					'Document',
+					'mime',
+					`Document ${blobPath} MIME mismatch: expected ${doc.mime}, got ${properties.contentType}`
+				)
+			);
 		}
 
 		if (doc.fileMD5 && properties.contentMD5) {
 			const blobMD5 = Buffer.from(properties.contentMD5).toString('hex');
 			if (blobMD5 !== doc.fileMD5) {
-				console.warn(`Document ${blobPath} MD5 mismatch: expected ${doc.fileMD5}, got ${blobMD5}`);
-				return false;
+				errors.push(
+					createValidationError(
+						'Document',
+						'fileMD5',
+						`Document ${blobPath} MD5 mismatch: expected ${doc.fileMD5}, got ${blobMD5}`
+					)
+				);
 			}
 		}
 	}
 
-	return true;
+	return errors.length === 0 ? createValidationSuccess() : createValidationFailure(errors);
 }
