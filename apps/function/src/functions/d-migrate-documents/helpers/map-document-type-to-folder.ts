@@ -260,6 +260,9 @@ const DOCUMENT_TYPE_TO_FOLDER: Record<AppealDocumentType, FolderPath> = {
 	// cancellation folder
 	[APPEAL_DOCUMENT_TYPE.LPA_ENFORCEMENT_NOTICE_WITHDRAWAL]: APPEAL_CASE_STAGE.CANCELLATION,
 
+	// TBC
+	[APPEAL_DOCUMENT_TYPE.DISCONTINUANCE_NOTICE]: APPEAL_CASE_STAGE.INTERNAL,
+
 	// representation folder - these are handled by REPRESENTATION_ATTACHMENT_TYPES logic first
 	// Included here for type safety completeness
 	[APPEAL_DOCUMENT_TYPE.APPELLANT_FINAL_COMMENT]: 'representation',
