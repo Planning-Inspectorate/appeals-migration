@@ -2,6 +2,7 @@ import type { InvocationContext } from '@azure/functions';
 import { app } from '@azure/functions';
 import type { Prisma } from '@pins/appeals-migration-database/src/client/client.ts';
 import { withRetry } from '@pins/appeals-migration-lib/util/retry.ts';
+import { createService } from '../../init.ts';
 import type { FunctionService } from '../../service.ts';
 import { stepStatus, type ItemToMigrate, type MigrationFunction, type StepIdField } from '../../types.ts';
 import { getStepId } from './step-id.ts';
@@ -135,7 +136,6 @@ export function createWorker(
 		queueName,
 		handler: async (itemToMigrate: ItemToMigrate, context: InvocationContext): Promise<void> => {
 			// Create a new service instance per invocation for better parallelism
-			const { createService } = await import('../../init.ts');
 			const service = createService();
 			const migrationFunction = migrationFunctionBuilder(service);
 
