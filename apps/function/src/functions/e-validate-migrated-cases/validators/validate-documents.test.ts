@@ -35,48 +35,48 @@ describe('validateDocuments', () => {
 			[createDoc({ size: 1024, mime: 'application/pdf', fileMD5: 'abc123' })],
 			client
 		);
-		assert.strictEqual(result, true);
+		assert.strictEqual(result.isValid, true);
 	});
 
 	test('returns true for empty array', async () => {
 		const client = createClientMock();
-		assert.strictEqual(await validateDocuments([], client), true);
+		assert.strictEqual((await validateDocuments([], client)).isValid, true);
 	});
 
-	test('returns false when document missing (fail fast)', async () => {
+	test('returns false when document missing', async () => {
 		const client = createClientMock({ exists: false });
 		const result = await validateDocuments([createDoc(), createDoc({ documentId: 'doc-456' })], client);
-		assert.strictEqual(result, false);
-		assert.strictEqual(client.getBlockBlobClient.mock.callCount(), 1);
+		assert.strictEqual(result.isValid, false);
+		assert.strictEqual(result.errors.length, 2);
 	});
 
 	test('returns false when size mismatch', async () => {
 		const client = createClientMock({ contentLength: 2048 });
-		assert.strictEqual(await validateDocuments([createDoc({ size: 1024 })], client), false);
+		assert.strictEqual((await validateDocuments([createDoc({ size: 1024 })], client)).isValid, false);
 	});
 
 	test('returns false when MIME mismatch', async () => {
 		const client = createClientMock({ contentType: 'image/png' });
-		assert.strictEqual(await validateDocuments([createDoc({ mime: 'application/pdf' })], client), false);
+		assert.strictEqual((await validateDocuments([createDoc({ mime: 'application/pdf' })], client)).isValid, false);
 	});
 
 	test('returns false when MD5 mismatch', async () => {
 		const client = createClientMock({ contentMD5: Buffer.from('abc123', 'hex') });
-		assert.strictEqual(await validateDocuments([createDoc({ fileMD5: 'def456' })], client), false);
+		assert.strictEqual((await validateDocuments([createDoc({ fileMD5: 'def456' })], client)).isValid, false);
 	});
 
 	test('skips metadata validation when source values null', async () => {
 		const client = createClientMock({ contentLength: 9999, contentType: 'text/plain' });
-		assert.strictEqual(await validateDocuments([createDoc()], client), true);
+		assert.strictEqual((await validateDocuments([createDoc()], client)).isValid, true);
 	});
 
 	test('returns false when caseReference missing', async () => {
 		const client = createClientMock();
-		assert.strictEqual(await validateDocuments([createDoc({ caseReference: null })], client), false);
+		assert.strictEqual((await validateDocuments([createDoc({ caseReference: null })], client)).isValid, false);
 	});
 
 	test('returns false when filename missing', async () => {
 		const client = createClientMock();
-		assert.strictEqual(await validateDocuments([createDoc({ filename: null })], client), false);
+		assert.strictEqual((await validateDocuments([createDoc({ filename: null })], client)).isValid, false);
 	});
 });

@@ -84,13 +84,14 @@ export function buildValidateMigratedCases(
 		const dataValidationResult = validators.validateData(sourceCase, sinkCase, sourceEvents, sourceServiceUsers);
 		context.log(`Case ${caseReference} data validation result: ${dataValidationResult.isValid}`);
 
-		const documentsExist = await validators.validateDocuments(sourceDocuments, sinkDocumentClient);
-		context.log(`Case ${caseReference} documents exist validation result: ${documentsExist}`);
+		const documentsExistResult = await validators.validateDocuments(sourceDocuments, sinkDocumentClient);
+		context.log(`Case ${caseReference} documents exist validation result: ${documentsExistResult.isValid}`);
 
-		const metadataValidated = validators.validateDocumentMetadata(sourceDocuments, sinkDocuments);
-		context.log(`Case ${caseReference} document metadata validation result: ${metadataValidated}`);
+		const metadataValidatedResult = validators.validateDocumentMetadata(sourceDocuments, sinkDocuments);
+		context.log(`Case ${caseReference} document metadata validation result: ${metadataValidatedResult.isValid}`);
 
-		const documentsValidated = documentsExist && metadataValidated;
+		const documentsValidated = documentsExistResult.isValid && metadataValidatedResult.isValid;
+		const documentValidationErrors = [...documentsExistResult.errors, ...metadataValidatedResult.errors];
 		context.log(`Case ${caseReference} documents validation result: ${documentsValidated}`);
 
 		await withRetry(() =>
@@ -100,7 +101,9 @@ export function buildValidateMigratedCases(
 					dataValidated: dataValidationResult.isValid,
 					dataValidationErrors:
 						dataValidationResult.errors.length > 0 ? JSON.stringify(dataValidationResult.errors) : null,
-					documentsValidated
+					documentsValidated,
+					documentValidationErrors:
+						documentValidationErrors.length > 0 ? JSON.stringify(documentValidationErrors) : null
 				}
 			})
 		);

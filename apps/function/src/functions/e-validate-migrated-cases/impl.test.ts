@@ -33,6 +33,16 @@ describe('buildValidateMigratedCases', () => {
 		validateDocumentMetadata: mock.fn()
 	});
 
+	const docMetadataFailure = {
+		isValid: false,
+		errors: [
+			{ sourceModel: 'Document', sourceField: 'Filename', error: 'Filename mismatch for document doc-1 version 1' }
+		]
+	};
+
+	const docMetadataFailureJson =
+		'[{"sourceModel":"Document","sourceField":"Filename","error":"Filename mismatch for document doc-1 version 1"}]';
+
 	test('saves validation results when both data and documents pass', async () => {
 		const service = newService();
 		const source = newSource();
@@ -46,8 +56,8 @@ describe('buildValidateMigratedCases', () => {
 		}));
 		sink.fetchSinkCaseDetails.mock.mockImplementationOnce(() => ({ reference: 'CASE-001' }));
 		validators.validateData.mock.mockImplementationOnce(() => ({ isValid: true, errors: [] }));
-		validators.validateDocuments.mock.mockImplementationOnce(() => true);
-		validators.validateDocumentMetadata.mock.mockImplementationOnce(() => true);
+		validators.validateDocuments.mock.mockImplementationOnce(() => ({ isValid: true, errors: [] }));
+		validators.validateDocumentMetadata.mock.mockImplementationOnce(() => ({ isValid: true, errors: [] }));
 
 		const handler = buildValidateMigratedCases(service, source, sink, validators);
 		await handler({ caseReference: 'CASE-001' }, context);
@@ -58,7 +68,8 @@ describe('buildValidateMigratedCases', () => {
 			data: {
 				dataValidated: true,
 				dataValidationErrors: null,
-				documentsValidated: true
+				documentsValidated: true,
+				documentValidationErrors: null
 			}
 		});
 	});
@@ -76,8 +87,8 @@ describe('buildValidateMigratedCases', () => {
 		}));
 		sink.fetchSinkCaseDetails.mock.mockImplementationOnce(() => ({ reference: 'CASE-002' }));
 		validators.validateData.mock.mockImplementationOnce(() => ({ isValid: true, errors: [] }));
-		validators.validateDocuments.mock.mockImplementationOnce(() => true);
-		validators.validateDocumentMetadata.mock.mockImplementationOnce(() => false);
+		validators.validateDocuments.mock.mockImplementationOnce(() => ({ isValid: true, errors: [] }));
+		validators.validateDocumentMetadata.mock.mockImplementationOnce(() => docMetadataFailure);
 
 		const handler = buildValidateMigratedCases(service, source, sink, validators);
 		await handler({ caseReference: 'CASE-002' }, context);
@@ -87,7 +98,8 @@ describe('buildValidateMigratedCases', () => {
 			data: {
 				dataValidated: true,
 				dataValidationErrors: null,
-				documentsValidated: false
+				documentsValidated: false,
+				documentValidationErrors: docMetadataFailureJson
 			}
 		});
 	});
@@ -166,8 +178,8 @@ describe('buildValidateMigratedCases', () => {
 				{ sourceModel: 'AppealHas', sourceField: 'caseType', error: "Expected 'Householder' got 'Full'" }
 			]
 		}));
-		validators.validateDocuments.mock.mockImplementationOnce(() => true);
-		validators.validateDocumentMetadata.mock.mockImplementationOnce(() => true);
+		validators.validateDocuments.mock.mockImplementationOnce(() => ({ isValid: true, errors: [] }));
+		validators.validateDocumentMetadata.mock.mockImplementationOnce(() => ({ isValid: true, errors: [] }));
 
 		const handler = buildValidateMigratedCases(service, source, sink, validators);
 		await handler({ caseReference: 'CASE-003' }, context);
@@ -178,7 +190,8 @@ describe('buildValidateMigratedCases', () => {
 				dataValidated: false,
 				dataValidationErrors:
 					'[{"sourceModel":"AppealHas","sourceField":"caseReference","error":"Expected \'CASE-003\' got \'CASE-999\'"},{"sourceModel":"AppealHas","sourceField":"caseType","error":"Expected \'Householder\' got \'Full\'"}]',
-				documentsValidated: true
+				documentsValidated: true,
+				documentValidationErrors: null
 			}
 		});
 	});
@@ -199,8 +212,8 @@ describe('buildValidateMigratedCases', () => {
 			isValid: false,
 			errors: [{ sourceModel: 'AppealS78', sourceField: 'caseReference', error: "Expected 'CASE-004' got 'CASE-888'" }]
 		}));
-		validators.validateDocuments.mock.mockImplementationOnce(() => true);
-		validators.validateDocumentMetadata.mock.mockImplementationOnce(() => false);
+		validators.validateDocuments.mock.mockImplementationOnce(() => ({ isValid: true, errors: [] }));
+		validators.validateDocumentMetadata.mock.mockImplementationOnce(() => docMetadataFailure);
 
 		const handler = buildValidateMigratedCases(service, source, sink, validators);
 		await handler({ caseReference: 'CASE-004' }, context);
@@ -211,7 +224,8 @@ describe('buildValidateMigratedCases', () => {
 				dataValidated: false,
 				dataValidationErrors:
 					'[{"sourceModel":"AppealS78","sourceField":"caseReference","error":"Expected \'CASE-004\' got \'CASE-888\'"}]',
-				documentsValidated: false
+				documentsValidated: false,
+				documentValidationErrors: docMetadataFailureJson
 			}
 		});
 	});
