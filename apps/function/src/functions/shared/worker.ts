@@ -125,6 +125,29 @@ export async function handleMigration(
 	);
 }
 
+/**
+ * Wrapper that handles service lifecycle (creation and disposal) around migration execution
+ * Extracted for testability of the try/finally logic
+ */
+export async function handleMigrationWithServiceLifecycle(
+	serviceFactory: () => FunctionService,
+	name: string,
+	migrationFunctionBuilder: (service: FunctionService) => MigrationFunction,
+	stepIdField: StepIdField,
+	itemToMigrate: ItemToMigrate,
+	context: InvocationContext
+): Promise<void> {
+	const service = serviceFactory();
+	const migrationFunction = migrationFunctionBuilder(service);
+
+	try {
+		await handleMigration(service, name, migrationFunction, stepIdField, itemToMigrate, context);
+	} finally {
+		// Always cleanup resources after invocation to prevent leaks
+		await service.dispose();
+	}
+}
+
 export function createWorker(
 	name: string,
 	queueName: string,
@@ -135,16 +158,14 @@ export function createWorker(
 		connection: 'ServiceBusConnection',
 		queueName,
 		handler: async (itemToMigrate: ItemToMigrate, context: InvocationContext): Promise<void> => {
-			// Create a new service instance per invocation for better parallelism
-			const service = createService();
-			const migrationFunction = migrationFunctionBuilder(service);
-
-			try {
-				await handleMigration(service, name, migrationFunction, stepIdField, itemToMigrate, context);
-			} finally {
-				// Always cleanup resources after invocation to prevent leaks
-				await service.dispose();
-			}
+			await handleMigrationWithServiceLifecycle(
+				createService,
+				name,
+				migrationFunctionBuilder,
+				stepIdField,
+				itemToMigrate,
+				context
+			);
 		}
 	});
 }
