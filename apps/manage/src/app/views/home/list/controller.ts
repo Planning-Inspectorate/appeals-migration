@@ -6,16 +6,27 @@ export function buildListItems(service: ManageService): AsyncRequestHandler {
 	return async (req, res) => {
 		logger.info('list items');
 
-		// check the DB connection is working
-		await db.$queryRaw`SELECT 1`;
+		const cases = await db.caseToMigrate.findMany({
+			include: {
+				DataStep: true,
+				DocumentListStep: true,
+				DocumentsStep: true,
+				ValidationStep: true
+			},
+			orderBy: { caseReference: 'asc' }
+		});
+
+		const items = cases.map((c) => ({
+			caseReference: c.caseReference,
+			dataStatus: c.DataStep.status,
+			documentListStatus: c.DocumentListStep.status,
+			documentsStatus: c.DocumentsStep.status,
+			validationStatus: c.ValidationStep.status
+		}));
 
 		return res.render('views/home/list/view.njk', {
 			pageHeading: 'Migration status',
-			items: [
-				{ task: 'Create new service', done: true },
-				{ task: 'Implement a new feature', done: false },
-				{ task: 'Fix a bug', done: false }
-			]
+			items
 		});
 	};
 }
