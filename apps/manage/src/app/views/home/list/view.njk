@@ -4,32 +4,40 @@
 {% from "govuk/components/table/macro.njk" import govukTable %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
+{% macro statusTag(status) %}
+    {% if status === "complete" %}
+        {{ govukTag({text: "Complete", classes: "govuk-tag--green"}) }}
+    {% elif status === "failed" %}
+        {{ govukTag({text: "Failed", classes: "govuk-tag--red"}) }}
+    {% elif status === "processing" %}
+        {{ govukTag({text: "Processing", classes: "govuk-tag--blue"}) }}
+    {% elif status === "queued" %}
+        {{ govukTag({text: "Queued", classes: "govuk-tag--yellow"}) }}
+    {% else %}
+        {{ govukTag({text: "Waiting", classes: "govuk-tag--grey"}) }}
+    {% endif %}
+{% endmacro %}
+
 {% block pageContent %}
     {% set tableRows = [] %}
 
     {% for item in items %}
-        {% set tagText = 'TO DO' %}
-        {% if item.done %}
-            {% set tagText = 'DONE' %}
-        {% endif %}
         {% set tableRows = (tableRows.push([
-            {
-                text: item.task
-            },
-            {
-                html: govukTag({text: tagText})
-            }
+            { text: item.caseReference },
+            { html: statusTag(item.dataStatus) },
+            { html: statusTag(item.documentListStatus) },
+            { html: statusTag(item.documentsStatus) },
+            { html: statusTag(item.validationStatus) }
         ]), tableRows) %}
     {% endfor %}
 
     {{ govukTable({
         head: [
-            {
-                text: "Task"
-            },
-            {
-                text: "Status"
-            }
+            { text: "Case Reference" },
+            { text: "Data" },
+            { text: "Document List" },
+            { text: "Documents" },
+            { text: "Validation" }
         ],
         rows: tableRows
     }) }}
