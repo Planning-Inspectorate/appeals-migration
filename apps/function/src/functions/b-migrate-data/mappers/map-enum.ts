@@ -1,4 +1,4 @@
-import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
+import { APPEAL_CASE_PROCEDURE, APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
 
 export function mapCaseStatus(caseStatus: string | null): string | null {
 	if (!caseStatus) {
@@ -32,4 +32,16 @@ export function mapCaseStatus(caseStatus: string | null): string | null {
 		['Validation Review', APPEAL_CASE_STATUS.VALIDATION]
 	]);
 	return map.get(caseStatus) || caseStatus;
+}
+
+export function mapCaseProcedure(caseProcedure: string | null): string | null {
+	if (!caseProcedure) {
+		return null;
+	}
+	const map: Map<string, string> = new Map([
+		['WR', APPEAL_CASE_PROCEDURE.WRITTEN],
+		['LI', APPEAL_CASE_PROCEDURE.INQUIRY],
+		['IH', APPEAL_CASE_PROCEDURE.HEARING]
+	]);
+	return map.get(caseProcedure) || caseProcedure;
 }

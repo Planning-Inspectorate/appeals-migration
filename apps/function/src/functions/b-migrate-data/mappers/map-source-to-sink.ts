@@ -15,7 +15,7 @@ import {
 	stringOrUndefined
 } from '../../shared/helpers/index.ts';
 import { FOLDERS } from './folders.ts';
-import { mapCaseStatus } from './map-enum.ts';
+import { mapCaseProcedure, mapCaseStatus } from './map-enum.ts';
 import { mapEventToSink } from './map-event-to-sink.ts';
 import { mapServiceUsersToAppealRelations } from './map-service-user.ts';
 
@@ -464,7 +464,7 @@ function connectLookupByKey(value: string | null | undefined): { connect: { key:
 }
 
 const buildAppealType = connectLookupByKey;
-const buildProcedureType = connectLookupByKey;
+const buildProcedureType = (procedure: string | null) => connectLookupByKey(mapCaseProcedure(procedure));
 
 /**
  * Type for validation reason configuration

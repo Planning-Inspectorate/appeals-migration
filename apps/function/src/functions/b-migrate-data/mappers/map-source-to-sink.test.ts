@@ -1,7 +1,7 @@
 // @ts-nocheck
 import type { AppealHas } from '@pins/odw-curated-database/src/client/client.ts';
 import { Prisma } from '@pins/odw-curated-database/src/client/client.ts';
-import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
+import { APPEAL_CASE_PROCEDURE, APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
 import assert from 'node:assert';
 import { describe, test } from 'node:test';
 import { FOLDERS } from './folders.ts';
@@ -64,6 +64,18 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 
 		assert.ok(result.lpa);
 		assert.strictEqual(result.lpa.connect.lpaCode, 'Q9999');
+	});
+
+	test('maps case procedure', () => {
+		const result = mapSourceToSinkAppeal(
+			{
+				...mockAppealHasCase,
+				caseProcedure: 'WR'
+			},
+			mockValidationReasonLookups
+		);
+		assert.ok(result.procedureType);
+		assert.strictEqual(result.procedureType.connect.key, APPEAL_CASE_PROCEDURE.WRITTEN);
 	});
 
 	test('maps user assignments with connectOrCreate', () => {
