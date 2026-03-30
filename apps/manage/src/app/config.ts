@@ -1,5 +1,5 @@
-import path from 'node:path';
 import type { BaseConfig } from '@pins/appeals-migration-lib/app/config-types.d.ts';
+import path from 'node:path';
 import { loadEnvFile } from 'node:process';
 
 export interface Config extends BaseConfig {

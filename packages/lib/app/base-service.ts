@@ -1,10 +1,10 @@
 import { initDatabaseClient } from '@pins/appeals-migration-database';
-import { initLogger } from '../util/logger.ts';
-import { initRedis } from '../redis/index.ts';
-import type { BaseConfig } from './config-types.d.ts';
-import type { Logger } from 'pino';
 import type { PrismaClient } from '@pins/appeals-migration-database/src/client/client.ts';
+import type { Logger } from 'pino';
+import { initRedis } from '../redis/index.ts';
 import type { RedisClient } from '../redis/redis-client.ts';
+import { initLogger } from '../util/logger.ts';
+import type { BaseConfig } from './config-types.d.ts';
 
 /**
  * This class encapsulates all the services and clients for the application
