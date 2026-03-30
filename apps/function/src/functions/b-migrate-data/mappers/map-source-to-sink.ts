@@ -368,7 +368,7 @@ function buildLpaQuestionnaire(source: AppealHas | AppealS78, validationReasonLo
 		isInfrastructureLevyFormallyAdopted: source.isInfrastructureLevyFormallyAdopted ?? undefined,
 		infrastructureLevyAdoptedDate: parseDateOrUndefined(source.infrastructureLevyAdoptedDate),
 		infrastructureLevyExpectedDate: parseDateOrUndefined(source.infrastructureLevyExpectedDate),
-		lpaProcedurePreference: stringOrUndefined(source.lpaProcedurePreference),
+		lpaProcedurePreference: stringOrUndefined(mapCaseProcedure(source.lpaProcedurePreference)),
 		lpaProcedurePreferenceDetails: stringOrUndefined(source.lpaProcedurePreferenceDetails),
 		lpaProcedurePreferenceDuration: parseNumber(source.lpaProcedurePreferenceDuration),
 		reasonForNeighbourVisits: stringOrUndefined(source.reasonForNeighbourVisits),
