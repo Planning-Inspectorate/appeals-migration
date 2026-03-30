@@ -1,8 +1,8 @@
-import { Router as createRouter } from 'express';
-import { asyncHandler } from '@pins/appeals-migration-lib/util/async-handler.ts';
-import { buildListItems } from './list/controller.ts';
 import type { ManageService } from '#service';
+import { asyncHandler } from '@pins/appeals-migration-lib/util/async-handler.ts';
 import type { IRouter } from 'express';
+import { Router as createRouter } from 'express';
+import { buildListItems } from './list/controller.ts';
 
 export function createRoutes(service: ManageService): IRouter {
 	const router = createRouter({ mergeParams: true });
