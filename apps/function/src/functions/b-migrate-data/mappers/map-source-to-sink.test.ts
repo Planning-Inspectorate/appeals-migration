@@ -2,6 +2,7 @@
 import type { AppealHas } from '@pins/odw-curated-database/src/client/client.ts';
 import { Prisma } from '@pins/odw-curated-database/src/client/client.ts';
 import {
+	APPEAL_CASE_DECISION_OUTCOME,
 	APPEAL_CASE_PROCEDURE,
 	APPEAL_CASE_STATUS,
 	APPEAL_CASE_VALIDATION_OUTCOME
@@ -210,6 +211,26 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 
 		assert.ok(result.inspectorDecision);
 		assert.strictEqual(result.inspectorDecision.create.outcome, 'allowed');
+		assert.strictEqual(
+			result.inspectorDecision.create.caseDecisionOutcomeDate?.toISOString(),
+			'2024-03-01T10:00:00.000Z'
+		);
+	});
+
+	test('maps inspector decision when outcome exists', () => {
+		const result = mapSourceToSinkAppeal(
+			{
+				...MockCases.mockCaseWithDecision,
+				caseDecisionOutcome: 'Planning permission granted'
+			},
+			mockValidationReasonLookups
+		);
+
+		assert.ok(result.inspectorDecision);
+		assert.strictEqual(
+			result.inspectorDecision.create.outcome,
+			APPEAL_CASE_DECISION_OUTCOME.PLANNING_PERMISSION_GRANTED
+		);
 		assert.strictEqual(
 			result.inspectorDecision.create.caseDecisionOutcomeDate?.toISOString(),
 			'2024-03-01T10:00:00.000Z'

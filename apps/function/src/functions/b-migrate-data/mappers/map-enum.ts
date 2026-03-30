@@ -1,4 +1,5 @@
 import {
+	APPEAL_CASE_DECISION_OUTCOME,
 	APPEAL_CASE_PROCEDURE,
 	APPEAL_CASE_STATUS,
 	APPEAL_CASE_VALIDATION_OUTCOME,
@@ -10,6 +11,28 @@ function mapSourceToSinkValues(value: string | null, map: Map<string, string | n
 		return null;
 	}
 	return map.get(value) || value;
+}
+
+export function mapCaseDecisionOutcome(caseDecisionOutcome: string | null): string | null {
+	// TODO: confirm mappings
+	const map: Map<string, string> = new Map([
+		['Allowed', APPEAL_CASE_DECISION_OUTCOME.ALLOWED],
+		['Allowed in part', APPEAL_CASE_DECISION_OUTCOME.ALLOWED],
+		['Allowed with conditions', APPEAL_CASE_DECISION_OUTCOME.ALLOWED],
+		['Appeal Withdrawn', APPEAL_CASE_DECISION_OUTCOME.INVALID],
+		['Dismissed', APPEAL_CASE_DECISION_OUTCOME.DISMISSED],
+		['Invalid', APPEAL_CASE_DECISION_OUTCOME.INVALID],
+		['Notice Quashed', APPEAL_CASE_DECISION_OUTCOME.DISMISSED],
+		['Notice Upheld', APPEAL_CASE_DECISION_OUTCOME.NOTICE_UPHELD],
+		['Notice upheld', APPEAL_CASE_DECISION_OUTCOME.NOTICE_UPHELD],
+		['Notice varied and upheld', APPEAL_CASE_DECISION_OUTCOME.NOTICE_VARIED_AND_UPHELD],
+		['Planning permission granted', APPEAL_CASE_DECISION_OUTCOME.PLANNING_PERMISSION_GRANTED],
+		['Quashed On Legal Grounds', APPEAL_CASE_DECISION_OUTCOME.QUASHED_ON_LEGAL_GROUNDS],
+		['Quashed on legal grounds', APPEAL_CASE_DECISION_OUTCOME.QUASHED_ON_LEGAL_GROUNDS],
+		['Split Decision', APPEAL_CASE_DECISION_OUTCOME.SPLIT_DECISION],
+		['Split decision', APPEAL_CASE_DECISION_OUTCOME.SPLIT_DECISION]
+	]);
+	return mapSourceToSinkValues(caseDecisionOutcome, map);
 }
 
 export function mapCaseStatus(caseStatus: string | null): string | null {
