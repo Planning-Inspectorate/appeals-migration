@@ -51,7 +51,11 @@ export interface StepCounts {
 /**
  * Build the summary view model from pre-fetched data.
  */
-export function buildSummaryViewModel(totalCases: number, completeCases: number, stepCounts: StepCounts): SummaryViewModel {
+export function buildSummaryViewModel(
+	totalCases: number,
+	completeCases: number,
+	stepCounts: StepCounts
+): SummaryViewModel {
 	return {
 		pageHeading: 'Migration summary',
 		totalCases,
