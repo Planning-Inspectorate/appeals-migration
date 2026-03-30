@@ -254,6 +254,18 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 		assert.strictEqual(result.parentAppeals, undefined);
 	});
 
+	test('omits parentAppeals when linkedCaseStatus is Not Linked (old value)', () => {
+		const source = {
+			...mockAppealHasCase,
+			linkedCaseStatus: 'Not Linked',
+			leadCaseReference: 'APP/HAS/2024/LEAD'
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.strictEqual(result.parentAppeals, undefined);
+	});
+
 	test('throws error when linkedCaseStatus is child but leadCaseReference is missing', () => {
 		const source = {
 			...mockAppealHasCase,

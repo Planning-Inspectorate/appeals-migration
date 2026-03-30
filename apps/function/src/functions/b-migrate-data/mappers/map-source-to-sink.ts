@@ -5,8 +5,7 @@ import type {
 	AppealS78,
 	AppealServiceUser
 } from '@pins/odw-curated-database/src/client/client.ts';
-import type { Schemas } from '@planning-inspectorate/data-model';
-import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
+import { APPEAL_CASE_STATUS, APPEAL_LINKED_CASE_STATUS, type Schemas } from '@planning-inspectorate/data-model';
 import {
 	booleanOrUndefined,
 	parseDateOrUndefined,
@@ -15,7 +14,7 @@ import {
 	stringOrUndefined
 } from '../../shared/helpers/index.ts';
 import { FOLDERS } from './folders.ts';
-import { mapCaseProcedure, mapCaseStatus, mapCaseValidationOutcome } from './map-enum.ts';
+import { mapCaseProcedure, mapCaseStatus, mapCaseValidationOutcome, mapLinkedCaseStatus } from './map-enum.ts';
 import { mapEventToSink } from './map-event-to-sink.ts';
 import { mapServiceUsersToAppealRelations } from './map-service-user.ts';
 
@@ -711,7 +710,8 @@ function buildUserConnection(userId: string | null | undefined) {
  * Build parent appeal relation for linked cases where this case is the child
  */
 function buildParentAppealRelation(source: AppealHas | AppealS78) {
-	if (source.linkedCaseStatus !== 'child') return undefined;
+	const linkedCaseStatus = mapLinkedCaseStatus(source.linkedCaseStatus);
+	if (linkedCaseStatus !== APPEAL_LINKED_CASE_STATUS.CHILD) return undefined;
 
 	if (!source.leadCaseReference) {
 		throw new Error(

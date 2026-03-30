@@ -1,10 +1,11 @@
 import {
 	APPEAL_CASE_PROCEDURE,
 	APPEAL_CASE_STATUS,
-	APPEAL_CASE_VALIDATION_OUTCOME
+	APPEAL_CASE_VALIDATION_OUTCOME,
+	APPEAL_LINKED_CASE_STATUS
 } from '@planning-inspectorate/data-model';
 
-function mapSourceToSinkValues(value: string | null, map: Map<string, string>): string | null {
+function mapSourceToSinkValues(value: string | null, map: Map<string, string | null>): string | null {
 	if (!value) {
 		return null;
 	}
@@ -61,4 +62,13 @@ export function mapCaseValidationOutcome(caseValidationOutcome: string | null): 
 		['Valid', APPEAL_CASE_VALIDATION_OUTCOME.VALID]
 	]);
 	return mapSourceToSinkValues(caseValidationOutcome, map);
+}
+
+export function mapLinkedCaseStatus(linkedCaseStatus: string | null): string | null {
+	const map: Map<string, string | null> = new Map([
+		['Child', APPEAL_LINKED_CASE_STATUS.CHILD],
+		['Lead', APPEAL_LINKED_CASE_STATUS.LEAD],
+		['Not Linked', null]
+	]);
+	return mapSourceToSinkValues(linkedCaseStatus, map);
 }
