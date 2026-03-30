@@ -1,9 +1,9 @@
-import { buildRouter } from './router.ts';
-import { configureNunjucks } from './nunjucks.ts';
+import type { ManageService } from '#service';
 import { addLocalsConfiguration } from '#util/config-middleware.ts';
 import { createBaseApp } from '@pins/appeals-migration-lib/app/app.ts';
 import type { Express } from 'express';
-import type { ManageService } from '#service';
+import { configureNunjucks } from './nunjucks.ts';
+import { buildRouter } from './router.ts';
 
 export function createApp(service: ManageService): Express {
 	const router = buildRouter(service);

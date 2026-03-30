@@ -1,6 +1,6 @@
+import type { RequestHandler } from 'express';
 import session from 'express-session';
 import type { RedisClient } from '../redis/redis-client.ts';
-import type { RequestHandler } from 'express';
 
 interface InitSessionOptions {
 	redis: RedisClient | null;
