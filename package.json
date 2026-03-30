@@ -30,14 +30,14 @@
     "test-coverage": "node --test --experimental-test-coverage"
   },
   "dependencies": {
-    "@azure/functions": "^4.11.2",
+    "@azure/functions": "^4.12.0",
     "@azure/identity": "^4.13.1",
     "@azure/msal-node": "^5.1.1",
     "@azure/service-bus": "^7.9.5",
     "@azure/storage-blob": "^12.31.0",
     "@planning-inspectorate/data-model": "^2.30.0",
-    "@prisma/adapter-mssql": "^7.5.0",
-    "@prisma/client": "^7.5.0",
+    "@prisma/adapter-mssql": "^7.6.0",
+    "@prisma/client": "^7.6.0",
     "accessible-autocomplete": "^3.0.1",
     "body-parser": "^2.2.2",
     "connect-redis": "^9.0.0",
@@ -72,9 +72,9 @@
     "prettier": "^3.8.1",
     "prettier-plugin-organize-imports": "^4.3.0",
     "prettier-plugin-prisma": "^5.0.0",
-    "prisma": "^7.5.0",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.57.2"
+    "prisma": "^7.6.0",
+    "typescript": "^6.0.2",
+    "typescript-eslint": "^8.58.0"
   },
   "lint-staged": {
     "*.{js,ts}": [
