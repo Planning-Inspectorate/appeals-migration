@@ -22,7 +22,7 @@ describe('list items', () => {
 		await assert.doesNotReject(() => listItems({}, mockRes));
 		assert.strictEqual(mockRes.render.mock.callCount(), 1);
 		assert.strictEqual(mockRes.render.mock.calls[0].arguments.length, 2);
-		assert.strictEqual(mockRes.render.mock.calls[0].arguments[0], 'views/home/list/view.njk');
+		assert.strictEqual(mockRes.render.mock.calls[0].arguments[0], 'views/status/list/view.njk');
 		assert.strictEqual(mockRes.render.mock.calls[0].arguments[1].pageHeading, 'Migration status');
 	});
 });
