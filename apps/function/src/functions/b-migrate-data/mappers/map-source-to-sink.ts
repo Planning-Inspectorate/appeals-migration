@@ -14,7 +14,13 @@ import {
 	stringOrUndefined
 } from '../../shared/helpers/index.ts';
 import { FOLDERS } from './folders.ts';
-import { mapCaseProcedure, mapCaseStatus, mapCaseValidationOutcome, mapLinkedCaseStatus } from './map-enum.ts';
+import {
+	mapCaseDecisionOutcome,
+	mapCaseProcedure,
+	mapCaseStatus,
+	mapCaseValidationOutcome,
+	mapLinkedCaseStatus
+} from './map-enum.ts';
 import { mapEventToSink } from './map-event-to-sink.ts';
 import { mapServiceUsersToAppealRelations } from './map-service-user.ts';
 
@@ -436,11 +442,12 @@ function buildLpaQuestionnaire(source: AppealHas | AppealS78, validationReasonLo
  * Build inspector decision object
  */
 function buildInspectorDecision(source: AppealHas | AppealS78) {
-	if (!source.caseDecisionOutcome) return undefined;
+	const caseDecisionOutcome = mapCaseDecisionOutcome(source.caseDecisionOutcome);
+	if (!caseDecisionOutcome) return undefined;
 
 	return {
 		create: {
-			outcome: source.caseDecisionOutcome,
+			outcome: caseDecisionOutcome,
 			caseDecisionOutcomeDate: parseDateOrUndefined(source.caseDecisionOutcomeDate)
 		}
 	};
