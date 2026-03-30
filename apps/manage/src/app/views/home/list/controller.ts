@@ -1,6 +1,6 @@
 import type { ManageService } from '#service';
 import type { AsyncRequestHandler } from '@pins/appeals-migration-lib/util/async-handler.ts';
-import { buildPaginationItems } from './pagination.ts';
+import { buildPagination } from './pagination.ts';
 
 const PAGE_SIZE = 50;
 
@@ -46,23 +46,13 @@ export function buildListItems(service: ManageService): AsyncRequestHandler {
 			params.set('search', search);
 		}
 
-		const paginationItems = buildPaginationItems(page, totalPages, params);
-
-		const buildPageHref = (p: number) => {
-			const qs = new URLSearchParams(params);
-			qs.set('page', String(p));
-			return `?${qs}`;
-		};
+		const pagination = buildPagination(page, totalPages, params);
 
 		return res.render('views/home/list/view.njk', {
 			pageHeading: 'Migration status',
 			search,
 			items,
-			pagination: {
-				previous: page > 1 ? { href: buildPageHref(page - 1) } : undefined,
-				next: page < totalPages ? { href: buildPageHref(page + 1) } : undefined,
-				items: paginationItems.length > 0 ? paginationItems : undefined
-			}
+			pagination
 		});
 	};
 }

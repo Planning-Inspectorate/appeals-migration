@@ -52,3 +52,16 @@ export function buildPaginationItems(
 
 	return items;
 }
+
+/**
+ * Build the full GOV.UK pagination object with previous/next links and page items.
+ */
+export function buildPagination(page: number, totalPages: number, params: URLSearchParams = new URLSearchParams()) {
+	const items = buildPaginationItems(page, totalPages, params);
+
+	return {
+		previous: page > 1 ? { href: buildPageHref(page - 1, params) } : undefined,
+		next: page < totalPages ? { href: buildPageHref(page + 1, params) } : undefined,
+		items: items.length > 0 ? items : undefined
+	};
+}
