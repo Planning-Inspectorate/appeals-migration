@@ -15,15 +15,23 @@ export function buildSummary(service: ManageService): AsyncRequestHandler {
 	return async (_req, res) => {
 		logger.info('migration summary');
 
-		const [totalCases, data, documentList, documents, validation] = await Promise.all([
+		const [totalCases, completeCases, data, documentList, documents, validation] = await Promise.all([
 			db.caseToMigrate.count(),
+			db.caseToMigrate.count({
+				where: {
+					DataStep: {status: 'complete'},
+					DocumentListStep: {status: 'complete'},
+					DocumentsStep: {status: 'complete'},
+					ValidationStep: {status: 'complete'}
+				}
+			}),
 			countByStatus(db, 'DataStepCase'),
 			countByStatus(db, 'DocumentListStepCase'),
 			countByStatus(db, 'DocumentsStepCase'),
 			countByStatus(db, 'ValidationStepCase')
 		]);
 
-		const viewModel = buildSummaryViewModel(totalCases, { data, documentList, documents, validation });
+		const viewModel = buildSummaryViewModel(totalCases, completeCases, { data, documentList, documents, validation });
 		return res.render('views/status/summary/view.njk', viewModel);
 	};
 }

@@ -15,6 +15,8 @@ export interface StepSummary {
 export interface SummaryViewModel {
 	pageHeading: string;
 	totalCases: number;
+	completeCases: number;
+	completeCasesPerc: string;
 	steps: StepSummary[];
 }
 
@@ -49,10 +51,12 @@ export interface StepCounts {
 /**
  * Build the summary view model from pre-fetched data.
  */
-export function buildSummaryViewModel(totalCases: number, stepCounts: StepCounts): SummaryViewModel {
+export function buildSummaryViewModel(totalCases: number, completeCases: number, stepCounts: StepCounts): SummaryViewModel {
 	return {
 		pageHeading: 'Migration summary',
 		totalCases,
+		completeCases,
+		completeCasesPerc: ((completeCases / totalCases) * 100).toFixed(2),
 		steps: [
 			{ label: 'Data', counts: mapStatusCounts(stepCounts.data, totalCases) },
 			{ label: 'Document list', counts: mapStatusCounts(stepCounts.documentList, totalCases) },
