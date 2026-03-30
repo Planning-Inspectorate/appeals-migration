@@ -19,10 +19,10 @@ export function buildSummary(service: ManageService): AsyncRequestHandler {
 			db.caseToMigrate.count(),
 			db.caseToMigrate.count({
 				where: {
-					DataStep: {status: 'complete'},
-					DocumentListStep: {status: 'complete'},
-					DocumentsStep: {status: 'complete'},
-					ValidationStep: {status: 'complete'}
+					DataStep: { status: 'complete' },
+					DocumentListStep: { status: 'complete' },
+					DocumentsStep: { status: 'complete' },
+					ValidationStep: { status: 'complete' }
 				}
 			}),
 			countByStatus(db, 'DataStepCase'),
