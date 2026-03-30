@@ -1,0 +1,84 @@
+{% extends "views/layouts/main.njk" %}
+
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% macro statusTag(status) %}
+    {% if status === "complete" %}
+        {{ govukTag({text: "Complete", classes: "govuk-tag--green"}) }}
+    {% elif status === "failed" %}
+        {{ govukTag({text: "Failed", classes: "govuk-tag--red"}) }}
+    {% elif status === "processing" %}
+        {{ govukTag({text: "Processing", classes: "govuk-tag--blue"}) }}
+    {% elif status === "queued" %}
+        {{ govukTag({text: "Queued", classes: "govuk-tag--yellow"}) }}
+    {% else %}
+        {{ govukTag({text: "Waiting", classes: "govuk-tag--grey"}) }}
+    {% endif %}
+{% endmacro %}
+
+{% macro stepSummary(title, step) %}
+    {{ govukSummaryList({
+        card: {
+            title: {
+                text: title
+            }
+        },
+        rows: [
+            {
+                key: { text: "Status" },
+                value: { html: statusTag(step.status) }
+            },
+            {
+                key: { text: "Started at" },
+                value: { text: step.startedAt or "–" }
+            },
+            {
+                key: { text: "Completed at" },
+                value: { text: step.completedAt or "–" }
+            },
+            {
+                key: { text: "Invocation ID" },
+                value: { text: step.invocationId or "–" }
+            },
+            {
+                key: { text: "Error message" },
+                value: { text: step.errorMessage or "–" }
+            }
+        ]
+    }) }}
+{% endmacro %}
+
+{% block pageContent %}
+    {{ stepSummary("Data", dataStep) }}
+    {{ stepSummary("Document list", documentListStep) }}
+    {{ stepSummary("Documents", documentsStep) }}
+    {{ stepSummary("Validation", validationStep) }}
+
+    {{ govukSummaryList({
+        card: {
+            title: {
+                text: "Validation outcome"
+            }
+        },
+        rows: [
+            {
+                key: { text: "Data validated" },
+                value: { text: "Yes" if dataValidated else ("No" if dataValidated === false else "–") }
+            },
+            {
+                key: { text: "Data validation errors" },
+                value: { text: dataValidationErrors or "–" }
+            },
+            {
+                key: { text: "Documents validated" },
+                value: { text: "Yes" if documentsValidated else ("No" if documentsValidated === false else "–") }
+            },
+            {
+                key: { text: "Document validation errors" },
+                value: { text: documentValidationErrors or "–" }
+            }
+        ]
+    }) }}
+{% endblock %}
+

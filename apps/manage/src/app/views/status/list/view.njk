@@ -43,7 +43,7 @@
 
     {% for item in items %}
         {% set tableRows = (tableRows.push([
-            { text: item.caseReference },
+            { html: '<a class="govuk-link" href="/case/' + item.caseReference + '">' + item.caseReference + '</a>' },
             { html: statusTag(item.dataStatus) },
             { html: statusTag(item.documentListStatus) },
             { html: statusTag(item.documentsStatus) },
