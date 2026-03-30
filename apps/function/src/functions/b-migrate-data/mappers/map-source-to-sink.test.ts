@@ -6,6 +6,7 @@ import {
 	APPEAL_CASE_PROCEDURE,
 	APPEAL_CASE_STATUS,
 	APPEAL_CASE_VALIDATION_OUTCOME,
+	APPEAL_DEVELOPMENT_TYPE,
 	APPEAL_TYPE_OF_PLANNING_APPLICATION
 } from '@planning-inspectorate/data-model';
 import assert from 'node:assert';
@@ -2003,6 +2004,19 @@ describe('mapSourceToSinkAppeal - AppealS78 Appellant Case Fields', () => {
 		assert.strictEqual(appellantCase.developmentType, 'residential');
 		assert.strictEqual(appellantCase.numberOfResidencesNetChange, 5);
 		assert.strictEqual(appellantCase.siteViewableFromRoad, true);
+	});
+
+	test('maps development type old values', () => {
+		const source = {
+			...mockAppealHasCase,
+			developmentType: 'Major offices/R&D/light industry'
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.ok(result.appellantCase);
+		const appellantCase = result.appellantCase.create;
+		assert.strictEqual(appellantCase.developmentType, APPEAL_DEVELOPMENT_TYPE.MAJOR_OFFICES);
 	});
 
 	test('handles null S78 fields gracefully', () => {

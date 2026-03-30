@@ -3,6 +3,7 @@ import {
 	APPEAL_CASE_PROCEDURE,
 	APPEAL_CASE_STATUS,
 	APPEAL_CASE_VALIDATION_OUTCOME,
+	APPEAL_DEVELOPMENT_TYPE,
 	APPEAL_LINKED_CASE_STATUS,
 	APPEAL_TYPE_OF_PLANNING_APPLICATION
 } from '@planning-inspectorate/data-model';
@@ -86,6 +87,54 @@ export function mapCaseValidationOutcome(caseValidationOutcome: string | null): 
 		['Valid', APPEAL_CASE_VALIDATION_OUTCOME.VALID]
 	]);
 	return mapSourceToSinkValues(caseValidationOutcome, map);
+}
+
+export function mapDevelopmentType(developmentType: string | null): string | null {
+	const map: Map<string, string> = new Map([
+		['Change Of Use', APPEAL_DEVELOPMENT_TYPE.CHANGE_OF_USE],
+		['Change of Use', APPEAL_DEVELOPMENT_TYPE.CHANGE_OF_USE],
+		['Change of use', APPEAL_DEVELOPMENT_TYPE.CHANGE_OF_USE],
+		['Householder Development', APPEAL_DEVELOPMENT_TYPE.HOUSEHOLDER],
+		['Householder Developments', APPEAL_DEVELOPMENT_TYPE.HOUSEHOLDER],
+		['Householder development', APPEAL_DEVELOPMENT_TYPE.HOUSEHOLDER],
+		['Householder developments', APPEAL_DEVELOPMENT_TYPE.HOUSEHOLDER],
+		['Major Development', APPEAL_DEVELOPMENT_TYPE.OTHER_MAJOR],
+		['Major Developments', APPEAL_DEVELOPMENT_TYPE.OTHER_MAJOR],
+		['Major Dwelling', APPEAL_DEVELOPMENT_TYPE.MAJOR_DWELLINGS],
+		['Major Dwellings', APPEAL_DEVELOPMENT_TYPE.MAJOR_DWELLINGS],
+		['Major dwellings', APPEAL_DEVELOPMENT_TYPE.MAJOR_DWELLINGS],
+		['Major Offices', APPEAL_DEVELOPMENT_TYPE.MAJOR_OFFICES],
+		['Major offices', APPEAL_DEVELOPMENT_TYPE.MAJOR_OFFICES],
+		['Major offices/R&D/light industry', APPEAL_DEVELOPMENT_TYPE.MAJOR_OFFICES],
+		['Major general industry/storage/warehousing', APPEAL_DEVELOPMENT_TYPE.MAJOR_INDUSTRY_STORAGE],
+		['Major manufacturing, storage and warehousing', APPEAL_DEVELOPMENT_TYPE.MAJOR_INDUSTRY_STORAGE],
+		['Major retail and services', APPEAL_DEVELOPMENT_TYPE.MAJOR_RETAIL_SERVICES],
+		['Major retail distribution and servicing', APPEAL_DEVELOPMENT_TYPE.MAJOR_RETAIL_SERVICES],
+		['Major traveller and caravan pitches', APPEAL_DEVELOPMENT_TYPE.MAJOR_TRAVELLER_CARAVAN],
+		['Mineral Working', APPEAL_DEVELOPMENT_TYPE.MINERAL_WORKINGS],
+		['Mineral working', APPEAL_DEVELOPMENT_TYPE.MINERAL_WORKINGS],
+		['Minor Development', APPEAL_DEVELOPMENT_TYPE.OTHER_MINOR],
+		['Minor Dwellings', APPEAL_DEVELOPMENT_TYPE.MINOR_DWELLINGS],
+		['Minor Manufacturing, Storage and Warehousing', APPEAL_DEVELOPMENT_TYPE.MINOR_INDUSTRY_STORAGE],
+		['Minor Offices', APPEAL_DEVELOPMENT_TYPE.MINOR_OFFICES],
+		['Minor Retail Distribution and Servicing', APPEAL_DEVELOPMENT_TYPE.MINOR_RETAIL_SERVICES],
+		['Minor dwelling', APPEAL_DEVELOPMENT_TYPE.MINOR_DWELLINGS],
+		['Minor dwellings', APPEAL_DEVELOPMENT_TYPE.MINOR_DWELLINGS],
+		['Minor general industry/storage/warehousing', APPEAL_DEVELOPMENT_TYPE.MINOR_INDUSTRY_STORAGE],
+		['Minor manufacturing, storage and warehousing', APPEAL_DEVELOPMENT_TYPE.MINOR_INDUSTRY_STORAGE],
+		['Minor offices/R&D/light industry', APPEAL_DEVELOPMENT_TYPE.MINOR_OFFICES],
+		['Minor retail and services', APPEAL_DEVELOPMENT_TYPE.MINOR_RETAIL_SERVICES],
+		['Minor retail distribution and servicing', APPEAL_DEVELOPMENT_TYPE.MINOR_RETAIL_SERVICES],
+		['Minor traveller and caravan pitches', APPEAL_DEVELOPMENT_TYPE.MINOR_TRAVELLER_CARAVAN],
+		['Other Major Development', APPEAL_DEVELOPMENT_TYPE.OTHER_MAJOR],
+		['Other Major Developments', APPEAL_DEVELOPMENT_TYPE.OTHER_MAJOR],
+		['Other Minor Developments', APPEAL_DEVELOPMENT_TYPE.OTHER_MINOR],
+		['Other major development', APPEAL_DEVELOPMENT_TYPE.OTHER_MAJOR],
+		['Other major developments', APPEAL_DEVELOPMENT_TYPE.OTHER_MAJOR],
+		['Other minor development', APPEAL_DEVELOPMENT_TYPE.OTHER_MINOR],
+		['Other minor developments', APPEAL_DEVELOPMENT_TYPE.OTHER_MINOR]
+	]);
+	return mapSourceToSinkValues(developmentType, map);
 }
 
 export function mapLinkedCaseStatus(linkedCaseStatus: string | null): string | null {
