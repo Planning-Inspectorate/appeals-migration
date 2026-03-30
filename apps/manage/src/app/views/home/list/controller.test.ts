@@ -1,8 +1,8 @@
-import { describe, it, mock } from 'node:test';
-import assert from 'node:assert';
-import { buildListItems } from './controller.ts';
-import { configureNunjucks } from '../../../nunjucks.ts';
 import { mockLogger } from '@pins/appeals-migration-lib/testing/mock-logger.ts';
+import assert from 'node:assert';
+import { describe, it, mock } from 'node:test';
+import { configureNunjucks } from '../../../nunjucks.ts';
+import { buildListItems } from './controller.ts';
 
 describe('list items', () => {
 	it('should render without error', async () => {
@@ -12,13 +12,16 @@ describe('list items', () => {
 			render: mock.fn((view, data) => nunjucks.render(view, data))
 		};
 		const mockDb = {
-			$queryRaw: mock.fn()
+			caseToMigrate: {
+				count: mock.fn(),
+				findMany: mock.fn(() => [])
+			}
 		};
 		const listItems = buildListItems({ db: mockDb, logger: mockLogger() });
 		await assert.doesNotReject(() => listItems({}, mockRes));
 		assert.strictEqual(mockRes.render.mock.callCount(), 1);
 		assert.strictEqual(mockRes.render.mock.calls[0].arguments.length, 2);
-		assert.strictEqual(mockRes.render.mock.calls[0].arguments[0], 'views/items/list/view.njk');
-		assert.strictEqual(mockRes.render.mock.calls[0].arguments[1].pageHeading, 'Some Service Name');
+		assert.strictEqual(mockRes.render.mock.calls[0].arguments[0], 'views/home/list/view.njk');
+		assert.strictEqual(mockRes.render.mock.calls[0].arguments[1].pageHeading, 'Migration status');
 	});
 });

@@ -124,12 +124,14 @@ describe('buildPaginationItems', () => {
 	});
 
 	it('should append extraParams to all page hrefs', () => {
-		const result = buildPaginationItems(2, 5, '&search=test');
+		const params = new URLSearchParams();
+		params.set('search', 'test');
+		const result = buildPaginationItems(2, 5, params);
 		const pageItems = result.filter((item) => 'href' in item);
 		for (const item of pageItems) {
 			assert.ok(
-				(item as { href: string }).href.endsWith('&search=test'),
-				`Expected href to end with &search=test, got ${(item as { href: string }).href}`
+				(item as { href: string }).href.includes('search=test'),
+				`Expected href to include search=test, got ${(item as { href: string }).href}`
 			);
 		}
 	});

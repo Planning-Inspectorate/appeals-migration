@@ -41,16 +41,26 @@ export function buildListItems(service: ManageService): AsyncRequestHandler {
 			validationStatus: c.ValidationStep.status
 		}));
 
-		const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
-		const paginationItems = buildPaginationItems(page, totalPages, searchParam);
+		const params = new URLSearchParams();
+		if (search) {
+			params.set('search', search);
+		}
+
+		const paginationItems = buildPaginationItems(page, totalPages, params);
+
+		const buildPageHref = (p: number) => {
+			const qs = new URLSearchParams(params);
+			qs.set('page', String(p));
+			return `?${qs}`;
+		};
 
 		return res.render('views/home/list/view.njk', {
 			pageHeading: 'Migration status',
 			search,
 			items,
 			pagination: {
-				previous: page > 1 ? { href: `?page=${page - 1}${searchParam}` } : undefined,
-				next: page < totalPages ? { href: `?page=${page + 1}${searchParam}` } : undefined,
+				previous: page > 1 ? { href: buildPageHref(page - 1) } : undefined,
+				next: page < totalPages ? { href: buildPageHref(page + 1) } : undefined,
 				items: paginationItems.length > 0 ? paginationItems : undefined
 			}
 		});
