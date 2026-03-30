@@ -100,6 +100,25 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 		assert.strictEqual(currentStatus.createdAt?.toISOString(), '2024-01-20T14:30:00.000Z');
 	});
 
+	test('maps old appeal statuses', () => {
+		const result = mapSourceToSinkAppeal(
+			{
+				...mockAppealHasCase,
+				caseStatus: 'Decision Issued'
+			},
+			mockValidationReasonLookups
+		);
+
+		assert.ok(result.appealStatus);
+		assert.ok(result.appealStatus.create.length >= 1);
+
+		// First status should be the current status
+		const currentStatus = result.appealStatus.create.find((s) => s.valid === true);
+		assert.ok(currentStatus);
+		assert.strictEqual(currentStatus.status, APPEAL_CASE_STATUS.COMPLETE);
+		assert.strictEqual(currentStatus.createdAt?.toISOString(), '2024-01-20T14:30:00.000Z');
+	});
+
 	test('creates multiple appeal statuses based on available dates', () => {
 		const result = mapSourceToSinkAppeal(MockCases.mockCaseWithMultipleStatuses, mockValidationReasonLookups);
 
