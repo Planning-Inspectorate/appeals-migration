@@ -1,6 +1,7 @@
 import type { ManageService } from '#service';
 import type { AsyncRequestHandler } from '@pins/appeals-migration-lib/util/async-handler.ts';
 import { buildPagination } from './pagination.ts';
+import { buildListViewModel } from './view-model.ts';
 
 const PAGE_SIZE = 50;
 
@@ -33,26 +34,14 @@ export function buildListItems(service: ManageService): AsyncRequestHandler {
 
 		const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
 
-		const items = cases.map((c) => ({
-			caseReference: c.caseReference,
-			dataStatus: c.DataStep.status,
-			documentListStatus: c.DocumentListStep.status,
-			documentsStatus: c.DocumentsStep.status,
-			validationStatus: c.ValidationStep.status
-		}));
-
 		const params = new URLSearchParams();
 		if (search) {
 			params.set('search', search);
 		}
 
 		const pagination = buildPagination(page, totalPages, params);
+		const viewModel = buildListViewModel(cases, search, pagination);
 
-		return res.render('views/status/list/view.njk', {
-			pageHeading: 'Migration status',
-			search,
-			items,
-			pagination
-		});
+		return res.render('views/status/list/view.njk', viewModel);
 	};
 }
