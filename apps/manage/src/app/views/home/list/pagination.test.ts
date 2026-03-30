@@ -1,5 +1,5 @@
-import { describe, it } from 'node:test';
 import assert from 'node:assert';
+import { describe, it } from 'node:test';
 import { buildPaginationItems } from './pagination.ts';
 
 describe('buildPaginationItems', () => {
@@ -122,5 +122,15 @@ describe('buildPaginationItems', () => {
 		assert.strictEqual(currentItems.length, 1);
 		assert.deepStrictEqual(currentItems[0], { number: 5, href: '?page=5', current: true });
 	});
-});
 
+	it('should append extraParams to all page hrefs', () => {
+		const result = buildPaginationItems(2, 5, '&search=test');
+		const pageItems = result.filter((item) => 'href' in item);
+		for (const item of pageItems) {
+			assert.ok(
+				(item as { href: string }).href.endsWith('&search=test'),
+				`Expected href to end with &search=test, got ${(item as { href: string }).href}`
+			);
+		}
+	});
+});

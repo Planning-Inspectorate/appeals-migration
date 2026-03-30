@@ -4,7 +4,7 @@ type PaginationItem = { number: number; href: string; current: boolean } | { ell
  * Build the GOV.UK pagination items array with ellipsis for large page counts.
  * Shows first page, last page, and a window of ±1 around the current page.
  */
-export function buildPaginationItems(page: number, totalPages: number): PaginationItem[] {
+export function buildPaginationItems(page: number, totalPages: number, extraParams = ''): PaginationItem[] {
 	if (totalPages <= 1) {
 		return [];
 	}
@@ -14,7 +14,7 @@ export function buildPaginationItems(page: number, totalPages: number): Paginati
 	const windowEnd = page + 1;
 
 	// first page
-	items.push({ number: 1, href: '?page=1', current: page === 1 });
+	items.push({ number: 1, href: `?page=1${extraParams}`, current: page === 1 });
 
 	// ellipsis before window
 	if (windowStart > 2) {
@@ -24,7 +24,7 @@ export function buildPaginationItems(page: number, totalPages: number): Paginati
 	// pages around current
 	for (let i = windowStart; i <= windowEnd; i++) {
 		if (i > 1 && i < totalPages) {
-			items.push({ number: i, href: `?page=${i}`, current: i === page });
+			items.push({ number: i, href: `?page=${i}${extraParams}`, current: i === page });
 		}
 	}
 
@@ -34,8 +34,7 @@ export function buildPaginationItems(page: number, totalPages: number): Paginati
 	}
 
 	// last page
-	items.push({ number: totalPages, href: `?page=${totalPages}`, current: page === totalPages });
+	items.push({ number: totalPages, href: `?page=${totalPages}${extraParams}`, current: page === totalPages });
 
 	return items;
 }
-
