@@ -1,0 +1,73 @@
+{% extends "views/layouts/main.njk" %}
+
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+
+{% set statusTagClasses = {
+    "complete": "govuk-tag--green",
+    "failed": "govuk-tag--red",
+    "processing": "govuk-tag--blue",
+    "queued": "govuk-tag--yellow",
+    "waiting": "govuk-tag--grey"
+} %}
+
+{% block pageContent %}
+    <p class="govuk-body-l">Total cases: <strong>{{ totalCases }}</strong></p>
+
+    <p class="govuk-body">
+        Key:
+        {{ govukTag({text: "waiting" | capitalize, classes: statusTagClasses["waiting"]}) }}
+        {{ govukTag({text: "queued" | capitalize, classes: statusTagClasses["queued"]}) }}
+        {{ govukTag({text: "processing" | capitalize, classes: statusTagClasses["processing"]}) }}
+        {{ govukTag({text: "complete" | capitalize, classes: statusTagClasses["complete"]}) }}
+        {{ govukTag({text: "failed" | capitalize, classes: statusTagClasses["failed"]}) }}
+    </p>
+
+    {% for step in steps %}
+        <h2 class="govuk-heading-m">{{ step.label }} step</h2>
+
+        <div class="migration-bar" role="img" aria-label="{{ step.label }} status breakdown" style="grid-template-columns: {% for item in step.counts %}{{ item.percentage }}% {% endfor %}">
+            {% for item in step.counts %}
+                {% if item.percentage > 0 %}
+                    <div
+                        class="migration-bar__segment govuk-tag {{ statusTagClasses[item.status] }} {% if not loop.last %}border{% endif %}"
+                        title="{{ item.status | capitalize }}: {{ item.count }} ({{ item.percentage }}%)"
+                    >
+                        {% if item.percentage >= 8 %}
+                            <span class="migration-bar__label">{{ item.percentage }}%</span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        {% set detailTable %}
+            <table class="govuk-table govuk-!-margin-top-2">
+                <thead class="govuk-table__header">
+                <tr class="govuk-table__row">
+                    <th class="govuk-table__header" scope="col">Status</th>
+                    <th class="govuk-table__header govuk-table__header--numeric" scope="col">Count</th>
+                    <th class="govuk-table__header govuk-table__header--numeric" scope="col">%</th>
+                </tr>
+                </thead>
+                <tbody class="govuk-table__body">
+                {% for item in step.counts %}
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell">
+                            {{ govukTag({text: item.status | capitalize, classes: statusTagClasses[item.status]}) }}
+                        </td>
+                        <td class="govuk-table__cell govuk-table__cell--numeric">{{ item.count }}</td>
+                        <td class="govuk-table__cell govuk-table__cell--numeric">{{ item.percentage }}%</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endset %}
+
+        {{ govukDetails({
+            summaryText: 'More details',
+            html: detailTable
+        }) }}
+    {% endfor %}
+{% endblock %}
+
