@@ -5,9 +5,18 @@ import type { Handler } from 'express';
  */
 export function addLocalsConfiguration(): Handler {
 	return (req, res, next) => {
+		const links: {href: string, text: string, active?: boolean}[] = [
+			{ href: '/', text: 'Summary' },
+			{ href: '/cases', text: 'Case list' },
+			{ href: '/auth/signout', text: 'Sign out' }
+		];
 		res.locals.config = {
-			styleFile: 'style-ddef3dad.css',
-			headerTitle: 'Manage appeals migration'
+			styleFile: 'style-bb056d5c.css',
+			headerTitle: 'Manage appeals migration',
+			headerLinks: links.map(l => {
+				l.active = req.url === l.href;
+				return l;
+			})
 		};
 		next();
 	};

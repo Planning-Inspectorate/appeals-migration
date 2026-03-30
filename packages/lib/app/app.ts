@@ -77,5 +77,5 @@ const cspDirectiveDefaults: HelmetCspDirectives = {
 	connectSrc: ["'self'"],
 	fontSrc: ["'self'"],
 	imgSrc: ["'self'"],
-	styleSrc: ["'self'"]
+	styleSrc: ["'self'", "'unsafe-inline'"]
 };
