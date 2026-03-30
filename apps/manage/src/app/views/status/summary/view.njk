@@ -2,6 +2,7 @@
 
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "govuk/components/details/macro.njk" import govukDetails %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 
 {% set statusTagClasses = {
     "complete": "govuk-tag--green",
@@ -12,16 +13,29 @@
 } %}
 
 {% block pageContent %}
-    <p class="govuk-body-l">Total cases: <strong>{{ totalCases }}</strong></p>
-
-    <p class="govuk-body">
-        Key:
+    {% set tagsKey %}
         {{ govukTag({text: "waiting" | capitalize, classes: statusTagClasses["waiting"]}) }}
         {{ govukTag({text: "queued" | capitalize, classes: statusTagClasses["queued"]}) }}
         {{ govukTag({text: "processing" | capitalize, classes: statusTagClasses["processing"]}) }}
         {{ govukTag({text: "complete" | capitalize, classes: statusTagClasses["complete"]}) }}
         {{ govukTag({text: "failed" | capitalize, classes: statusTagClasses["failed"]}) }}
-    </p>
+    {% endset %}
+    {{ govukSummaryList({
+        rows: [
+            {
+                key: {text: 'Total cases'},
+                value: {text: totalCases}
+            },
+            {
+                key: {text: 'Complete'},
+                value: {text: completeCases + " (" + completeCasesPerc + "%)"}
+            },
+            {
+                key: {text: 'Key'},
+                value: {html: tagsKey}
+            }
+        ]
+    }) }}
 
     {% for step in steps %}
         <h2 class="govuk-heading-m">{{ step.label }} step</h2>
