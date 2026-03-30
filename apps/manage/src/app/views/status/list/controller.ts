@@ -48,7 +48,7 @@ export function buildListItems(service: ManageService): AsyncRequestHandler {
 
 		const pagination = buildPagination(page, totalPages, params);
 
-		return res.render('views/home/list/view.njk', {
+		return res.render('views/status/list/view.njk', {
 			pageHeading: 'Migration status',
 			search,
 			items,
