@@ -19,6 +19,7 @@ import {
 	mapCaseProcedure,
 	mapCaseStatus,
 	mapCaseValidationOutcome,
+	mapDevelopmentType,
 	mapLinkedCaseStatus,
 	mapTypeOfPlanningApplication
 } from './map-enum.ts';
@@ -693,7 +694,7 @@ function buildAppellantCase(
 			contactPlanningInspectorateDate: parseDateOrUndefined(s78.dateAppellantContactedPins),
 			applicationMadeAndFeePaid: s78.applicationMadeAndFeePaid,
 			applicationDevelopmentAllOrPart: stringOrUndefined(s78.applicationPartOrWholeDevelopment),
-			developmentType: stringOrUndefined(s78.developmentType),
+			developmentType: stringOrUndefined(mapDevelopmentType(s78.developmentType)),
 			numberOfResidencesNetChange: parseNumber(s78.numberOfResidencesNetChange),
 			siteViewableFromRoad: s78.siteViewableFromRoad,
 			appealDecisionDate: parseDateOrUndefined(s78.dateLpaDecisionReceived)
