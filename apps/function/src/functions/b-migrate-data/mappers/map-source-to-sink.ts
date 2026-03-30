@@ -19,7 +19,8 @@ import {
 	mapCaseProcedure,
 	mapCaseStatus,
 	mapCaseValidationOutcome,
-	mapLinkedCaseStatus
+	mapLinkedCaseStatus,
+	mapTypeOfPlanningApplication
 } from './map-enum.ts';
 import { mapEventToSink } from './map-event-to-sink.ts';
 import { mapServiceUsersToAppealRelations } from './map-service-user.ts';
@@ -655,7 +656,7 @@ function buildAppellantCase(
 
 			isGreenBelt: source.isGreenBelt,
 
-			typeOfPlanningApplication: stringOrUndefined(source.typeOfPlanningApplication),
+			typeOfPlanningApplication: stringOrUndefined(mapTypeOfPlanningApplication(source.typeOfPlanningApplication)),
 
 			caseworkReason: stringOrUndefined(source.caseworkReason),
 

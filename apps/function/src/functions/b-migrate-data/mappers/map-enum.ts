@@ -3,7 +3,8 @@ import {
 	APPEAL_CASE_PROCEDURE,
 	APPEAL_CASE_STATUS,
 	APPEAL_CASE_VALIDATION_OUTCOME,
-	APPEAL_LINKED_CASE_STATUS
+	APPEAL_LINKED_CASE_STATUS,
+	APPEAL_TYPE_OF_PLANNING_APPLICATION
 } from '@planning-inspectorate/data-model';
 
 function mapSourceToSinkValues(value: string | null, map: Map<string, string | null>): string | null {
@@ -94,4 +95,17 @@ export function mapLinkedCaseStatus(linkedCaseStatus: string | null): string | n
 		['Not Linked', null]
 	]);
 	return mapSourceToSinkValues(linkedCaseStatus, map);
+}
+
+export function mapTypeOfPlanningApplication(typeOfPlanningApplication: string | null): string | null {
+	const map: Map<string, string | null> = new Map([
+		['Application for approval of reserved matters', APPEAL_TYPE_OF_PLANNING_APPLICATION.RESERVED_MATTERS],
+		['Application for full planning permission', APPEAL_TYPE_OF_PLANNING_APPLICATION.FULL_APPEAL],
+		['Application for outline planning permission', APPEAL_TYPE_OF_PLANNING_APPLICATION.OUTLINE_PLANNING],
+		[
+			'Application for variation or removal of a condition on a permission',
+			APPEAL_TYPE_OF_PLANNING_APPLICATION.REMOVAL_OR_VARIATION_OF_CONDITIONS
+		]
+	]);
+	return mapSourceToSinkValues(typeOfPlanningApplication, map);
 }

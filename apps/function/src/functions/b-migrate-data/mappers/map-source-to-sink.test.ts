@@ -5,7 +5,8 @@ import {
 	APPEAL_CASE_DECISION_OUTCOME,
 	APPEAL_CASE_PROCEDURE,
 	APPEAL_CASE_STATUS,
-	APPEAL_CASE_VALIDATION_OUTCOME
+	APPEAL_CASE_VALIDATION_OUTCOME,
+	APPEAL_TYPE_OF_PLANNING_APPLICATION
 } from '@planning-inspectorate/data-model';
 import assert from 'node:assert';
 import { describe, test } from 'node:test';
@@ -1729,6 +1730,20 @@ describe('mapSourceToSinkAppeal - LPA Questionnaire Mapping', () => {
 
 		assert.strictEqual(result.lpaQuestionnaire.create.preserveGrantLoan, true);
 		assert.strictEqual(result.lpaQuestionnaire.create.historicEnglandConsultation, true);
+	});
+
+	test('maps type of planning application old values', () => {
+		const source = {
+			...mockAppealHasCase,
+			typeOfPlanningApplication: 'Application for approval of reserved matters'
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.strictEqual(
+			result.appellantCase.create.typeOfPlanningApplication,
+			APPEAL_TYPE_OF_PLANNING_APPLICATION.RESERVED_MATTERS
+		);
 	});
 
 	test('handles null S78 fields gracefully', () => {
