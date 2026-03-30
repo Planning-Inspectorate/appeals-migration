@@ -15,6 +15,7 @@ import {
 	stringOrUndefined
 } from '../../shared/helpers/index.ts';
 import { FOLDERS } from './folders.ts';
+import { mapCaseStatus } from './map-enum.ts';
 import { mapEventToSink } from './map-event-to-sink.ts';
 import { mapServiceUsersToAppealRelations } from './map-service-user.ts';
 
@@ -95,7 +96,7 @@ function parseNeighbouringSiteAddresses(
 function buildAppealStatus(source: AppealHas | AppealS78) {
 	const statuses = [
 		{
-			status: source.caseStatus,
+			status: mapCaseStatus(source.caseStatus),
 			valid: true,
 			// Use caseUpdatedDate as best guess for when this status was set
 			createdAt: parseDateOrUndefined(source.caseUpdatedDate)
