@@ -63,6 +63,7 @@
     "@types/express-session": "^1.18.2",
     "@types/lodash.chunk": "^4.2.9",
     "@types/node": "^25.5.0",
+    "@types/nunjucks": "^3.2.6",
     "eslint": "^10.1.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.4.0",
