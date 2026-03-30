@@ -1,11 +1,11 @@
+import type { ManageService } from '#service';
+import { createMonitoringRoutes } from '@pins/appeals-migration-lib/controllers/monitoring.ts';
+import { cacheNoCacheMiddleware } from '@pins/appeals-migration-lib/middleware/cache.ts';
+import type { IRouter } from 'express';
 import { Router as createRouter } from 'express';
 import { createRoutesAndGuards as createAuthRoutesAndGuards } from './auth/router.ts';
-import { createMonitoringRoutes } from '@pins/appeals-migration-lib/controllers/monitoring.ts';
-import { createRoutes as createHomeRoutes } from './views/home/index.ts';
 import { createErrorRoutes } from './views/static/error/index.ts';
-import { cacheNoCacheMiddleware } from '@pins/appeals-migration-lib/middleware/cache.ts';
-import type { ManageService } from '#service';
-import type { IRouter } from 'express';
+import { createRoutes as createStatusRoutes } from './views/status/index.ts';
 
 /**
  * Main app router
@@ -14,7 +14,7 @@ export function buildRouter(service: ManageService): IRouter {
 	const router = createRouter();
 	const monitoringRoutes = createMonitoringRoutes(service);
 	const { router: authRoutes, guards: authGuards } = createAuthRoutesAndGuards(service);
-	const homeRoutes = createHomeRoutes(service);
+	const statusRoutes = createStatusRoutes(service);
 
 	router.use('/', monitoringRoutes);
 
@@ -38,7 +38,7 @@ export function buildRouter(service: ManageService): IRouter {
 		service.logger.warn('auth disabled; auth routes and guards skipped');
 	}
 
-	router.use('/', homeRoutes);
+	router.use('/', statusRoutes);
 	router.use('/error', createErrorRoutes(service));
 
 	return router;
