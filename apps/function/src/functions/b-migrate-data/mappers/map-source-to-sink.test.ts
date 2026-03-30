@@ -1,7 +1,11 @@
 // @ts-nocheck
 import type { AppealHas } from '@pins/odw-curated-database/src/client/client.ts';
 import { Prisma } from '@pins/odw-curated-database/src/client/client.ts';
-import { APPEAL_CASE_PROCEDURE, APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
+import {
+	APPEAL_CASE_PROCEDURE,
+	APPEAL_CASE_STATUS,
+	APPEAL_CASE_VALIDATION_OUTCOME
+} from '@planning-inspectorate/data-model';
 import assert from 'node:assert';
 import { describe, test } from 'node:test';
 import { FOLDERS } from './folders.ts';
@@ -858,6 +862,27 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 		assert.strictEqual(advertDetail.highwayLand, false);
 
 		assert.strictEqual(appellantCase.appellantCostsAppliedFor, true);
+	});
+
+	test('maps validation outcome', () => {
+		const mockCase: AppealHas = {
+			...mockAppealHasCase,
+			caseValidationOutcome: 'Invalid - Missing Information'
+		};
+
+		const result = mapSourceToSinkAppeal(mockCase, mockValidationReasonLookups);
+
+		// Verify appellant case is created
+		assert.ok(result.appellantCase);
+		assert.ok(result.appellantCase.create);
+		const appellantCase = result.appellantCase.create;
+
+		// Verify validation outcome
+		assert.ok(appellantCase.appellantCaseValidationOutcome);
+		assert.strictEqual(
+			appellantCase.appellantCaseValidationOutcome.connect.name,
+			APPEAL_CASE_VALIDATION_OUTCOME.INVALID
+		);
 	});
 
 	test('maps validation incomplete reasons with text', () => {

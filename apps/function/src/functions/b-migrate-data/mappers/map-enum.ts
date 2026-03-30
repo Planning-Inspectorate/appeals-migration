@@ -1,9 +1,17 @@
-import { APPEAL_CASE_PROCEDURE, APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
+import {
+	APPEAL_CASE_PROCEDURE,
+	APPEAL_CASE_STATUS,
+	APPEAL_CASE_VALIDATION_OUTCOME
+} from '@planning-inspectorate/data-model';
 
-export function mapCaseStatus(caseStatus: string | null): string | null {
-	if (!caseStatus) {
+function mapSourceToSinkValues(value: string | null, map: Map<string, string>): string | null {
+	if (!value) {
 		return null;
 	}
+	return map.get(value) || value;
+}
+
+export function mapCaseStatus(caseStatus: string | null): string | null {
 	// TODO: confirm mappings
 	const map: Map<string, string> = new Map([
 		['Abeyance', APPEAL_CASE_STATUS.AWAITING_TRANSFER],
@@ -31,17 +39,26 @@ export function mapCaseStatus(caseStatus: string | null): string | null {
 		['Validated', APPEAL_CASE_STATUS.READY_TO_START],
 		['Validation Review', APPEAL_CASE_STATUS.VALIDATION]
 	]);
-	return map.get(caseStatus) || caseStatus;
+	return mapSourceToSinkValues(caseStatus, map);
 }
 
 export function mapCaseProcedure(caseProcedure: string | null): string | null {
-	if (!caseProcedure) {
-		return null;
-	}
 	const map: Map<string, string> = new Map([
 		['WR', APPEAL_CASE_PROCEDURE.WRITTEN],
 		['LI', APPEAL_CASE_PROCEDURE.INQUIRY],
 		['IH', APPEAL_CASE_PROCEDURE.HEARING]
 	]);
-	return map.get(caseProcedure) || caseProcedure;
+	return mapSourceToSinkValues(caseProcedure, map);
+}
+
+export function mapCaseValidationOutcome(caseValidationOutcome: string | null): string | null {
+	const map: Map<string, string> = new Map([
+		['Incomplete', APPEAL_CASE_VALIDATION_OUTCOME.INCOMPLETE],
+		['Invalid', APPEAL_CASE_VALIDATION_OUTCOME.INVALID],
+		['Invalid - Missing Information', APPEAL_CASE_VALIDATION_OUTCOME.INVALID],
+		['Invalid - No Right of Appeal', APPEAL_CASE_VALIDATION_OUTCOME.INVALID],
+		['Invalid - Out of Time', APPEAL_CASE_VALIDATION_OUTCOME.INVALID],
+		['Valid', APPEAL_CASE_VALIDATION_OUTCOME.VALID]
+	]);
+	return mapSourceToSinkValues(caseValidationOutcome, map);
 }

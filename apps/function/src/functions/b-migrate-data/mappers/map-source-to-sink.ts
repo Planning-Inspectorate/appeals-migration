@@ -15,7 +15,7 @@ import {
 	stringOrUndefined
 } from '../../shared/helpers/index.ts';
 import { FOLDERS } from './folders.ts';
-import { mapCaseProcedure, mapCaseStatus } from './map-enum.ts';
+import { mapCaseProcedure, mapCaseStatus, mapCaseValidationOutcome } from './map-enum.ts';
 import { mapEventToSink } from './map-event-to-sink.ts';
 import { mapServiceUsersToAppealRelations } from './map-service-user.ts';
 
@@ -616,7 +616,7 @@ function buildAppellantCase(
 			caseSubmissionDueDate: parseDateOrUndefined(source.caseSubmissionDueDate),
 
 			// Validation
-			appellantCaseValidationOutcome: connectLookupByName(source.caseValidationOutcome),
+			appellantCaseValidationOutcome: connectLookupByName(mapCaseValidationOutcome(source.caseValidationOutcome)),
 			appellantCaseIncompleteReasonsSelected: incompleteReasons,
 			appellantCaseInvalidReasonsSelected: invalidReasons,
 
