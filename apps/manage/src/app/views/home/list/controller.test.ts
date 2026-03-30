@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { mockLogger } from '@pins/appeals-migration-lib/testing/mock-logger.ts';
 import assert from 'node:assert';
 import { describe, it, mock } from 'node:test';
