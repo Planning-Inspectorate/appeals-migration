@@ -89,18 +89,3 @@ export function buildAssertGroupAccess(logger: Logger, ...groupIds: string[]): R
 		res.status(403).render(_403View);
 	};
 }
-
-/**
- * Assert that the user's authenticated account has access to the provided groups.
- */
-export function assertUserHasPermission(permission: string): RequestHandler {
-	return (req, res, next) => {
-		const permissions = req.session.permissions;
-
-		if (permissions && permissions[permission]) {
-			return next();
-		}
-
-		res.render(_403View);
-	};
-}
