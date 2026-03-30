@@ -1470,6 +1470,18 @@ describe('mapSourceToSinkAppeal - LPA Questionnaire Mapping', () => {
 		assert.strictEqual(result.lpaQuestionnaire.create.importantInformation, 'Important info');
 	});
 
+	test('maps lpaProcedurePreference old values', () => {
+		const source = {
+			...mockAppealHasCase,
+			lpaProcedurePreference: 'LI'
+		};
+
+		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
+
+		assert.ok(result.lpaQuestionnaire);
+		assert.strictEqual(result.lpaQuestionnaire.create.lpaProcedurePreference, APPEAL_CASE_PROCEDURE.INQUIRY);
+	});
+
 	test('creates lpaQuestionnaire when only a boolean field is set', () => {
 		const source = {
 			...mockAppealHasCase,
