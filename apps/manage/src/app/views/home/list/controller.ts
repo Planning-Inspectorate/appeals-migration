@@ -10,11 +10,15 @@ export function buildListItems(service: ManageService): AsyncRequestHandler {
 		logger.info('list items');
 
 		const page = Math.max(1, parseInt(String(req.query?.page), 10) || 1);
+		const search = typeof req.query?.search === 'string' ? req.query.search.trim() : '';
 		const skip = (page - 1) * PAGE_SIZE;
 
+		const where = search ? { caseReference: { contains: search } } : undefined;
+
 		const [totalItems, cases] = await Promise.all([
-			db.caseToMigrate.count(),
+			db.caseToMigrate.count({ where }),
 			db.caseToMigrate.findMany({
+				where,
 				include: {
 					DataStep: true,
 					DocumentListStep: true,
@@ -37,14 +41,16 @@ export function buildListItems(service: ManageService): AsyncRequestHandler {
 			validationStatus: c.ValidationStep.status
 		}));
 
-		const paginationItems = buildPaginationItems(page, totalPages);
+		const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
+		const paginationItems = buildPaginationItems(page, totalPages, searchParam);
 
 		return res.render('views/home/list/view.njk', {
 			pageHeading: 'Migration status',
+			search,
 			items,
 			pagination: {
-				previous: page > 1 ? { href: `?page=${page - 1}` } : undefined,
-				next: page < totalPages ? { href: `?page=${page + 1}` } : undefined,
+				previous: page > 1 ? { href: `?page=${page - 1}${searchParam}` } : undefined,
+				next: page < totalPages ? { href: `?page=${page + 1}${searchParam}` } : undefined,
 				items: paginationItems.length > 0 ? paginationItems : undefined
 			}
 		});
