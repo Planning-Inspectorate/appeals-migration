@@ -1,3 +1,5 @@
+export const ZERO_DATE = new Date(0);
+
 export function parseDate(value: string | Date | null | undefined): Date | null {
 	if (!value) {
 		return null;

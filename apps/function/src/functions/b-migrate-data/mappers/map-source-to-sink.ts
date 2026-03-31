@@ -6,6 +6,7 @@ import type {
 	AppealServiceUser
 } from '@pins/odw-curated-database/src/client/client.ts';
 import { APPEAL_CASE_STATUS, APPEAL_LINKED_CASE_STATUS, type Schemas } from '@planning-inspectorate/data-model';
+import { ZERO_DATE } from '../../shared/helpers/date.ts';
 import {
 	booleanOrUndefined,
 	parseDateOrUndefined,
@@ -106,7 +107,7 @@ function buildAppealStatus(source: AppealHas | AppealS78) {
 			status: mapCaseStatus(source.caseStatus),
 			valid: true,
 			// Use caseUpdatedDate as best guess for when this status was set
-			createdAt: parseDateOrUndefined(source.caseUpdatedDate)
+			createdAt: parseDateOrUndefined(source.caseUpdatedDate) || ZERO_DATE
 		}
 	];
 
@@ -126,7 +127,7 @@ function buildAppealStatus(source: AppealHas | AppealS78) {
 		statuses.push({
 			status,
 			valid,
-			createdAt: parseDateOrUndefined(date)
+			createdAt: parseDateOrUndefined(date) || ZERO_DATE
 		});
 	};
 
@@ -356,7 +357,7 @@ function buildLpaQuestionnaire(source: AppealHas | AppealS78, validationReasonLo
 	const s78 = source as AppealS78;
 	const create = {
 		lpaQuestionnaireSubmittedDate: parseDateOrUndefined(source.lpaQuestionnaireSubmittedDate),
-		lpaqCreatedDate: parseDateOrUndefined(source.lpaQuestionnaireCreatedDate),
+		lpaqCreatedDate: parseDateOrUndefined(source.lpaQuestionnaireCreatedDate) || ZERO_DATE,
 		lpaStatement: stringOrUndefined(source.lpaStatement),
 		newConditionDetails: stringOrUndefined(source.newConditionDetails),
 		siteAccessDetails: stringOrUndefined(source.siteAccessDetails),
@@ -612,7 +613,7 @@ function buildAppellantCase(
 
 	// AppellantCase is required for all appeals, so we always create it
 	// Use placeholders for missing required fields to allow migration of incomplete cases
-	const caseSubmittedDate = parseDateOrUndefined(source.caseSubmittedDate) ?? new Date(0);
+	const caseSubmittedDate = parseDateOrUndefined(source.caseSubmittedDate) ?? ZERO_DATE;
 	const applicationDecision = stringOrUndefined(source.applicationDecision) ?? `Not available ${source.caseReference}`;
 
 	const s78 = source as AppealS78;
@@ -629,7 +630,7 @@ function buildAppellantCase(
 			appellantCaseInvalidReasonsSelected: invalidReasons,
 
 			// Application details
-			applicationDate: parseDateOrUndefined(source.applicationDate),
+			applicationDate: parseDateOrUndefined(source.applicationDate) || ZERO_DATE, // sink schema has a default of now, so we set an explicit value
 			applicationDecision,
 			applicationDecisionDate: parseDateOrUndefined(source.applicationDecisionDate),
 
@@ -735,7 +736,8 @@ function buildParentAppealRelation(source: AppealHas | AppealS78) {
 			{
 				type: 'linked',
 				parentRef: source.leadCaseReference,
-				childRef: source.caseReference
+				childRef: source.caseReference,
+				linkingDate: ZERO_DATE
 			}
 		]
 	};

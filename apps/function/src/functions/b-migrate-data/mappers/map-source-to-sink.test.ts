@@ -11,6 +11,7 @@ import {
 } from '@planning-inspectorate/data-model';
 import assert from 'node:assert';
 import { describe, test } from 'node:test';
+import { ZERO_DATE } from '../../shared/helpers/date.ts';
 import { FOLDERS } from './folders.ts';
 import { mapSourceToSinkAppeal } from './map-source-to-sink.ts';
 import * as MockCases from './test-data/mock-appeal-cases.ts';
@@ -897,6 +898,22 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 		assert.strictEqual(advertDetail.highwayLand, false);
 
 		assert.strictEqual(appellantCase.appellantCostsAppliedFor, true);
+	});
+
+	test('uses zero date for missing fields', () => {
+		const mockCase: AppealHas = {
+			...mockAppealHasCase,
+			applicationDate: null
+		};
+
+		const result = mapSourceToSinkAppeal(mockCase, mockValidationReasonLookups);
+
+		// Verify appellant case is created
+		assert.ok(result.appellantCase);
+		assert.ok(result.appellantCase.create);
+		const appellantCase = result.appellantCase.create;
+
+		assert.strictEqual(appellantCase.applicationDate, ZERO_DATE);
 	});
 
 	test('maps validation outcome', () => {

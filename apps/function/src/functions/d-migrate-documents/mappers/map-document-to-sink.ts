@@ -1,6 +1,7 @@
 import type { Prisma } from '@pins/manage-appeals-database/src/client/client.d.ts';
 import type { AppealDocument } from '@pins/odw-curated-database/src/client/client.ts';
 import { APPEAL_REDACTED_STATUS } from '@planning-inspectorate/data-model';
+import { ZERO_DATE } from '../../shared/helpers/date.ts';
 import { parseDateOrUndefined } from '../../shared/helpers/index.ts';
 import { buildBlobStoragePath } from '../helpers/map-case-reference-for-storage.ts';
 
@@ -69,7 +70,7 @@ export function mapDocumentToSink(
 			blobStorageContainer,
 			blobStoragePath,
 			documentURI: doc.documentURI,
-			dateCreated: parseDateOrUndefined(doc.dateCreated) ?? new Date(),
+			dateCreated: parseDateOrUndefined(doc.dateCreated) ?? ZERO_DATE,
 			datePublished: parseDateOrUndefined(doc.datePublished),
 			dateReceived: parseDateOrUndefined(doc.dateReceived),
 			isDeleted: false,
@@ -90,7 +91,7 @@ export function mapDocumentToSink(
 		name: firstDocument.filename,
 		caseId,
 		folderId,
-		createdAt: parseDateOrUndefined(firstDocument.dateCreated) ?? new Date(),
+		createdAt: parseDateOrUndefined(firstDocument.dateCreated) ?? ZERO_DATE,
 		isDeleted: false,
 		latestVersionId,
 		versions: {
