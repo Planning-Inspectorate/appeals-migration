@@ -1,4 +1,4 @@
-const STATUSES = ['waiting', 'queued', 'processing', 'complete', 'failed'] as const;
+const STATUSES = ['complete', 'processing', 'queued', 'waiting', 'failed'] as const;
 export type Status = (typeof STATUSES)[number];
 
 export interface StatusCount {

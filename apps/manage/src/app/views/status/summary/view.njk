@@ -14,10 +14,10 @@
 
 {% block pageContent %}
     {% set tagsKey %}
-        {{ govukTag({text: "waiting" | capitalize, classes: statusTagClasses["waiting"]}) }}
-        {{ govukTag({text: "queued" | capitalize, classes: statusTagClasses["queued"]}) }}
-        {{ govukTag({text: "processing" | capitalize, classes: statusTagClasses["processing"]}) }}
         {{ govukTag({text: "complete" | capitalize, classes: statusTagClasses["complete"]}) }}
+        {{ govukTag({text: "processing" | capitalize, classes: statusTagClasses["processing"]}) }}
+        {{ govukTag({text: "queued" | capitalize, classes: statusTagClasses["queued"]}) }}
+        {{ govukTag({text: "waiting" | capitalize, classes: statusTagClasses["waiting"]}) }}
         {{ govukTag({text: "failed" | capitalize, classes: statusTagClasses["failed"]}) }}
     {% endset %}
     {{ govukSummaryList({
