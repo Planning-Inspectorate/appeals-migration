@@ -53,6 +53,18 @@ common_config = {
 
 environment = "prod"
 
+front_door_config = {
+  name        = "pins-fd-common-prod"
+  rg          = "pins-rg-common-prod"
+  ep_name     = "pins-fde-appeals-prod"
+  use_tooling = false
+  waf_rate_limits = {
+    enabled             = true
+    duration_in_minutes = 5
+    threshold           = 1500
+  }
+}
+
 manage_appeals_config = {
   database_server_name = "pins-sql-appeals-bo-primary-prod"
   database_name        = "pins-sqldb-appeals-bo-prod"

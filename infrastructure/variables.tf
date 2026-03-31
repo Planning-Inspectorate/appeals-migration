@@ -65,6 +65,21 @@ variable "environment" {
   type        = string
 }
 
+variable "front_door_config" {
+  description = "Config for the frontdoor in tooling subscription"
+  type = object({
+    name        = string
+    rg          = string
+    ep_name     = string
+    use_tooling = bool
+    waf_rate_limits = object({
+      enabled             = bool
+      duration_in_minutes = number
+      threshold           = number
+    })
+  })
+}
+
 variable "manage_appeals_config" {
   description = "Config for the manage appeals (back office) system"
   type = object({

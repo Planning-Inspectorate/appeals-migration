@@ -53,6 +53,18 @@ common_config = {
 
 environment = "test"
 
+front_door_config = {
+  name        = "pins-fd-common-tooling"
+  rg          = "pins-rg-common-tooling"
+  ep_name     = "pins-fde-appeals"
+  use_tooling = true
+  waf_rate_limits = {
+    enabled             = true
+    duration_in_minutes = 5
+    threshold           = 1500
+  }
+}
+
 manage_appeals_config = {
   documents_account_name   = "pinsstdocsappealsbotest"
   documents_container_name = "appeals-bo-documents"
