@@ -6,13 +6,38 @@ apps_config = {
     zone_balancing_enabled   = false
   }
 
+  auth = {
+    client_id                = "9692d222-d3aa-4f21-bee8-c5b1dfab2b5b"
+    group_application_access = "c1232a02-e4c5-4ac4-9efd-14f05e597023"
+  }
+
   functions_node_version = 22
+
+  logging = {
+    level = "info"
+  }
+
+  manage = {
+    app_service_plan = {
+      sku                      = "B2"
+      per_site_scaling_enabled = false
+      worker_count             = 1
+      zone_balancing_enabled   = false
+    }
+    domain = "manage-appeals-migration-test.planninginspectorate.gov.uk"
+  }
 
   migration = {
     buffer_per_worker     = 500
     maximum_parallelism   = 5
     dispatcher_start_hour = 6
     dispatcher_end_hour   = 22
+  }
+
+  redis = {
+    capacity = 0
+    family   = "C"
+    sku_name = "Basic"
   }
 }
 

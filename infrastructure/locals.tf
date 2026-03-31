@@ -23,6 +23,7 @@ locals {
   }
 
   secrets = [
+    "appeals-migration-client-secret",
     "horizon-web-base-url",
     "horizon-web-username",
     "horizon-web-password",
@@ -34,7 +35,10 @@ locals {
       for k, v in azurerm_key_vault_secret.manual_secrets : k => "@Microsoft.KeyVault(SecretUri=${v.versionless_id})"
     },
     {
+      "app-insights-connection-string"           = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.app_insights_connection_string.versionless_id})",
       "manage-appeals-sql-app-connection-string" = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.manage_appeals_sql_connection_string.versionless_id})"
+      "redis-connection-string"                  = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.redis_web_connection_string.versionless_id})"
+      "session-secret-web"                       = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.web_session_secret.versionless_id})"
       "sql-app-connection-string"                = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.sql_app_connection_string.versionless_id})"
       "odw-sql-app-connection-string"            = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.odw_sql_connection_string.versionless_id})"
     }

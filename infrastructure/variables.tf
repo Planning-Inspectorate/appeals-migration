@@ -10,13 +10,39 @@ variable "apps_config" {
       worker_count             = number
       zone_balancing_enabled   = bool
     })
+    auth = object({
+      client_id                = string
+      group_application_access = string
+    })
+
     functions_node_version = number
+
+    logging = object({
+      level = string
+    })
+
+    manage = object({
+      app_service_plan = object({
+        sku                      = string
+        per_site_scaling_enabled = bool
+        worker_count             = number
+        zone_balancing_enabled   = bool
+      })
+
+      domain = string
+    })
 
     migration = object({
       buffer_per_worker     = number
       maximum_parallelism   = number
       dispatcher_start_hour = number
       dispatcher_end_hour   = number
+    })
+
+    redis = object({
+      capacity = number
+      family   = string
+      sku_name = string
     })
   })
 }
