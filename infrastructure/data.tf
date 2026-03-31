@@ -35,6 +35,13 @@ data "azurerm_private_dns_zone" "key_vault" {
   provider = azurerm.tooling
 }
 
+data "azurerm_private_dns_zone" "redis_cache" {
+  name                = "privatelink.redis.cache.windows.net"
+  resource_group_name = var.tooling_config.network_rg
+
+  provider = azurerm.tooling
+}
+
 data "azurerm_private_dns_zone" "service_bus" {
   name                = "privatelink.servicebus.windows.net"
   resource_group_name = var.tooling_config.network_rg
