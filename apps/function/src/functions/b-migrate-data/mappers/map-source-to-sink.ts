@@ -357,7 +357,7 @@ function buildLpaQuestionnaire(source: AppealHas | AppealS78, validationReasonLo
 	const s78 = source as AppealS78;
 	const create = {
 		lpaQuestionnaireSubmittedDate: parseDateOrUndefined(source.lpaQuestionnaireSubmittedDate),
-		lpaqCreatedDate: parseDateOrUndefined(source.lpaQuestionnaireCreatedDate) || ZERO_DATE,
+		lpaqCreatedDate: parseDateOrUndefined(source.lpaQuestionnaireCreatedDate),
 		lpaStatement: stringOrUndefined(source.lpaStatement),
 		newConditionDetails: stringOrUndefined(source.newConditionDetails),
 		siteAccessDetails: stringOrUndefined(source.siteAccessDetails),
@@ -437,6 +437,10 @@ function buildLpaQuestionnaire(source: AppealHas | AppealS78, validationReasonLo
 	};
 
 	if (!Object.values(create).some((v) => v !== undefined)) return undefined;
+
+	if (!create.lpaqCreatedDate) {
+		create.lpaqCreatedDate = ZERO_DATE;
+	}
 
 	return { create };
 }

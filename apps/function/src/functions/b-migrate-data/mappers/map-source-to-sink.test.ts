@@ -774,7 +774,7 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 		// Should have defaults or undefined for null values
 		assert.ok(appellantCase.caseSubmittedDate); // Has default
 		assert.strictEqual(appellantCase.applicationDecision, 'refused'); // Has default
-		assert.strictEqual(appellantCase.applicationDate, undefined);
+		assert.strictEqual(appellantCase.applicationDate, ZERO_DATE);
 		assert.strictEqual(appellantCase.siteAccessDetails, undefined);
 		assert.strictEqual(appellantCase.knowsOtherOwners, undefined);
 		assert.strictEqual(appellantCase.knowsAllOwners, undefined);
@@ -1282,7 +1282,7 @@ describe('mapSourceToSinkAppeal - LPA Questionnaire Mapping', () => {
 		assert.strictEqual(result.lpaQuestionnaire.create.lpaqCreatedDate?.toISOString(), '2024-02-05T09:00:00.000Z');
 	});
 
-	test('does not set lpaqCreatedDate when lpaQuestionnaireCreatedDate is null', () => {
+	test('sets lpaqCreatedDate to zero date when lpaQuestionnaireCreatedDate is null', () => {
 		const source = {
 			...mockAppealHasCase,
 			lpaQuestionnaireSubmittedDate: '2024-02-10T10:00:00.000Z',
@@ -1292,7 +1292,7 @@ describe('mapSourceToSinkAppeal - LPA Questionnaire Mapping', () => {
 		const result = mapSourceToSinkAppeal(source, mockValidationReasonLookups);
 
 		assert.ok(result.lpaQuestionnaire);
-		assert.strictEqual(result.lpaQuestionnaire.create.lpaqCreatedDate, undefined);
+		assert.strictEqual(result.lpaQuestionnaire.create.lpaqCreatedDate, ZERO_DATE);
 	});
 
 	test('maps lpaProcedurePreferenceDuration Decimal to number', () => {
