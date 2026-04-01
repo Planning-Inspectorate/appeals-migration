@@ -4,6 +4,7 @@ import { cacheNoCacheMiddleware } from '@pins/appeals-migration-lib/middleware/c
 import type { IRouter } from 'express';
 import { Router as createRouter } from 'express';
 import { createRoutesAndGuards as createAuthRoutesAndGuards } from './auth/router.ts';
+import { createRoutes as createConfigureRoutes } from './views/configure/index.ts';
 import { createErrorRoutes } from './views/static/error/index.ts';
 import { createRoutes as createStatusRoutes } from './views/status/index.ts';
 
@@ -15,6 +16,7 @@ export function buildRouter(service: ManageService): IRouter {
 	const monitoringRoutes = createMonitoringRoutes(service);
 	const { router: authRoutes, guards: authGuards } = createAuthRoutesAndGuards(service);
 	const statusRoutes = createStatusRoutes(service);
+	const configureRoutes = createConfigureRoutes(service);
 
 	router.use('/', monitoringRoutes);
 
@@ -39,6 +41,7 @@ export function buildRouter(service: ManageService): IRouter {
 	}
 
 	router.use('/', statusRoutes);
+	router.use('/configure', configureRoutes);
 	router.use('/error', createErrorRoutes(service));
 
 	return router;

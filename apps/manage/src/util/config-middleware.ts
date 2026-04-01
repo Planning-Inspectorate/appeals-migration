@@ -8,6 +8,7 @@ export function addLocalsConfiguration(): Handler {
 		const links: { href: string; text: string; active?: boolean }[] = [
 			{ href: '/', text: 'Summary' },
 			{ href: '/cases', text: 'Case list' },
+			{ href: '/configure', text: 'Configure' },
 			{ href: '/auth/signout', text: 'Sign out' }
 		];
 		res.locals.config = {
