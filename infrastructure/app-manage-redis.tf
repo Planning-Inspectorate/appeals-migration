@@ -29,6 +29,15 @@ resource "azurerm_private_endpoint" "redis_manage" {
   }
 }
 
+resource "azurerm_private_dns_zone_virtual_network_link" "redis_cache" {
+  name                  = "${local.org}-vnetlink-redis-cache-${local.resource_suffix}"
+  resource_group_name   = var.tooling_config.network_rg
+  private_dns_zone_name = data.azurerm_private_dns_zone.redis_cache.name
+  virtual_network_id    = azurerm_virtual_network.main.id
+
+  provider = azurerm.tooling
+}
+
 resource "azurerm_key_vault_secret" "redis_web_connection_string" {
   #checkov:skip=CKV_AZURE_41: TODO: Secret rotation
   key_vault_id = azurerm_key_vault.main.id
