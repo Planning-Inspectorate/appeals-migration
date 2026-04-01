@@ -1,6 +1,12 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { buildFormViewModelForAdd, buildFormViewModelFromRecord, parseFormBody } from './form-view-model.ts';
+import {
+	buildFormViewModelForAdd,
+	buildFormViewModelFromRecord,
+	parseFormBody,
+	PROCEDURE_OPTIONS,
+	STATUS_OPTIONS
+} from './form-view-model.ts';
 
 describe('form-view-model', () => {
 	describe('buildFormViewModelForAdd', () => {
@@ -25,6 +31,37 @@ describe('form-view-model', () => {
 			});
 			assert.strictEqual(result.errors, undefined);
 			assert.strictEqual(result.errorSummary, undefined);
+		});
+
+		it('should include status options with "Any" selected by default', () => {
+			const result = buildFormViewModelForAdd();
+
+			assert.strictEqual(result.statusOptions[0].value, '');
+			assert.strictEqual(result.statusOptions[0].text, 'Any');
+			assert.strictEqual(result.statusOptions[0].selected, true);
+			assert.strictEqual(result.statusOptions.length, STATUS_OPTIONS.length + 1);
+			assert.ok(result.statusOptions.slice(1).every((o) => !o.selected));
+		});
+
+		it('should include procedure options with "Any" selected by default', () => {
+			const result = buildFormViewModelForAdd();
+
+			assert.strictEqual(result.procedureOptions[0].value, '');
+			assert.strictEqual(result.procedureOptions[0].text, 'Any');
+			assert.strictEqual(result.procedureOptions[0].selected, true);
+			assert.strictEqual(result.procedureOptions.length, PROCEDURE_OPTIONS.length + 1);
+			assert.ok(result.procedureOptions.slice(1).every((o) => !o.selected));
+		});
+
+		it('should use full names for procedure options', () => {
+			const result = buildFormViewModelForAdd();
+
+			const wr = result.procedureOptions.find((o) => o.value === 'WR');
+			const li = result.procedureOptions.find((o) => o.value === 'LI');
+			const ih = result.procedureOptions.find((o) => o.value === 'IH');
+			assert.strictEqual(wr?.text, 'Written representations');
+			assert.strictEqual(li?.text, 'Inquiry');
+			assert.strictEqual(ih?.text, 'Hearing');
 		});
 	});
 
@@ -93,6 +130,74 @@ describe('form-view-model', () => {
 				startDateFrom: '',
 				startDateTo: ''
 			});
+		});
+
+		it('should select the matching status option', () => {
+			const record = {
+				id: 1,
+				caseTypeName: null,
+				lpa: null,
+				procedureType: null,
+				status: 'Decision Issued',
+				dateReceivedFrom: null,
+				dateReceivedTo: null,
+				decisionDateFrom: null,
+				decisionDateTo: null,
+				startDateFrom: null,
+				startDateTo: null
+			};
+
+			const result = buildFormViewModelFromRecord(record);
+
+			const selected = result.statusOptions.filter((o) => o.selected);
+			assert.strictEqual(selected.length, 1);
+			assert.strictEqual(selected[0].value, 'Decision Issued');
+		});
+
+		it('should select the matching procedure option', () => {
+			const record = {
+				id: 1,
+				caseTypeName: null,
+				lpa: null,
+				procedureType: 'IH',
+				status: null,
+				dateReceivedFrom: null,
+				dateReceivedTo: null,
+				decisionDateFrom: null,
+				decisionDateTo: null,
+				startDateFrom: null,
+				startDateTo: null
+			};
+
+			const result = buildFormViewModelFromRecord(record);
+
+			const selected = result.procedureOptions.filter((o) => o.selected);
+			assert.strictEqual(selected.length, 1);
+			assert.strictEqual(selected[0].value, 'IH');
+			assert.strictEqual(selected[0].text, 'Hearing');
+		});
+
+		it('should select "Any" when status is null', () => {
+			const record = {
+				id: 1,
+				caseTypeName: null,
+				lpa: null,
+				procedureType: null,
+				status: null,
+				dateReceivedFrom: null,
+				dateReceivedTo: null,
+				decisionDateFrom: null,
+				decisionDateTo: null,
+				startDateFrom: null,
+				startDateTo: null
+			};
+
+			const result = buildFormViewModelFromRecord(record);
+
+			const selected = result.statusOptions.filter((o) => o.selected);
+			assert.strictEqual(selected.length, 1);
+			assert.strictEqual(selected[0].value, '');
+			assert.strictEqual(selected[0].text, 'Any');
 		});
 	});
 
