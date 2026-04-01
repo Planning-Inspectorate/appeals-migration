@@ -47,6 +47,7 @@ pids
 
 # Editors
 .idea
+!.idea/runConfigurations
 **/*.swp
 
 # Env settings / local env files
