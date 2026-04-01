@@ -8,7 +8,7 @@ apps_config = {
 
   auth = {
     client_id                = "b1f8cb48-656c-4c00-93fc-8a0f79e2679a"
-    group_application_access = "7760d7fc-d26c-442b-8275-d038bcec1325"
+    group_application_access = "2648df01-a092-487f-8ac7-d51cc5200812"
   }
 
   functions_node_version = 22
