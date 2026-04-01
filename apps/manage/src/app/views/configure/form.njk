@@ -1,0 +1,138 @@
+{% extends "views/layouts/main.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/fieldset/macro.njk" import govukFieldset %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+
+{% block pageContent %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <form method="post" action="{{ actionUrl }}" novalidate>
+
+                {{ govukInput({
+                    id: "caseTypeName",
+                    name: "caseTypeName",
+                    label: { text: "Case type name" },
+                    value: values.caseTypeName,
+                    classes: "govuk-input--width-20",
+                    errorMessage: errors.caseTypeName if errors and errors.caseTypeName
+                }) }}
+
+                {{ govukInput({
+                    id: "lpa",
+                    name: "lpa",
+                    label: { text: "LPA" },
+                    value: values.lpa,
+                    classes: "govuk-input--width-20",
+                    errorMessage: errors.lpa if errors and errors.lpa
+                }) }}
+
+                {{ govukInput({
+                    id: "procedureType",
+                    name: "procedureType",
+                    label: { text: "Procedure type" },
+                    value: values.procedureType,
+                    classes: "govuk-input--width-20",
+                    errorMessage: errors.procedureType if errors and errors.procedureType
+                }) }}
+
+                {{ govukInput({
+                    id: "status",
+                    name: "status",
+                    label: { text: "Status" },
+                    value: values.status,
+                    classes: "govuk-input--width-20",
+                    errorMessage: errors.status if errors and errors.status
+                }) }}
+
+                {% call govukFieldset({
+                    legend: {
+                        text: "Date received",
+                        classes: "govuk-fieldset__legend--m"
+                    }
+                }) %}
+                    {{ govukInput({
+                        id: "dateReceivedFrom",
+                        name: "dateReceivedFrom",
+                        label: { text: "From" },
+                        value: values.dateReceivedFrom,
+                        classes: "govuk-input--width-10",
+                        type: "date",
+                        errorMessage: errors.dateReceivedFrom if errors and errors.dateReceivedFrom
+                    }) }}
+
+                    {{ govukInput({
+                        id: "dateReceivedTo",
+                        name: "dateReceivedTo",
+                        label: { text: "To" },
+                        value: values.dateReceivedTo,
+                        classes: "govuk-input--width-10",
+                        type: "date",
+                        errorMessage: errors.dateReceivedTo if errors and errors.dateReceivedTo
+                    }) }}
+                {% endcall %}
+
+                {% call govukFieldset({
+                    legend: {
+                        text: "Decision date",
+                        classes: "govuk-fieldset__legend--m"
+                    }
+                }) %}
+                    {{ govukInput({
+                        id: "decisionDateFrom",
+                        name: "decisionDateFrom",
+                        label: { text: "From" },
+                        value: values.decisionDateFrom,
+                        classes: "govuk-input--width-10",
+                        type: "date",
+                        errorMessage: errors.decisionDateFrom if errors and errors.decisionDateFrom
+                    }) }}
+
+                    {{ govukInput({
+                        id: "decisionDateTo",
+                        name: "decisionDateTo",
+                        label: { text: "To" },
+                        value: values.decisionDateTo,
+                        classes: "govuk-input--width-10",
+                        type: "date",
+                        errorMessage: errors.decisionDateTo if errors and errors.decisionDateTo
+                    }) }}
+                {% endcall %}
+
+                {% call govukFieldset({
+                    legend: {
+                        text: "Start date",
+                        classes: "govuk-fieldset__legend--m"
+                    }
+                }) %}
+                    {{ govukInput({
+                        id: "startDateFrom",
+                        name: "startDateFrom",
+                        label: { text: "From" },
+                        value: values.startDateFrom,
+                        classes: "govuk-input--width-10",
+                        type: "date",
+                        errorMessage: errors.startDateFrom if errors and errors.startDateFrom
+                    }) }}
+
+                    {{ govukInput({
+                        id: "startDateTo",
+                        name: "startDateTo",
+                        label: { text: "To" },
+                        value: values.startDateTo,
+                        classes: "govuk-input--width-10",
+                        type: "date",
+                        errorMessage: errors.startDateTo if errors and errors.startDateTo
+                    }) }}
+                {% endcall %}
+
+                <div class="govuk-button-group">
+                    {{ govukButton({
+                        text: "Save" if isEdit else "Add parameter"
+                    }) }}
+                    <a class="govuk-link" href="/configure">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "views/layouts/main.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
+
+{% block pageContent %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <p class="govuk-body">
+                Migration parameters are used to determine which cases to retrieve for migration.
+                Each <i>parameter</i> consists of various <i>fields</i> (for example, case type, LPA, etc...).
+            </p>
+            <ul class="govuk-list  govuk-list--bullet">
+                <li>
+                    Migration parameter fields use AND logic. For example, if a parameter is configured with a procedure and status,
+                    only cases which match <strong>both</strong> will be fetched
+                </li>
+                <li>
+                    Multiple migration parameters can be added, and cases which match any one parameter will be included.
+                </li>
+            </ul>
+            {{ govukButton({
+                text: "Add parameter",
+                href: "/configure/add"
+            }) }}
+
+            {% set tableRows = [] %}
+
+            {% for item in items %}
+                {% set tableRows = (tableRows.push([
+                    { text: item.caseTypeName },
+                    { text: item.lpa },
+                    { text: item.procedureType },
+                    { text: item.status },
+                    { text: item.dateReceived },
+                    { text: item.decisionDate },
+                    { text: item.startDate },
+                    { html: '<a class="govuk-link" href="/configure/edit/' + item.id + '">Edit</a>' }
+                ]), tableRows) %}
+            {% endfor %}
+
+            {{ govukTable({
+                head: [
+                    { text: "Case type" },
+                    { text: "LPA" },
+                    { text: "Procedure" },
+                    { text: "Status" },
+                    { text: "Date received" },
+                    { text: "Decision date" },
+                    { text: "Start date" },
+                    { text: "Action" }
+                ],
+                rows: tableRows
+            }) }}
+
+            {% if items.length === 0 %}
+                <p class="govuk-body">No migration parameters configured.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+

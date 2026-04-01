@@ -19,7 +19,7 @@ datasource db {
 /// A table to hold migration parameter configuration
 /// each entry would equate to one case search, and will map to CaseSearchCriteria in case-search.ts
 model ToMigrateParameter {
-  id Int @id
+  id Int @id @default(autoincrement())
 
   caseTypeName     String?
   dateReceivedFrom DateTime?
