@@ -42,6 +42,7 @@ module "app_manage" {
     APPLICATIONINSIGHTS_CONNECTION_STRING      = local.key_vault_refs["app-insights-connection-string"]
     ApplicationInsightsAgent_EXTENSION_VERSION = "~3"
     NODE_ENV                                   = "production"
+    ENVIRONMENT                                = var.environment
 
     APP_HOSTNAME                  = var.apps_config.manage.domain
     AUTH_GROUP_APPLICATION_ACCESS = var.apps_config.auth.group_application_access
