@@ -16,6 +16,7 @@ export interface Config extends BaseConfig {
 		redirectUri: string;
 		signoutUrl: string;
 	};
+	environment: string;
 }
 
 export type ENVIRONMENT_NAMES = Readonly<{ PROD: string; DEV: string; TEST: string; TRAINING: string }>;
@@ -53,6 +54,7 @@ export function loadConfig(): Config {
 		AUTH_GROUP_APPLICATION_ACCESS,
 		AUTH_TENANT_ID,
 		CACHE_CONTROL_MAX_AGE,
+		ENVIRONMENT,
 		GIT_SHA,
 		LOG_LEVEL,
 		PORT,
@@ -117,6 +119,7 @@ export function loadConfig(): Config {
 		cacheControl: {
 			maxAge: CACHE_CONTROL_MAX_AGE || '1d'
 		},
+		environment: ENVIRONMENT || 'local',
 		database: SQL_CONNECTION_STRING,
 		gitSha: GIT_SHA,
 		// the log level to use

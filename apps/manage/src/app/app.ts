@@ -8,5 +8,10 @@ import { buildRouter } from './router.ts';
 export function createApp(service: ManageService): Express {
 	const router = buildRouter(service);
 	// create an express app, and configure it for our usage
-	return createBaseApp({ service, configureNunjucks, router, middlewares: [addLocalsConfiguration()] });
+	return createBaseApp({
+		service,
+		configureNunjucks,
+		router,
+		middlewares: [addLocalsConfiguration(service.environment)]
+	});
 }

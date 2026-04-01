@@ -1,7 +1,8 @@
+{% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
 {% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
 {% from "ui/header/pins-header.njk" import pinsHeader %}
 
-{% macro header(serviceName, headerLinks) %}
+{% macro header(serviceName, environment, headerLinks) %}
     {{ pinsHeader({isExternal: false}) }}
 
     {{ govukServiceNavigation({
@@ -10,4 +11,13 @@
         classes: 'pins-service-navigation',
         navigation: headerLinks
     }) }}
+
+    {% if environment %}
+        {{ govukPhaseBanner({
+            tag: {
+                text: environment
+            },
+            html: 'This is not a live service.'
+        }) }}
+    {% endif %}
 {% endmacro %}
