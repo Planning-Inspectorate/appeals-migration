@@ -30,7 +30,7 @@ export interface CaseStatusViewModel {
 const dateFormatter = new Intl.DateTimeFormat('en-GB', {
 	timeZone: 'Europe/London',
 	dateStyle: 'long',
-	timeStyle: 'short'
+	timeStyle: 'medium'
 });
 
 function formatStep(step: MigrationStep): StepViewModel {
