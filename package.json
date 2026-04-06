@@ -32,7 +32,7 @@
   "dependencies": {
     "@azure/functions": "^4.12.0",
     "@azure/identity": "^4.13.1",
-    "@azure/msal-node": "^5.1.1",
+    "@azure/msal-node": "^5.1.2",
     "@azure/service-bus": "^7.9.5",
     "@azure/storage-blob": "^12.31.0",
     "@planning-inspectorate/data-model": "^2.30.0",
@@ -62,9 +62,9 @@
     "@types/express": "^5.0.6",
     "@types/express-session": "^1.18.2",
     "@types/lodash.chunk": "^4.2.9",
-    "@types/node": "^25.5.0",
+    "@types/node": "^25.5.2",
     "@types/nunjucks": "^3.2.6",
-    "eslint": "^10.1.0",
+    "eslint": "^10.2.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.4.0",
     "husky": "^9.1.7",
@@ -73,7 +73,7 @@
     "prettier-plugin-organize-imports": "^4.3.0",
     "prettier-plugin-prisma": "^5.0.0",
     "prisma": "^7.6.0",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.2",
     "typescript-eslint": "^8.58.0"
   },
   "lint-staged": {

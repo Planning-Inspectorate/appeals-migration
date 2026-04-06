@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "nodemon": "*",
-    "sass": "*"
+    "sass": "^1.99.0"
   },
   "imports": {
     "#service": "./src/app/service.ts",
