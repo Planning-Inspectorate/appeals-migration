@@ -10,16 +10,16 @@
   "license": "MIT",
   "dependencies": {
     "@azure/msal-node": "*",
-		"@pins/appeals-migration-database": "*",
+    "@pins/appeals-migration-database": "*",
     "connect-redis": "*",
     "express-session": "*",
-		"httpntlm": "*",
+    "httpntlm": "*",
     "notifications-node-client": "*",
     "pino": "*",
     "pino-pretty": "*",
     "redis": "*"
   },
   "devDependencies": {
-    "sass": "*"
+    "sass": "^1.99.0"
   }
 }
