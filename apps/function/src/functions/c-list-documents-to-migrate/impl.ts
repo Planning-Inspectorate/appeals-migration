@@ -1,6 +1,8 @@
-import type { PrismaClient as MigrationPrismaClient } from '@pins/appeals-migration-database/src/client/client.ts';
+import type {
+	CaseToMigrate,
+	PrismaClient as MigrationPrismaClient
+} from '@pins/appeals-migration-database/src/client/client.ts';
 import { withRetry } from '@pins/appeals-migration-lib/util/retry.ts';
-import type { CaseToMigrate } from 'packages/database/src/client/client.ts';
 import type { FunctionService } from '../../service.ts';
 import type { MigrationFunction } from '../../types.ts';
 import { upsertDocumentsToMigrate } from './migration/document-to-migrate.ts';
