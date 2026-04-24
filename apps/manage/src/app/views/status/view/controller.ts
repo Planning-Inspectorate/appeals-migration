@@ -1,4 +1,5 @@
 import type { ManageService } from '#service';
+import { getPreviousUrlFromSession } from '#util/session.ts';
 import type { AsyncRequestHandler } from '@pins/appeals-migration-lib/util/async-handler.ts';
 import { buildCaseStatusViewModel } from './view-model.ts';
 
@@ -26,6 +27,8 @@ export function buildViewCase(service: ManageService): AsyncRequestHandler {
 			return res.status(404).render('views/errors/404.njk');
 		}
 
-		return res.render('views/status/view/view.njk', buildCaseStatusViewModel(caseToMigrate));
+		const previousUrl = getPreviousUrlFromSession(req);
+
+		return res.render('views/status/view/view.njk', buildCaseStatusViewModel(caseToMigrate, previousUrl));
 	};
 }
