@@ -1,28 +1,42 @@
 {% extends "views/layouts/main.njk" %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
 {% from "govuk/components/table/macro.njk" import govukTable %}
 
 {% block pageContent %}
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
-            <p class="govuk-body">
-                Migration parameters are used to determine which cases to retrieve for migration.
-                Each <i>parameter</i> consists of various <i>fields</i> (for example, case type, LPA, etc...).
-            </p>
-            <ul class="govuk-list  govuk-list--bullet">
-                <li>
-                    Migration parameter fields use AND logic. For example, if a parameter is configured with a procedure and status,
-                    only cases which match <strong>both</strong> will be fetched
-                </li>
-                <li>
-                    Multiple migration parameters can be added, and cases which match any one parameter will be included.
-                </li>
-            </ul>
-            {{ govukButton({
-                text: "Add parameter",
-                href: "/configure/add"
+            {% set aboutConfiguration %}
+                <p class="govuk-body">
+                    Migration parameters are used to determine which cases to retrieve for migration.
+                    Each <i>parameter</i> consists of various <i>fields</i> (for example, case type, LPA, etc...).
+                </p>
+                <ul class="govuk-list  govuk-list--bullet">
+                    <li>
+                        Migration parameter fields use AND logic. For example, if a parameter is configured with a procedure and status,
+                        only cases which match <strong>both</strong> will be fetched
+                    </li>
+                    <li>
+                        Multiple migration parameters can be added, and cases which match any one parameter will be included.
+                    </li>
+                </ul>
+            {% endset %}
+            {{ govukDetails({
+                summaryText: "About configuration",
+                html: aboutConfiguration
             }) }}
+            <div class="govuk-button-group">
+                {{ govukButton({
+                    text: "Add a parameter",
+                    href: "/configure/add"
+                }) }}
+                {{ govukButton({
+                    text: "Add a case",
+                    href: "/configure/add-case",
+                    classes: "govuk-button--secondary"
+                }) }}
+            </div>
 
             {% set tableRows = [] %}
 
