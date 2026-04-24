@@ -1,8 +1,7 @@
 import { DefaultAzureCredential } from '@azure/identity';
 import { ServiceBusAdministrationClient, ServiceBusClient } from '@azure/service-bus';
 import { BlobServiceClient } from '@azure/storage-blob';
-import { newDatabaseClient } from '@pins/appeals-migration-database';
-import type { PrismaClient as MigrationPrismaClient } from '@pins/appeals-migration-database/src/client/client.ts';
+import { type MigrationPrismaClient, newDatabaseClient } from '@pins/appeals-migration-database';
 import { HorizonWebClient } from '@pins/appeals-migration-lib/horizon/web/horizon-web-client.ts';
 import { newManageAppealsDatabaseClient } from '@pins/manage-appeals-database';
 import type { PrismaClient as SinkPrismaClient } from '@pins/manage-appeals-database/src/client/client.ts';

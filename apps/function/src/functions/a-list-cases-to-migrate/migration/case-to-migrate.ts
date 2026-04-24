@@ -1,4 +1,4 @@
-import type { PrismaClient as MigrationPrismaClient } from '@pins/appeals-migration-database';
+import type { MigrationPrismaClient } from '@pins/appeals-migration-database';
 import { withRetry } from '@pins/appeals-migration-lib/util/retry.ts';
 
 export async function upsertCaseReferences(

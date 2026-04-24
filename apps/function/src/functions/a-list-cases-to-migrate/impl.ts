@@ -3,10 +3,8 @@ import { upsertCaseReferences } from './migration/case-to-migrate.ts';
 import { fetchCaseReferences } from './source/case-reference.ts';
 
 import type { TimerHandler } from '@azure/functions';
-import type {
-	PrismaClient as MigrationPrismaClient,
-	ToMigrateParameter
-} from '@pins/appeals-migration-database/src/client/client.ts';
+import type { MigrationPrismaClient } from '@pins/appeals-migration-database';
+import type { ToMigrateParameter } from '@pins/appeals-migration-database/src/client/client.ts';
 import type { FunctionService } from '../../service.ts';
 
 type Migration = {

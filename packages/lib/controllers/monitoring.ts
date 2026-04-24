@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@pins/appeals-migration-database/src/client/client.ts';
+import type { MigrationPrismaClient } from '@pins/appeals-migration-database';
 import type { IRouter, Request, Response } from 'express';
 import { Router as createRouter } from 'express';
 import type { BaseLogger } from 'pino';
@@ -8,7 +8,7 @@ import { asyncHandler } from '../util/async-handler.ts';
 
 interface MonitoringRoutesOptions {
 	logger: BaseLogger;
-	dbClient: PrismaClient;
+	dbClient: MigrationPrismaClient;
 	gitSha?: string;
 }
 
@@ -31,7 +31,7 @@ export function handleHeadHealthCheck(_: Request, response: Response) {
 
 export function buildHandleHeathCheck(
 	logger: BaseLogger,
-	dbClient: PrismaClient,
+	dbClient: MigrationPrismaClient,
 	gitSha?: string
 ): AsyncRequestHandler {
 	return async (_, response) => {

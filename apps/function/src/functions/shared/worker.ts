@@ -1,6 +1,6 @@
 import type { InvocationContext } from '@azure/functions';
 import { app } from '@azure/functions';
-import type { Prisma } from '@pins/appeals-migration-database/src/client/client.ts';
+import type { MigrationTransactionPrismaClient } from '@pins/appeals-migration-database';
 import { withRetry } from '@pins/appeals-migration-lib/util/retry.ts';
 import { createService } from '../../init.ts';
 import type { FunctionService } from '../../service.ts';
@@ -8,7 +8,7 @@ import { stepStatus, type ItemToMigrate, type MigrationFunction, type StepIdFiel
 import { getStepId } from './step-id.ts';
 
 async function startCaseDocumentsStepIfWaiting(
-	transaction: Prisma.TransactionClient,
+	transaction: MigrationTransactionPrismaClient,
 	migrationItem: ItemToMigrate
 ): Promise<void> {
 	const caseToMigrate = await transaction.caseToMigrate.findUnique({
@@ -33,7 +33,7 @@ async function startCaseDocumentsStepIfWaiting(
 }
 
 async function completeCaseDocumentsStepIfFinished(
-	transaction: Prisma.TransactionClient,
+	transaction: MigrationTransactionPrismaClient,
 	itemToMigrate: ItemToMigrate
 ): Promise<void> {
 	const lockedCasesToMigrate = await transaction.$queryRaw<Array<{ documentsStepId: number }>>`
