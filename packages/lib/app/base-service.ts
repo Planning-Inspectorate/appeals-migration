@@ -1,5 +1,4 @@
-import { initDatabaseClient } from '@pins/appeals-migration-database';
-import type { PrismaClient } from '@pins/appeals-migration-database/src/client/client.ts';
+import { initDatabaseClient, type MigrationPrismaClient } from '@pins/appeals-migration-database';
 import type { Logger } from 'pino';
 import { initRedis } from '../redis/index.ts';
 import type { RedisClient } from '../redis/redis-client.ts';
@@ -12,7 +11,7 @@ import type { BaseConfig } from './config-types.d.ts';
 export class BaseService {
 	#config: BaseConfig;
 	logger: Logger;
-	dbClient: PrismaClient;
+	dbClient: MigrationPrismaClient;
 	redisClient: RedisClient | null;
 
 	constructor(config: BaseConfig) {
@@ -29,10 +28,8 @@ export class BaseService {
 
 	/**
 	 * Alias of dbClient
-	 *
-	 * @returns {import('@pins/appeals-migration-database/src/client/client.ts').PrismaClient}
 	 */
-	get db() {
+	get db(): MigrationPrismaClient {
 		return this.dbClient;
 	}
 

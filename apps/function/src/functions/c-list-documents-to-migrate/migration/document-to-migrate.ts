@@ -1,4 +1,4 @@
-import type { PrismaClient as MigrationPrismaClient } from '@pins/appeals-migration-database';
+import type { MigrationPrismaClient } from '@pins/appeals-migration-database';
 import type { DocumentInfo } from '../source/document.ts';
 
 export async function upsertDocumentsToMigrate(

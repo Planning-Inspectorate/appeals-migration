@@ -1,11 +1,13 @@
-import type { Prisma } from '@pins/appeals-migration-database/src/client/client.d.ts';
-import { PrismaClient } from '@pins/appeals-migration-database/src/client/client.ts';
+import { Prisma, PrismaClient } from '@pins/appeals-migration-database/src/client/client.ts';
 import { PrismaMssql } from '@prisma/adapter-mssql';
 import type { Logger } from 'pino';
 
-export type { PrismaClient };
+export type MigrationPrismaClient = ReturnType<typeof newDatabaseClient>;
+// extract the tx parameter from the $transaction callback type
+// this is the transaction client with the added extension methods
+export type MigrationTransactionPrismaClient = Parameters<Parameters<MigrationPrismaClient['$transaction']>[0]>[0];
 
-export function initDatabaseClient(config: { database: string; NODE_ENV: string }, logger: Logger): PrismaClient {
+export function initDatabaseClient(config: { database: string; NODE_ENV: string }, logger: Logger) {
 	let prismaLogger: Logger | undefined;
 
 	if (config.NODE_ENV !== 'production') {
@@ -19,7 +21,7 @@ export function initDatabaseClient(config: { database: string; NODE_ENV: string 
 	return newDatabaseClient(config.database, prismaLogger);
 }
 
-export function newDatabaseClient(connectionString: string, logger?: Logger): PrismaClient {
+export function newDatabaseClient(connectionString: string, logger?: Logger) {
 	const adapter = new PrismaMssql(connectionString);
 	const prisma = new PrismaClient({
 		adapter,
@@ -58,5 +60,26 @@ export function newDatabaseClient(connectionString: string, logger?: Logger): Pr
 		prisma.$on('warn', logWarn);
 	}
 
-	return prisma;
+	return prisma.$extends({
+		model: {
+			caseToMigrate: {
+				async createWithDefaults(caseReference: string) {
+					if (!caseReference) {
+						throw new Error('caseReference is required');
+					}
+					// Get the current model at runtime
+					const context = Prisma.getExtensionContext(this);
+					return context.create({
+						data: {
+							caseReference,
+							DataStep: { create: {} },
+							DocumentListStep: { create: {} },
+							DocumentsStep: { create: {} },
+							ValidationStep: { create: {} }
+						}
+					});
+				}
+			}
+		}
+	});
 }

@@ -1,5 +1,5 @@
 import type { HttpHandler } from '@azure/functions';
-import type { PrismaClient as MigrationPrismaClient } from '@pins/appeals-migration-database/src/client/client.ts';
+import type { MigrationPrismaClient } from '@pins/appeals-migration-database';
 import type { PrismaClient as SinkPrismaClient } from '@pins/manage-appeals-database/src/client/client.ts';
 import type { PrismaClient as SourcePrismaClient } from '@pins/odw-curated-database/src/client/client.ts';
 import type { FunctionService } from '../../service.ts';

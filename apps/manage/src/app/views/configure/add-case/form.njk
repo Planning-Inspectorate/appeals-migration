@@ -1,0 +1,32 @@
+{% extends "views/layouts/main.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+
+{% block pageContent %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <p class="govuk-body">
+                Use this form to add a case into the system for migration.
+                This should only be used when a specific case needs to be added.
+                Otherwise, migration parameters can be used to fetch cases based on certain criteria.
+                See <a class="govuk-link" href="/configure">configure</a>.
+            </p>
+            <form method="post" action="" novalidate>
+                {{ govukInput({
+                    id: "caseReference",
+                    name: "caseReference",
+                    label: { text: "Case reference" },
+                    classes: "govuk-input--width-20"
+                }) }}
+
+                <div class="govuk-button-group">
+                    {{ govukButton({
+                        text: "Add case"
+                    }) }}
+                    <a class="govuk-link" href="/configure">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
