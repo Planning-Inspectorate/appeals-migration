@@ -43,11 +43,14 @@ function formatStep(step: MigrationStep): StepViewModel {
 	};
 }
 
-export function buildCaseStatusViewModel(caseToMigrate: CaseToMigrateWithSteps): CaseStatusViewModel {
+export function buildCaseStatusViewModel(
+	caseToMigrate: CaseToMigrateWithSteps,
+	previousUrl: string | null
+): CaseStatusViewModel {
 	return {
 		pageHeading: caseToMigrate.caseReference,
 		pageCaption: 'Case migration status',
-		backLinkUrl: '/',
+		backLinkUrl: previousUrl || '/cases',
 		caseReference: caseToMigrate.caseReference,
 		dataStep: formatStep(caseToMigrate.DataStep),
 		documentListStep: formatStep(caseToMigrate.DocumentListStep),
