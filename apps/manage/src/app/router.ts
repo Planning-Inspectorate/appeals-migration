@@ -1,4 +1,5 @@
 import type { ManageService } from '#service';
+import { saveUrlToSessionMiddleware } from '#util/session.ts';
 import { createMonitoringRoutes } from '@pins/appeals-migration-lib/controllers/monitoring.ts';
 import { cacheNoCacheMiddleware } from '@pins/appeals-migration-lib/middleware/cache.ts';
 import type { IRouter } from 'express';
@@ -39,6 +40,8 @@ export function buildRouter(service: ManageService): IRouter {
 	} else {
 		service.logger.warn('auth disabled; auth routes and guards skipped');
 	}
+
+	router.use(saveUrlToSessionMiddleware);
 
 	router.use('/', statusRoutes);
 	router.use('/configure', configureRoutes);
