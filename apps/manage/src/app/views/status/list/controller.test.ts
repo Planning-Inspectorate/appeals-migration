@@ -23,6 +23,6 @@ describe('list items', () => {
 		assert.strictEqual(mockRes.render.mock.callCount(), 1);
 		assert.strictEqual(mockRes.render.mock.calls[0].arguments.length, 2);
 		assert.strictEqual(mockRes.render.mock.calls[0].arguments[0], 'views/status/list/view.njk');
-		assert.strictEqual(mockRes.render.mock.calls[0].arguments[1].pageHeading, 'Migration status');
+		assert.strictEqual(mockRes.render.mock.calls[0].arguments[1].pageHeading, 'Case list');
 	});
 });

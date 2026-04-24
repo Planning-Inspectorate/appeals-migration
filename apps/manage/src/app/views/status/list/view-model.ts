@@ -36,7 +36,7 @@ export function buildListViewModel(
 	pagination: ReturnType<typeof buildPagination>
 ): ListViewModel {
 	return {
-		pageHeading: 'Migration status',
+		pageHeading: 'Case list',
 		search,
 		items: cases.map(mapListItem),
 		pagination

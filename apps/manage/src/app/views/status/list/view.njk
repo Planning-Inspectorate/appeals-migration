@@ -1,6 +1,7 @@
 {% extends "views/layouts/main.njk" %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
 {% from "govuk/components/table/macro.njk" import govukTable %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
@@ -21,6 +22,10 @@
 {% endmacro %}
 
 {% block pageContent %}
+    {{ govukDetails({
+        summaryText: "About this list",
+        text: "Cases in this list have been added for migration. This is not an exhaustive list of all cases. They will be processed in case reference order, as per the configured schedule. To add more cases, or check the configuration, select the configure tab in the navigation bar."
+    }) }}
     <form method="get" action="" class="govuk-!-margin-bottom-6">
         <div class="govuk-form-group">
             {{ govukInput({
