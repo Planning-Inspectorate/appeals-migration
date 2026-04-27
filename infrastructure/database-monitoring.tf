@@ -20,8 +20,34 @@ resource "azurerm_storage_account" "sql_server" {
   cross_tenant_replication_enabled = false
   public_network_access_enabled    = false
 
+  network_rules {
+    default_action = "Deny"
+    bypass         = ["AzureServices"]
+  }
+
   identity {
     type = "SystemAssigned"
+  }
+
+  tags = local.tags
+}
+
+resource "azurerm_private_endpoint" "sql_storage" {
+  name                = "${local.org}-pe-st-sql-${local.resource_suffix}"
+  location            = module.primary_region.location
+  resource_group_name = azurerm_resource_group.primary.name
+  subnet_id           = azurerm_subnet.main.id
+
+  private_dns_zone_group {
+    name                 = "${local.org}-pdns-${local.service_name}-storage-${var.environment}"
+    private_dns_zone_ids = [data.azurerm_private_dns_zone.storage.id]
+  }
+
+  private_service_connection {
+    name                           = "${local.org}-psc-storage-${local.resource_suffix}"
+    private_connection_resource_id = azurerm_storage_account.sql_server.id
+    subresource_names              = ["blob"]
+    is_manual_connection           = false
   }
 
   tags = local.tags
@@ -77,7 +103,6 @@ resource "azurerm_mssql_server_vulnerability_assessment" "appeals_migration_sql_
 
   server_security_alert_policy_id = azurerm_mssql_server_security_alert_policy.sql_server.id
   storage_container_path          = "${azurerm_storage_account.sql_server.primary_blob_endpoint}${azurerm_storage_container.sql_server.name}/"
-  storage_account_access_key      = azurerm_storage_account.sql_server.primary_access_key
 
   recurring_scans {
     enabled                   = var.monitoring_config.alerts_enabled
