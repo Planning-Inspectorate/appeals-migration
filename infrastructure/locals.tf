@@ -30,6 +30,8 @@ locals {
     "horizon-web-dns-mapping"
   ]
 
+  service_bus_hostname = "${var.manage_appeals_config.service_bus_name}.servicebus.windows.net"
+
   key_vault_refs = merge(
     {
       for k, v in azurerm_key_vault_secret.manual_secrets : k => "@Microsoft.KeyVault(SecretUri=${v.versionless_id})"

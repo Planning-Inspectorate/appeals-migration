@@ -59,6 +59,9 @@ module "app_manage" {
     # sessions
     REDIS_CONNECTION_STRING = local.key_vault_refs["redis-connection-string"]
     SESSION_SECRET          = local.key_vault_refs["session-secret-web"]
+
+    # service bus
+    SERVICE_BUS_HOSTNAME = local.service_bus_hostname
   }
 
   providers = {

@@ -36,8 +36,8 @@ module "function_main" {
   # settings
   function_node_version = var.apps_config.functions_node_version
   app_settings = {
-    SERVICE_BUS_HOSTNAME                          = "${var.manage_appeals_config.service_bus_name}.servicebus.windows.net"
-    ServiceBusConnection__fullyQualifiedNamespace = "${var.manage_appeals_config.service_bus_name}.servicebus.windows.net"
+    SERVICE_BUS_HOSTNAME                          = local.service_bus_hostname
+    ServiceBusConnection__fullyQualifiedNamespace = local.service_bus_hostname
     SQL_CONNECTION_STRING                         = local.key_vault_refs["sql-app-connection-string"]
 
     BUFFER_PER_WORKER     = var.apps_config.migration.buffer_per_worker

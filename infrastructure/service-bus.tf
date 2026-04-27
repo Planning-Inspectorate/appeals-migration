@@ -26,3 +26,11 @@ resource "azurerm_role_assignment" "queue_data_owner" {
   role_definition_name = "Azure Service Bus Data Owner"
   principal_id         = module.function_main.principal_id
 }
+
+resource "azurerm_role_assignment" "queue_data_sender" {
+  for_each = azurerm_servicebus_queue.queues
+
+  scope                = each.value.id
+  role_definition_name = "Azure Service Bus Data Sender"
+  principal_id         = module.app_manage.principal_id
+}
