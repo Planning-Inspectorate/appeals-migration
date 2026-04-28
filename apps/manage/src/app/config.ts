@@ -17,6 +17,7 @@ export interface Config extends BaseConfig {
 		signoutUrl: string;
 	};
 	environment: string;
+	serviceBus: string;
 }
 
 export type ENVIRONMENT_NAMES = Readonly<{ PROD: string; DEV: string; TEST: string; TRAINING: string }>;
@@ -61,14 +62,23 @@ export function loadConfig(): Config {
 		NODE_ENV,
 		REDIS_CONNECTION_STRING,
 		SESSION_SECRET,
+		SERVICE_BUS_HOSTNAME,
 		SQL_CONNECTION_STRING
 	} = process.env;
 
-	const buildConfig = loadBuildConfig();
+	const requiredConfig = {
+		SESSION_SECRET,
+		SERVICE_BUS_HOSTNAME,
+		SQL_CONNECTION_STRING
+	};
 
-	if (!SESSION_SECRET) {
-		throw new Error('SESSION_SECRET is required');
+	for (const [k, v] of Object.entries(requiredConfig)) {
+		if (!v) {
+			throw new Error(`${k} is required`);
+		}
 	}
+
+	const buildConfig = loadBuildConfig();
 
 	let httpPort = 8090;
 	if (PORT) {
@@ -78,10 +88,6 @@ export function loadConfig(): Config {
 			throw new Error('PORT must be an integer');
 		}
 		httpPort = port;
-	}
-
-	if (!SQL_CONNECTION_STRING) {
-		throw new Error('SQL_CONNECTION_STRING is required');
 	}
 
 	const isProduction = NODE_ENV === 'production';
@@ -120,7 +126,7 @@ export function loadConfig(): Config {
 			maxAge: CACHE_CONTROL_MAX_AGE || '1d'
 		},
 		environment: ENVIRONMENT || 'local',
-		database: SQL_CONNECTION_STRING,
+		database: SQL_CONNECTION_STRING!,
 		gitSha: GIT_SHA,
 		// the log level to use
 		logLevel: LOG_LEVEL || 'info',
@@ -129,10 +135,11 @@ export function loadConfig(): Config {
 		httpPort: httpPort,
 		// the src directory
 		srcDir: buildConfig.srcDir,
+		serviceBus: SERVICE_BUS_HOSTNAME!,
 		session: {
 			redisPrefix: 'manage:',
 			redis: REDIS_CONNECTION_STRING,
-			secret: SESSION_SECRET
+			secret: SESSION_SECRET!
 		},
 		// the static directory to serve assets from (images, css, etc..)
 		staticDir: buildConfig.staticDir
