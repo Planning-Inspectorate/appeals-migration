@@ -1,5 +1,8 @@
 {% extends "views/layouts/main.njk" %}
 
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
@@ -50,6 +53,30 @@
 {% endmacro %}
 
 {% block pageContent %}
+    {% set migrationActions %}
+        <p class="govuk-body">
+            To trigger a migration step for a case, use the buttons below.
+            Then refresh the page to see the status and any progress.
+        </p>
+        {{ govukNotificationBanner({
+            text: "These actions will trigger immediately and will not adhere to any configured schedules."
+        }) }}
+        <div class="govuk-button-group">
+            {% for action in actions %}
+                <form method="post" action="/case/{{ caseReference }}/migrate/{{ action.action }}">
+                    {{ govukButton({
+                        text: action.text,
+                        classes: "govuk-button--secondary"
+                    }) }}
+                </form>
+            {% endfor %}
+        </div>
+    {% endset %}
+    {{ govukDetails({
+        summaryText: "Migration actions",
+        html: migrationActions
+    }) }}
+
     {{ stepSummary("Data", dataStep) }}
     {{ stepSummary("Document list", documentListStep) }}
     {{ stepSummary("Documents", documentsStep) }}

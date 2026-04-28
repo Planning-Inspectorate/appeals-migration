@@ -1,4 +1,5 @@
 import type { MigrationStep, Prisma } from '@pins/appeals-migration-database/src/client/client.ts';
+import { MIGRATION_ACTIONS } from '../action/actions.ts';
 
 type CaseToMigrateWithSteps = Prisma.CaseToMigrateGetPayload<{
 	include: { DataStep: true; DocumentsStep: true; DocumentListStep: true; ValidationStep: true };
@@ -25,6 +26,7 @@ export interface CaseStatusViewModel {
 	dataValidationErrors: string | null;
 	documentsValidated: boolean | null;
 	documentValidationErrors: string | null;
+	actions: { text: string; action: string }[];
 }
 
 const dateFormatter = new Intl.DateTimeFormat('en-GB', {
@@ -59,6 +61,24 @@ export function buildCaseStatusViewModel(
 		dataValidated: caseToMigrate.dataValidated,
 		dataValidationErrors: caseToMigrate.dataValidationErrors,
 		documentsValidated: caseToMigrate.documentsValidated,
-		documentValidationErrors: caseToMigrate.documentValidationErrors
+		documentValidationErrors: caseToMigrate.documentValidationErrors,
+		actions: [
+			{
+				text: 'Migrate data',
+				action: MIGRATION_ACTIONS.DATA
+			},
+			{
+				text: 'List documents',
+				action: MIGRATION_ACTIONS.LIST_DOCUMENTS
+			},
+			{
+				text: 'Migrate documents',
+				action: MIGRATION_ACTIONS.DOCUMENTS
+			},
+			{
+				text: 'Validate migration',
+				action: MIGRATION_ACTIONS.VALIDATE
+			}
+		]
 	};
 }
