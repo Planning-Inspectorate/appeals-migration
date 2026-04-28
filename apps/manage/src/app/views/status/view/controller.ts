@@ -1,6 +1,7 @@
 import type { ManageService } from '#service';
 import { getPreviousUrlFromSession } from '#util/session.ts';
 import type { AsyncRequestHandler } from '@pins/appeals-migration-lib/util/async-handler.ts';
+import { getSessionActionSuccess, getSessionActionWarning } from '../action/actions.ts';
 import { buildCaseStatusViewModel } from './view-model.ts';
 
 export function buildViewCase(service: ManageService): AsyncRequestHandler {
@@ -28,7 +29,13 @@ export function buildViewCase(service: ManageService): AsyncRequestHandler {
 		}
 
 		const previousUrl = getPreviousUrlFromSession(req);
+		// for success banner
+		const actionSuccess = getSessionActionSuccess(req);
+		const actionWarning = getSessionActionWarning(req);
 
-		return res.render('views/status/view/view.njk', buildCaseStatusViewModel(caseToMigrate, previousUrl));
+		return res.render(
+			'views/status/view/view.njk',
+			buildCaseStatusViewModel(caseToMigrate, previousUrl, actionSuccess, actionWarning)
+		);
 	};
 }
