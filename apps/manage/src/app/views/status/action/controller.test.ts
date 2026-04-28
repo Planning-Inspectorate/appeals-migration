@@ -49,7 +49,7 @@ function buildMockService({ caseToMigrate = null, documentsToMigrate = [] } = {}
 function buildReqRes(caseReference, migrationAction) {
 	const redirect = mock.fn();
 	return {
-		req: { params: { caseReference, migrationAction } },
+		req: { params: { caseReference, migrationAction }, session: {} },
 		res: { redirect }
 	};
 }
@@ -163,5 +163,16 @@ describe('buildActionController', () => {
 		await handler(req, res);
 
 		assert.strictEqual(mocks.sendMessages.mock.callCount(), 0);
+	});
+
+	test('adds session data on success', async () => {
+		const caseToMigrate = { caseReference: '1234' };
+		const { service, mocks } = buildMockService({ caseToMigrate });
+		const handler = buildActionController(service);
+		const { req, res } = buildReqRes('1234', MIGRATION_ACTIONS.DATA);
+		await handler(req, res);
+
+		assert.strictEqual(mocks.sendMessages.mock.callCount(), 1);
+		assert.strictEqual(req.session?.migrationActionSuccess, MIGRATION_ACTIONS.DATA);
 	});
 });

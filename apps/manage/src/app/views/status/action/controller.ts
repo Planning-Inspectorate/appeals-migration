@@ -1,7 +1,12 @@
 import type { ManageService } from '#service';
 import type { ServiceBusSender } from '@azure/service-bus';
 import type { AsyncRequestHandler } from '@pins/appeals-migration-lib/util/async-handler.ts';
-import { ACTION_TO_QUEUE_NAME, MIGRATION_ACTIONS } from './actions.ts';
+import {
+	ACTION_TO_QUEUE_NAME,
+	MIGRATION_ACTIONS,
+	setSessionActionSuccess,
+	setSessionActionWarning
+} from './actions.ts';
 
 export function buildActionController(service: ManageService): AsyncRequestHandler {
 	const { db, logger, serviceBusClient } = service;
@@ -74,6 +79,7 @@ export function buildActionController(service: ManageService): AsyncRequestHandl
 					}
 				} else {
 					logger.info('no documents to migrate');
+					setSessionActionWarning(req, 'No documents to migrate');
 				}
 			} else {
 				const queue = ACTION_TO_QUEUE_NAME.get(migrationAction as any);
@@ -93,7 +99,8 @@ export function buildActionController(service: ManageService): AsyncRequestHandl
 			await sender?.close();
 		}
 
-		// todo: success banner
+		// for success banner
+		setSessionActionSuccess(req, migrationAction);
 
 		return backToCasePage();
 	};

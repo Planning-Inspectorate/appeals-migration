@@ -27,6 +27,8 @@ export interface CaseStatusViewModel {
 	documentsValidated: boolean | null;
 	documentValidationErrors: string | null;
 	actions: { text: string; action: string }[];
+	actionSuccess?: string;
+	actionWarning?: string;
 }
 
 const dateFormatter = new Intl.DateTimeFormat('en-GB', {
@@ -47,7 +49,9 @@ function formatStep(step: MigrationStep): StepViewModel {
 
 export function buildCaseStatusViewModel(
 	caseToMigrate: CaseToMigrateWithSteps,
-	previousUrl: string | null
+	previousUrl: string | null,
+	actionSuccess: string | undefined,
+	actionWarning: string | undefined
 ): CaseStatusViewModel {
 	return {
 		pageHeading: caseToMigrate.caseReference,
@@ -62,23 +66,20 @@ export function buildCaseStatusViewModel(
 		dataValidationErrors: caseToMigrate.dataValidationErrors,
 		documentsValidated: caseToMigrate.documentsValidated,
 		documentValidationErrors: caseToMigrate.documentValidationErrors,
-		actions: [
-			{
-				text: 'Migrate data',
-				action: MIGRATION_ACTIONS.DATA
-			},
-			{
-				text: 'List documents',
-				action: MIGRATION_ACTIONS.LIST_DOCUMENTS
-			},
-			{
-				text: 'Migrate documents',
-				action: MIGRATION_ACTIONS.DOCUMENTS
-			},
-			{
-				text: 'Validate migration',
-				action: MIGRATION_ACTIONS.VALIDATE
-			}
-		]
+		actionSuccess: actionSuccess && actionDisplayNames.get(actionSuccess),
+		actionWarning,
+		actions: [...actionDisplayNames.entries()].map(([k, v]) => {
+			return {
+				text: v,
+				action: k
+			};
+		})
 	};
 }
+
+const actionDisplayNames = new Map<string, string>([
+	[MIGRATION_ACTIONS.DATA, 'Migrate data'],
+	[MIGRATION_ACTIONS.LIST_DOCUMENTS, 'List documents'],
+	[MIGRATION_ACTIONS.DOCUMENTS, 'Migrate documents'],
+	[MIGRATION_ACTIONS.VALIDATE, 'Validate migration']
+]);
