@@ -28,6 +28,12 @@ export function buildAddCase(service: ManageService): { get: AsyncRequestHandler
 		await db.caseToMigrate.createWithDefaults(caseReference);
 
 		logger.info({ caseReference }, 'created case to migrate');
+
+		// for success banner on configure list page
+		if (req.session) {
+			req.session.addCaseSuccess = caseReference;
+		}
+
 		return res.redirect('/configure');
 	};
 
