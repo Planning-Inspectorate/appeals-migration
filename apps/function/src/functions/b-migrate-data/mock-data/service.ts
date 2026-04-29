@@ -11,7 +11,6 @@ export type MockFunctionService = {
 	documentsContainerName: string;
 	aListCasesToMigrateSchedule: string;
 	dispatcherSchedule: string;
-	dispatcherEndWindow: any;
 	dispatcherQueueTarget: string;
 	migrationStepUpdateChunkSize: number;
 	serviceBusParallelism: number;
@@ -122,7 +121,6 @@ export const createMockService = (overrides = {}): MockFunctionService => ({
 	serviceBusAdministrationClient: {},
 	aListCasesToMigrateSchedule: '0 0 * * *',
 	dispatcherSchedule: '0 0 * * *',
-	dispatcherEndWindow: 5,
 	dispatcherQueueTarget: 'test-queue',
 	migrationStepUpdateChunkSize: 10,
 	serviceBusParallelism: 1,

@@ -40,10 +40,8 @@ module "function_main" {
     ServiceBusConnection__fullyQualifiedNamespace = local.service_bus_hostname
     SQL_CONNECTION_STRING                         = local.key_vault_refs["sql-app-connection-string"]
 
-    BUFFER_PER_WORKER     = var.apps_config.migration.buffer_per_worker
-    MAXIMUM_PARALLELISM   = var.apps_config.migration.maximum_parallelism
-    DISPATCHER_END_HOUR   = var.apps_config.migration.dispatcher_start_hour
-    DISPATCHER_START_HOUR = var.apps_config.migration.dispatcher_end_hour
+    BUFFER_PER_WORKER   = var.apps_config.migration.buffer_per_worker
+    MAXIMUM_PARALLELISM = var.apps_config.migration.maximum_parallelism
 
     HORIZON_WEB_BASE_URL    = local.key_vault_refs["horizon-web-base-url"]
     HORIZON_WEB_USERNAME    = local.key_vault_refs["horizon-web-username"]
