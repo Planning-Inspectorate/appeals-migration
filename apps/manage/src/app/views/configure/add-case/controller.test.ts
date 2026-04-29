@@ -16,7 +16,7 @@ describe('add-case/controller', () => {
 			const mockRes = {
 				redirect: mock.fn()
 			};
-			const mockReq = { body };
+			const mockReq = { body, session: {} };
 
 			const { post } = buildAddCase({ db: mockDb, logger: mockLogger() });
 			await post(mockReq, mockRes);
@@ -27,6 +27,7 @@ describe('add-case/controller', () => {
 
 			assert.strictEqual(mockRes.redirect.mock.callCount(), 1);
 			assert.strictEqual(mockRes.redirect.mock.calls[0].arguments[0], '/configure');
+			assert.strictEqual(mockReq.session.addCaseSuccess, 'REF-001');
 		});
 
 		it('should trim whitespace from string fields', async () => {
@@ -39,7 +40,7 @@ describe('add-case/controller', () => {
 			const mockRes = {
 				redirect: mock.fn()
 			};
-			const mockReq = { body };
+			const mockReq = { body, session: {} };
 
 			const { post } = buildAddCase({ db: mockDb, logger: mockLogger() });
 			await post(mockReq, mockRes);
@@ -47,6 +48,7 @@ describe('add-case/controller', () => {
 			assert.strictEqual(mockDb.caseToMigrate.createWithDefaults.mock.callCount(), 1);
 			const createArg = mockDb.caseToMigrate.createWithDefaults.mock.calls[0].arguments[0];
 			assert.strictEqual(createArg, 'REF-001');
+			assert.strictEqual(mockReq.session.addCaseSuccess, 'REF-001');
 		});
 	});
 });

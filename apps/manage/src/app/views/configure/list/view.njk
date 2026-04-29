@@ -2,11 +2,18 @@
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/details/macro.njk" import govukDetails %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 {% from "govuk/components/table/macro.njk" import govukTable %}
 
 {% block pageContent %}
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
+            {% if addCaseSuccess %}
+                {{ govukNotificationBanner({
+                    type: "success",
+                    text: "Case " + addCaseSuccess + " added successfully."
+                }) }}
+            {% endif %}
             {% set aboutConfiguration %}
                 <p class="govuk-body">
                     Migration parameters are used to determine which cases to retrieve for migration.
