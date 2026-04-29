@@ -60,13 +60,6 @@ export class FunctionService {
 		return this.#config.functions.dispatcher.schedule;
 	}
 
-	get dispatcherEndWindow() {
-		return {
-			endHour: this.#config.functions.dispatcher.endHour,
-			endMinutes: this.#config.functions.dispatcher.endMinutes
-		};
-	}
-
 	get dispatcherQueueTarget() {
 		return this.#config.functions.dispatcher.queueTarget;
 	}

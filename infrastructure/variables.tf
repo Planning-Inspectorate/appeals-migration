@@ -33,10 +33,8 @@ variable "apps_config" {
     })
 
     migration = object({
-      buffer_per_worker     = number
-      maximum_parallelism   = number
-      dispatcher_start_hour = number
-      dispatcher_end_hour   = number
+      buffer_per_worker   = number
+      maximum_parallelism = number
     })
 
     redis = object({

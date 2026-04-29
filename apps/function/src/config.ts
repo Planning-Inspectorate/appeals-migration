@@ -16,8 +16,6 @@ export interface Config {
 		};
 		dispatcher: {
 			schedule: string;
-			endHour: number;
-			endMinutes: number;
 			queueTarget: number;
 			migrationStepUpdateChunkSize: number;
 			serviceBusParallelism: number;
@@ -47,10 +45,7 @@ export function loadConfig(): Config {
 		BUFFER_PER_WORKER,
 		DATABASE_TRANSACTION_WAIT_TIME,
 		DATABASE_TRANSACTION_TIMEOUT,
-		DISPATCHER_CADENCE_MINUTES,
-		DISPATCHER_END_HOUR,
-		DISPATCHER_END_MINUTES,
-		DISPATCHER_START_HOUR,
+		DISPATCHER_SCHEDULE,
 		FUNC_LIST_CASE_TO_MIGRATE_SCHEDULE,
 		FUNC_RECLAIM_STALE_STEPS_SCHEDULE,
 		FUNC_RECLAIM_STALE_STEPS_TIMEOUT_MINUTES,
@@ -72,8 +67,6 @@ export function loadConfig(): Config {
 
 	const requiredConfig = {
 		BUFFER_PER_WORKER,
-		DISPATCHER_END_HOUR,
-		DISPATCHER_START_HOUR,
 		HORIZON_WEB_BASE_URL,
 		HORIZON_WEB_USERNAME,
 		HORIZON_WEB_PASSWORD,
@@ -92,14 +85,6 @@ export function loadConfig(): Config {
 		}
 	}
 
-	function dispatcherSchedule(): string {
-		const start = Number(DISPATCHER_START_HOUR);
-		const end = Number(DISPATCHER_END_HOUR);
-		const cadence = Number(DISPATCHER_CADENCE_MINUTES ?? 1);
-		const hours = start <= end ? `${start}-${end}` : `0-${end},${start}-23`;
-		return `0 */${cadence} ${hours} * * *`;
-	}
-
 	return {
 		database: SQL_CONNECTION_STRING!,
 		sourceDatabase: ODW_CURATED_SQL_CONNECTION_STRING!,
@@ -114,9 +99,7 @@ export function loadConfig(): Config {
 				schedule: FUNC_LIST_CASE_TO_MIGRATE_SCHEDULE || '0 0 0 * * *' // default to daily at midnight
 			},
 			dispatcher: {
-				schedule: dispatcherSchedule(),
-				endHour: Number(DISPATCHER_END_HOUR),
-				endMinutes: Number(DISPATCHER_END_MINUTES ?? 55),
+				schedule: DISPATCHER_SCHEDULE || '00:01:00', // every minute
 				queueTarget: Math.floor(Number(MAXIMUM_PARALLELISM) * Number(BUFFER_PER_WORKER)),
 				migrationStepUpdateChunkSize: Number(MIGRATION_STEP_UPDATE_CHUNK_SIZE ?? 1000),
 				serviceBusParallelism: Number(SERVICE_BUS_PARALLELISM ?? 50)

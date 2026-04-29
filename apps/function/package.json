@@ -38,6 +38,7 @@
     "#pins/odw-curated-database/*": "./src/packages/odw-curated-database/*"
   },
   "devDependencies": {
-    "@types/lodash.chunk": "*"
+    "@types/lodash.chunk": "*",
+    "@types/node": "*"
   }
 }

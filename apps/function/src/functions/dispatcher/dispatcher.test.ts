@@ -1,12 +1,46 @@
 // @ts-nocheck
 import assert from 'node:assert';
-import { describe, mock, test } from 'node:test';
+import { after, before, describe, mock, test } from 'node:test';
 import { stepStatus } from '../../types.ts';
 import { buildDispatcher } from './dispatcher.ts';
+import { getLondonTime } from './schedule-date.ts';
 
 const createPrismaError = (code) => Object.assign(new Error(`Prisma error ${code}`), { code });
 
+// Fixed test date: Wednesday 2026-05-06 14:30 UTC = Wednesday 15:30 BST (Europe/London)
+const TEST_NOW = new Date('2026-05-06T14:30:00.000Z');
+
+/**
+ * Format minutes since midnight as HH:mm, handling wrap-around via modulo.
+ */
+function formatTime(totalMinutes: number): string {
+	const wrapped = ((totalMinutes % 1440) + 1440) % 1440;
+	return `${String(Math.floor(wrapped / 60)).padStart(2, '0')}:${String(wrapped % 60).padStart(2, '0')}`;
+}
+
+/**
+ * Build a mock schedule row covering a window around the current London time.
+ * Use a large `endOffset` for dispatch, or `1` for drain (last-minute window).
+ */
+function scheduleRow(endOffset = 30) {
+	const { day, minutes } = getLondonTime(new Date());
+	return {
+		startDayIndex: day,
+		startTime: formatTime(minutes - 30),
+		endDayIndex: day,
+		endTime: formatTime(minutes + endOffset)
+	};
+}
+
 describe('buildDispatcher', () => {
+	before(() => {
+		mock.timers.enable({ apis: ['Date'], now: TEST_NOW });
+	});
+
+	after(() => {
+		mock.timers.reset();
+	});
+
 	const newContext = () => ({
 		log: mock.fn(),
 		error: mock.fn()
@@ -29,7 +63,7 @@ describe('buildDispatcher', () => {
 		close: mock.fn()
 	});
 
-	const newService = ({ activeMessageCount = 0, queueTarget = 10 } = {}) => ({
+	const newService = ({ activeMessageCount = 0, queueTarget = 10, scheduleRows = [scheduleRow()] } = {}) => ({
 		serviceBusAdministrationClient: {
 			getQueueRuntimeProperties: mock.fn(async () => ({ activeMessageCount }))
 		},
@@ -46,10 +80,10 @@ describe('buildDispatcher', () => {
 				})
 			),
 			caseToMigrate: { findMany: mock.fn(async () => []) },
-			migrationStep: { updateMany: mock.fn() }
+			migrationStep: { updateMany: mock.fn() },
+			migrationSchedule: { findMany: mock.fn(async () => scheduleRows) }
 		},
 		dispatcherQueueTarget: queueTarget,
-		dispatcherEndWindow: { endHour: -1, endMinutes: 0 },
 		migrationStepUpdateChunkSize: 100,
 		serviceBusParallelism: 5
 	});
@@ -322,10 +356,7 @@ describe('buildDispatcher', () => {
 
 	describe('drain mode', () => {
 		const newDrainService = () => {
-			const service = newService();
-			const now = new Date();
-			service.dispatcherEndWindow = { endHour: now.getHours(), endMinutes: now.getMinutes() };
-			return service;
+			return newService({ scheduleRows: [scheduleRow(1)] });
 		};
 
 		test('drains messages and updates database', async () => {
@@ -530,6 +561,20 @@ describe('buildDispatcher', () => {
 			);
 
 			assert.strictEqual(service.databaseClient.migrationStep.updateMany.mock.callCount(), 1);
+		});
+	});
+
+	describe('no schedules', () => {
+		test('skips when no schedules configured', async () => {
+			const service = newService({ scheduleRows: [] });
+			const context = newContext();
+
+			const handler = buildDispatcher(service);
+			await handler({}, context);
+
+			const logged = context.log.mock.calls.map((call) => call.arguments[0]);
+			assert.ok(logged.some((message) => message.includes('No migration schedules configured')));
+			assert.strictEqual(service.serviceBusAdministrationClient.getQueueRuntimeProperties.mock.callCount(), 0);
 		});
 	});
 

@@ -6,6 +6,7 @@ import type { FunctionService } from '../../service.ts';
 import type { StepIdField } from '../../types.ts';
 import { stepStatus, type ItemToMigrate } from '../../types.ts';
 import { getStepId } from '../shared/step-id.ts';
+import { determineAction, parseTime, type ScheduleWindow } from './schedule-date.ts';
 
 type DispatchConfig = {
 	queueItemType: 'case' | 'document';
@@ -159,10 +160,19 @@ async function drain(config: DispatchConfig, service: FunctionService, context: 
 	context.log(`[${config.queueName}] Drained: ${total}`);
 }
 
-function isEndOfWindow(service: FunctionService): boolean {
-	const { endHour, endMinutes } = service.dispatcherEndWindow;
-	const now = new Date();
-	return now.getHours() === endHour && now.getMinutes() >= endMinutes;
+/**
+ * Load schedule windows from the database
+ */
+async function loadSchedules(service: FunctionService): Promise<ScheduleWindow[]> {
+	const rows = await service.databaseClient.migrationSchedule.findMany({
+		orderBy: [{ startDayIndex: 'asc' }, { startTime: 'asc' }, { endDayIndex: 'asc' }, { endTime: 'asc' }]
+	});
+	return rows.map((row) => ({
+		startDay: row.startDayIndex,
+		startMinutes: parseTime(row.startTime),
+		endDay: row.endDayIndex,
+		endMinutes: parseTime(row.endTime)
+	}));
 }
 
 export function buildDispatcher(service: FunctionService): TimerHandler {
@@ -208,11 +218,25 @@ export function buildDispatcher(service: FunctionService): TimerHandler {
 		}
 	];
 
-	return async (timer: Timer, context: InvocationContext): Promise<void> => {
-		const action = isEndOfWindow(service) ? drain : dispatch;
-		context.log(`mode: ${action.name}`);
+	return async (_timer: Timer, context: InvocationContext): Promise<void> => {
+		const schedules = await loadSchedules(service);
+
+		if (schedules.length === 0) {
+			context.log('No migration schedules configured, skipping.');
+			return;
+		}
+
+		const action = determineAction(new Date(), schedules);
+		context.log(`mode: ${action}`);
+
+		if (action === 'skip') {
+			context.log('Outside schedule window, skipping.');
+			return;
+		}
+
+		const handler = action === 'drain' ? drain : dispatch;
 		for (const config of configs) {
-			await action(config, service, context);
+			await handler(config, service, context);
 		}
 	};
 }

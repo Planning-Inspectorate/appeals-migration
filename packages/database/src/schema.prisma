@@ -87,3 +87,20 @@ model DocumentToMigrate {
   migrationStepId Int           @unique
   MigrationStep   MigrationStep @relation(fields: [migrationStepId], references: [id], onUpdate: NoAction, onDelete: NoAction)
 }
+
+/// A table to hold migration schedules defining when migrations can run
+model MigrationSchedule {
+  id Int @id @default(autoincrement())
+
+  /// Day of the week the schedule starts (0=Sunday, 1=Monday, etc...)
+  startDayIndex Int
+  /// Time of day the schedule starts (HH:mm format)
+  startTime     String
+  /// Day of the week the schedule ends (0=Sunday, 1=Monday, etc...)
+  endDayIndex   Int
+  /// Time of day the schedule ends (HH:mm format)
+  endTime       String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
