@@ -62,6 +62,13 @@ data "azurerm_private_dns_zone" "service_bus" {
   provider = azurerm.tooling
 }
 
+data "azurerm_private_dns_zone" "storage" {
+  name                = "privatelink.blob.core.windows.net"
+  resource_group_name = var.tooling_config.network_rg
+
+  provider = azurerm.tooling
+}
+
 data "azurerm_private_dns_zone" "synapse_sql" {
   name                = "privatelink.sql.azuresynapse.net"
   resource_group_name = var.tooling_config.network_rg
