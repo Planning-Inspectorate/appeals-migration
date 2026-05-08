@@ -11,11 +11,13 @@ export function buildListParameters(service: ManageService): AsyncRequestHandler
 			orderBy: { id: 'asc' }
 		});
 
-		// flash message for add-case success
+		// flash messages
 		const addCaseSuccess = req.session?.addCaseSuccess;
 		delete req.session?.addCaseSuccess;
+		const parameterSuccess = req.session?.parameterSuccess;
+		delete req.session?.parameterSuccess;
 
-		const viewModel = { ...buildListViewModel(parameters), addCaseSuccess };
+		const viewModel = { ...buildListViewModel(parameters), addCaseSuccess, parameterSuccess };
 		return res.render('views/configure/list/view.njk', viewModel);
 	};
 }

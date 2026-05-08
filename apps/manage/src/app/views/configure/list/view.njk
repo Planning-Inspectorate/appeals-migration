@@ -14,6 +14,12 @@
                     text: "Case " + addCaseSuccess + " added successfully."
                 }) }}
             {% endif %}
+            {% if parameterSuccess %}
+                {{ govukNotificationBanner({
+                    type: "success",
+                    text: parameterSuccess
+                }) }}
+            {% endif %}
             {% set aboutConfiguration %}
                 <p class="govuk-body">
                     Migration parameters are used to determine which cases to retrieve for migration.
@@ -48,6 +54,18 @@
             {% set tableRows = [] %}
 
             {% for item in items %}
+                {% set actionHtml %}
+                    <div class="govuk-button-group govuk-!-margin-bottom-0">
+                        <a class="govuk-link govuk-!-margin-bottom-0" href="/configure/edit/{{ item.id }}">Edit</a>
+                        {{ govukButton({
+                            text: "Delete",
+                            element: "button",
+                            classes: "govuk-button--warning govuk-!-margin-bottom-0",
+                            attributes: { form: "delete-" + item.id }
+                        }) }}
+                        <form id="delete-{{ item.id }}" method="post" action="/configure/delete/{{ item.id }}"></form>
+                    </div>
+                {% endset %}
                 {% set tableRows = (tableRows.push([
                     { text: item.caseTypeName },
                     { text: item.lpa },
@@ -56,7 +74,7 @@
                     { text: item.dateReceived },
                     { text: item.decisionDate },
                     { text: item.startDate },
-                    { html: '<a class="govuk-link" href="/configure/edit/' + item.id + '">Edit</a>' }
+                    { html: actionHtml }
                 ]), tableRows) %}
             {% endfor %}
 
