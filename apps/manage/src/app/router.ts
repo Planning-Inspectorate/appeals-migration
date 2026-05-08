@@ -6,6 +6,7 @@ import type { IRouter } from 'express';
 import { Router as createRouter } from 'express';
 import { createRoutesAndGuards as createAuthRoutesAndGuards } from './auth/router.ts';
 import { createRoutes as createConfigureRoutes } from './views/configure/index.ts';
+import { createRoutes as createScheduleRoutes } from './views/schedules/index.ts';
 import { createErrorRoutes } from './views/static/error/index.ts';
 import { createRoutes as createStatusRoutes } from './views/status/index.ts';
 
@@ -18,6 +19,7 @@ export function buildRouter(service: ManageService): IRouter {
 	const { router: authRoutes, guards: authGuards } = createAuthRoutesAndGuards(service);
 	const statusRoutes = createStatusRoutes(service);
 	const configureRoutes = createConfigureRoutes(service);
+	const scheduleRoutes = createScheduleRoutes(service);
 
 	router.use('/', monitoringRoutes);
 
@@ -45,6 +47,7 @@ export function buildRouter(service: ManageService): IRouter {
 
 	router.use('/', statusRoutes);
 	router.use('/configure', configureRoutes);
+	router.use('/schedules', scheduleRoutes);
 	router.use('/error', createErrorRoutes(service));
 
 	return router;

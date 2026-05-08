@@ -9,6 +9,7 @@ export function addLocalsConfiguration(environment?: string): Handler {
 			{ href: '/', text: 'Summary' },
 			{ href: '/cases', text: 'Case list' },
 			{ href: '/configure', text: 'Configure' },
+			{ href: '/schedules', text: 'Schedules' },
 			{ href: '/auth/signout', text: 'Sign out' }
 		];
 		res.locals.config = {
