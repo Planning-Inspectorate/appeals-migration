@@ -1,0 +1,83 @@
+{% extends "views/layouts/main.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
+
+{% block pageContent %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            {% set aboutSchedules %}
+                <p class="govuk-body">
+                    Migrations run within defined windows or schedules.
+                    Each schedule consists of a start day and time, and an end day and time.
+                </p>
+                <p class="govuk-body">
+                    The migration tool 'wakes up' every minute, and checks which action to take. It will be either:
+                </p>
+                <ul class="govuk-list  govuk-list--bullet">
+                    <li>Outside of a schedule: no action</li>
+                    <li>Inside of a schedule: queue up appeals to migrate</li>
+                    <li>End of a schedule: empty the queue to pause migrations</li>
+                </ul>
+            {% endset %}
+            {% if scheduleSuccess %}
+                {{ govukNotificationBanner({
+                    type: "success",
+                    text: scheduleSuccess
+                }) }}
+            {% endif %}
+            {{ govukDetails({
+                summaryText: "About schedules",
+                html: aboutSchedules
+            }) }}
+            <div class="govuk-button-group">
+                {{ govukButton({
+                    text: "Add a schedule",
+                    href: "/schedules/add"
+                }) }}
+            </div>
+
+            {% set tableRows = [] %}
+
+            {% for item in items %}
+                {% set actionHtml %}
+                    <div class="govuk-button-group govuk-!-margin-bottom-0">
+                        <a class="govuk-link govuk-!-margin-bottom-0" href="/schedules/edit/{{ item.id }}">Edit</a>
+                        {{ govukButton({
+                            text: "Delete",
+                            element: "button",
+                            classes: "govuk-button--warning govuk-!-margin-bottom-0",
+                            attributes: { form: "delete-" + item.id }
+                        }) }}
+                        <form id="delete-{{ item.id }}" method="post" action="/schedules/delete/{{ item.id }}"></form>
+                    </div>
+                {% endset %}
+                {% set tableRows = (tableRows.push([
+                    { text: item.startDay },
+                    { text: item.startTime },
+                    { text: item.endDay },
+                    { text: item.endTime },
+                    { html: actionHtml }
+                ]), tableRows) %}
+            {% endfor %}
+
+            {{ govukTable({
+                head: [
+                    { text: "Start day" },
+                    { text: "Start time" },
+                    { text: "End day" },
+                    { text: "End time" },
+                    { text: "Action" }
+                ],
+                rows: tableRows
+            }) }}
+
+            {% if items.length === 0 %}
+                <p class="govuk-body">No migration schedules configured.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+

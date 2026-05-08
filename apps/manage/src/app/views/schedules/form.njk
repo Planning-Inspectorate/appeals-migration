@@ -1,0 +1,58 @@
+{% extends "views/layouts/main.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+
+{% block pageContent %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <form method="post" action="{{ actionUrl }}" novalidate>
+
+                {{ govukSelect({
+                    id: "startDayIndex",
+                    name: "startDayIndex",
+                    label: { text: "Start day" },
+                    items: startDayOptions,
+                    errorMessage: errors.startDayIndex if errors and errors.startDayIndex
+                }) }}
+
+                {{ govukInput({
+                    id: "startTime",
+                    name: "startTime",
+                    label: { text: "Start time" },
+                    hint: { text: "Use HH:mm format, e.g. 09:00" },
+                    value: values.startTime,
+                    classes: "govuk-input--width-5",
+                    errorMessage: errors.startTime if errors and errors.startTime
+                }) }}
+
+                {{ govukSelect({
+                    id: "endDayIndex",
+                    name: "endDayIndex",
+                    label: { text: "End day" },
+                    items: endDayOptions,
+                    errorMessage: errors.endDayIndex if errors and errors.endDayIndex
+                }) }}
+
+                {{ govukInput({
+                    id: "endTime",
+                    name: "endTime",
+                    label: { text: "End time" },
+                    hint: { text: "Use HH:mm format, e.g. 17:00" },
+                    value: values.endTime,
+                    classes: "govuk-input--width-5",
+                    errorMessage: errors.endTime if errors and errors.endTime
+                }) }}
+
+                <div class="govuk-button-group">
+                    {{ govukButton({
+                        text: "Save" if isEdit else "Add schedule"
+                    }) }}
+                    <a class="govuk-link" href="/schedules">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
