@@ -153,6 +153,95 @@ export class HorizonWebClient {
 		return this.#authedGetRequest(url);
 	}
 
+	/**
+	 * Add a custom view by uploading an HTML string as a multipart/form-data POST
+	 *
+	 * @param caseNodeId - the parent node ID in Horizon
+	 * @param html - the HTML content to upload
+	 * @param name - the name for the new object
+	 */
+	async addCustomView(caseNodeId: string, html: string, name: string): Promise<void> {
+		await this.#waitForLogin('/otcs/llisapi.dll');
+
+		const boundary = `----FormBoundary${Date.now().toString(16)}`;
+		const fileName = name.endsWith('.html') ? name : `${name}.html`;
+		const fileBuffer = Buffer.from(html, 'utf-8');
+
+		const nextURL = `/otcs/llisapi.dll?func=ll&objid=${caseNodeId}&objAction=browse&sort=name&section=1`;
+
+		const fields: Record<string, string> = {
+			func: 'll',
+			objType: '146', // custom view
+			objAction: 'create2',
+			parentId: caseNodeId,
+			nextURL,
+			ExOrNew: 'Ex',
+			creationType: 'Ex',
+			name
+		};
+
+		// build the multipart preamble (fields + file header)
+		let preamble = '';
+		for (const [key, value] of Object.entries(fields)) {
+			preamble += `--${boundary}\r\n`;
+			preamble += `Content-Disposition: form-data; name="${key}"\r\n\r\n`;
+			preamble += `${value}\r\n`;
+		}
+		preamble += `--${boundary}\r\n`;
+		preamble += `Content-Disposition: form-data; name="versionFile"; filename="${fileName}"\r\n`;
+		preamble += `Content-Type: text/html\r\n\r\n`;
+
+		const epilogue = `\r\n--${boundary}--\r\n`;
+
+		const preambleBuffer = Buffer.from(preamble, 'utf-8');
+		const epilogueBuffer = Buffer.from(epilogue, 'utf-8');
+		const contentLength = preambleBuffer.length + fileBuffer.length + epilogueBuffer.length;
+
+		// Content Server checks the Referer header for CSRF protection
+		// simulate the browser having come from the create form page
+		const refererParams = new URLSearchParams({
+			func: 'll',
+			objType: '146',
+			objAction: 'create',
+			parentId: caseNodeId,
+			nextURL
+		});
+		const referer = `${this.#baseUrl}/otcs/llisapi.dll?${refererParams.toString()}`;
+
+		const headers: http.OutgoingHttpHeaders = {
+			'Content-Type': `multipart/form-data; boundary=${boundary}`,
+			'Content-Length': contentLength,
+			Connection: 'keep-alive',
+			Referer: referer
+		};
+		this.#addCookies(headers);
+
+		const res = await this.#post('/otcs/llisapi.dll', headers, (req) => {
+			req.write(preambleBuffer);
+			req.write(fileBuffer);
+			req.write(epilogueBuffer);
+			req.end();
+		});
+		// correct response is 302 redirect
+		if (res.statusCode !== 302) {
+			// read the response
+			const body = await new Promise<string>((resolve, reject) => {
+				let data = '';
+				res.setEncoding('utf8');
+				res.on('data', (chunk) => (data += chunk));
+				res.on('end', () => resolve(data));
+				res.on('error', (err) => reject(err));
+			});
+			throw new CustomViewError(body);
+		}
+		// else all OK, no errors, so drain the response
+		await new Promise<void>((resolve, reject) => {
+			res.on('end', () => resolve());
+			res.on('error', (err) => reject(err));
+			res.resume();
+		});
+	}
+
 	async #waitForLogin(url: string) {
 		if (!this.#hasAuth && !this.#loginPromise) {
 			// if no login in progress, start the login process and save the promise
@@ -319,6 +408,44 @@ export class HorizonWebClient {
 	}
 
 	/**
+	 * Make a POST request to the server
+	 * @param url
+	 * @param headers
+	 * @param writeBody callback that writes the request body and calls req.end()
+	 * @private
+	 */
+	#post(
+		url: string,
+		headers: http.OutgoingHttpHeaders,
+		writeBody: (req: http.ClientRequest) => void
+	): Promise<http.IncomingMessage> {
+		if (!url.startsWith('http')) {
+			url = this.#baseUrl + url;
+		}
+		const parsedUrl = new URL(url);
+		return new Promise((resolve, reject) => {
+			const req = https.request(
+				{
+					hostname: parsedUrl.hostname,
+					port: parsedUrl.port,
+					path: parsedUrl.pathname + parsedUrl.search,
+					method: 'POST',
+					agent: this.#agent,
+					headers
+				},
+				(res) => {
+					resolve(res);
+				}
+			);
+			req.on('error', reject);
+			req.on('timeout', () => {
+				req.destroy(new Error('Request timed out'));
+			});
+			writeBody(req);
+		});
+	}
+
+	/**
 	 * Make a GET request to the server
 	 * @param url
 	 * @param options
@@ -398,5 +525,14 @@ export class HorizonWebClient {
 			const array = opts.all ? [{ address: ip, family: 4 }] : ip;
 			callback(null, array, 4);
 		};
+	}
+}
+
+class CustomViewError extends Error {
+	response: string;
+
+	constructor(response: string) {
+		super('Error creating custom view');
+		this.response = response;
 	}
 }
