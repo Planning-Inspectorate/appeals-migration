@@ -109,5 +109,10 @@ export function buildValidateMigratedCases(
 		);
 
 		context.log(`Case ${caseReference} validation results saved`);
+
+		if (caseToMigrate.sourceCaseId && dataValidationResult.isValid && documentsValidated) {
+			context.log(`Setting migrated view for ${caseReference}`);
+			await service.customViewManager.addMigratedView(caseToMigrate.sourceCaseId);
+		}
 	};
 }

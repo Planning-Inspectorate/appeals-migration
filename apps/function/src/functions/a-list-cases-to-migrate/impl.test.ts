@@ -6,7 +6,8 @@ import { buildListCasesToMigrate } from './impl.ts';
 describe('buildListCasesToMigrate', () => {
 	const newService = () => ({
 		databaseClient: { db: 'migration' },
-		sourceDatabaseClient: { db: 'source' }
+		sourceDatabaseClient: { db: 'source' },
+		customViewManager: { addInQueueView: mock.fn() }
 	});
 
 	const newMigration = () => ({

@@ -8,6 +8,7 @@ export type MockFunctionService = {
 	serviceBusAdministrationClient: any;
 	sourceDocumentClient: any;
 	sinkDocumentClient: any;
+	customViewManager: any;
 	documentsContainerName: string;
 	aListCasesToMigrateSchedule: string;
 	dispatcherSchedule: string;
@@ -114,6 +115,11 @@ export const createMockService = (overrides = {}): MockFunctionService => ({
 			uploadStream: async () => {},
 			getProperties: async () => ({})
 		})
+	},
+	customViewManager: {
+		addInQueueView: async () => {},
+		addInProgressView: async () => {},
+		addMigratedView: async () => {}
 	},
 	documentsContainerName: 'test-container',
 	databaseClient: {},
