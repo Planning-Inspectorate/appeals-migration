@@ -107,13 +107,23 @@ export function buildMigrateDocuments(service: FunctionService): MigrationFuncti
 		);
 
 		// Insert document and versions in a transaction
+		// Create without latestVersionId first to avoid FK constraint violation,
+		// then update once the versions exist
+		const { latestVersionId, ...createData } = documentData;
+
 		await withRetry(() =>
 			service.sinkDatabaseClient.$transaction(async (tx) => {
 				const createdDocument = await tx.document.create({
-					data: documentData,
+					data: createData,
 					include: {
 						versions: true
 					}
+				});
+
+				// Now that versions exist, set the latestVersionId
+				await tx.document.update({
+					where: { guid: createdDocument.guid },
+					data: { latestVersionId }
 				});
 
 				context.log(
