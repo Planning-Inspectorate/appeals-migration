@@ -59,6 +59,14 @@ export function buildListCasesToMigrate(
 			context.log('Upserting', allCases.size, 'cases');
 
 			await migration.upsertCaseReferences(migrationDatabase, Array.from(allCases.values()));
+
+			for (const ref of allCases.values()) {
+				if (!ref.caseId) {
+					context.log(ref.caseReference, 'no case ID to set custom view');
+					continue;
+				}
+				await service.customViewManager.addInQueueView(ref.caseId?.toString());
+			}
 		} catch (error) {
 			context.error('Error during list builder run', error);
 			throw error;

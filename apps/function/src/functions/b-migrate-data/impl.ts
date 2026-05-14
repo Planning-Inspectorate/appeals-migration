@@ -1,3 +1,4 @@
+import type { CaseToMigrate } from '@pins/appeals-migration-database/src/client/client.ts';
 import { withRetry } from '@pins/appeals-migration-lib/util/retry.ts';
 import type { FunctionService } from '../../service.ts';
 import type { MigrationFunction } from '../../types.ts';
@@ -41,11 +42,17 @@ export function buildMigrateData(
 	mappers: Mappers = defaultMappers,
 	sink: Sink = defaultSink
 ): MigrationFunction {
-	return async (caseToMigrate, context) => {
+	return async (itemToMigrate, context) => {
+		const caseToMigrate = itemToMigrate as CaseToMigrate;
 		const sourceDatabase = service.sourceDatabaseClient;
 		const sinkDatabase = service.sinkDatabaseClient;
 		const caseReference = caseToMigrate.caseReference;
 		context.log(`Processing case: ${caseReference}`);
+
+		if (caseToMigrate.sourceCaseId) {
+			context.log(`Setting in-progress view for ${caseReference}`);
+			await service.customViewManager.addInProgressView(caseToMigrate.sourceCaseId);
+		}
 
 		const [incompleteReasons, invalidReasons, lpaIncompleteReasons] = await withRetry(() =>
 			Promise.all([
