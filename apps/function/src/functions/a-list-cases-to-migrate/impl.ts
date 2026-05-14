@@ -1,6 +1,6 @@
 import { mapToMigrateParameterToWhere } from './mappers/map-to-migrate-parameter.ts';
 import { upsertCaseReferences } from './migration/case-to-migrate.ts';
-import { fetchCaseReferences } from './source/case-reference.ts';
+import { fetchCaseReferences, type ReferenceId } from './source/case-reference.ts';
 
 import type { TimerHandler } from '@azure/functions';
 import type { MigrationPrismaClient } from '@pins/appeals-migration-database';
@@ -47,18 +47,18 @@ export function buildListCasesToMigrate(
 			const params = await migration.readToMigrateParameters(migrationDatabase);
 			context.log('Read', params.length, 'parameters');
 
-			const allRefs = new Set<string>();
+			const allCases = new Map<string, ReferenceId>();
 
 			for (const param of params) {
 				const whereClause = mappers.mapToMigrateParameterToWhere(param);
 
 				const refs = await source.fetchCaseReferences(sourceDatabase, whereClause, whereClause);
-				refs.forEach((r) => allRefs.add(r));
+				refs.forEach((r) => allCases.set(r.caseReference, r));
 			}
 
-			context.log('Upserting', allRefs.size, 'cases');
+			context.log('Upserting', allCases.size, 'cases');
 
-			await migration.upsertCaseReferences(migrationDatabase, Array.from(allRefs));
+			await migration.upsertCaseReferences(migrationDatabase, Array.from(allCases.values()));
 		} catch (error) {
 			context.error('Error during list builder run', error);
 			throw error;

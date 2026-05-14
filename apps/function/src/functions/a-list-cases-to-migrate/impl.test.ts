@@ -37,8 +37,9 @@ describe('buildListCasesToMigrate', () => {
 		mappers.mapToMigrateParameterToWhere.mock.mockImplementation((p) => ({ caseStatus: p.status }));
 
 		source.fetchCaseReferences.mock.mockImplementation((_sourceDb, hasWhere) => {
-			if (hasWhere.caseStatus === 'open') return ['CASE-001', 'CASE-002', 'CASE-001'];
-			if (hasWhere.caseStatus === 'closed') return ['CASE-002', 'CASE-003'];
+			if (hasWhere.caseStatus === 'open')
+				return [{ caseReference: 'CASE-001' }, { caseReference: 'CASE-002' }, { caseReference: 'CASE-001' }];
+			if (hasWhere.caseStatus === 'closed') return [{ caseReference: 'CASE-002' }, { caseReference: 'CASE-003' }];
 			return [];
 		});
 
@@ -53,9 +54,9 @@ describe('buildListCasesToMigrate', () => {
 
 		assert.deepStrictEqual(migration.upsertCaseReferences.mock.calls[0].arguments[0], service.databaseClient);
 		assert.deepStrictEqual(migration.upsertCaseReferences.mock.calls[0].arguments[1], [
-			'CASE-001',
-			'CASE-002',
-			'CASE-003'
+			{ caseReference: 'CASE-001' },
+			{ caseReference: 'CASE-002' },
+			{ caseReference: 'CASE-003' }
 		]);
 	});
 
