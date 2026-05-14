@@ -46,4 +46,17 @@ describe('fetchCaseDetails', () => {
 
 		assert.strictEqual(result, null);
 	});
+	test('maps lpa code if configured', async () => {
+		const sourceDatabase = {
+			appealHas: { findFirst: mock.fn() },
+			appealS78: { findFirst: mock.fn() }
+		};
+
+		const mockHasCase = { caseId: 1, caseReference: 'CASE-001', lpaCode: 'CODE-1' };
+		sourceDatabase.appealHas.findFirst.mock.mockImplementationOnce(() => mockHasCase);
+
+		const result = await fetchCaseDetails(sourceDatabase, 'CASE-001', true);
+
+		assert.strictEqual(result.data.lpaCode, 'Q9999');
+	});
 });
