@@ -18,7 +18,8 @@ describe('d-migrate-documents-impl', () => {
 					findUnique: mock.fn()
 				},
 				document: {
-					create: mock.fn()
+					create: mock.fn(),
+					update: mock.fn()
 				},
 				folder: {
 					findFirst: mock.fn(() => Promise.resolve({ id: 1 }))
