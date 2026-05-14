@@ -91,6 +91,10 @@ export class FunctionService {
 		return this.#config.databaseTransactionOptions;
 	}
 
+	get mapLpaCodesToTest() {
+		return this.#config.mapLpaCodesToTest;
+	}
+
 	/**
 	 * Cleanup resources when the service instance is no longer needed
 	 * Should be called after each invocation to prevent resource leaks

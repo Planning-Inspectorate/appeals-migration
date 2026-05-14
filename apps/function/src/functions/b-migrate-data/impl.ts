@@ -68,7 +68,7 @@ export function buildMigrateData(
 			lpaIncomplete: new Map(lpaIncompleteReasons.map((reason) => [reason.name, reason.id]))
 		};
 
-		const caseDetails = await source.fetchCaseDetails(sourceDatabase, caseReference);
+		const caseDetails = await source.fetchCaseDetails(sourceDatabase, caseReference, service.mapLpaCodesToTest);
 
 		if (!caseDetails) {
 			throw new Error(`Case ${caseReference} not found in source database`);

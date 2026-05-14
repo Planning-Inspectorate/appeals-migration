@@ -35,6 +35,7 @@ variable "apps_config" {
     migration = object({
       buffer_per_worker   = number
       maximum_parallelism = number
+      map_lpa_codes       = bool
     })
 
     redis = object({

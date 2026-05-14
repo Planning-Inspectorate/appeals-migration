@@ -33,6 +33,10 @@ export interface Config {
 			containerName: string;
 		};
 	};
+	/**
+	 * If true, will map LPA codes to Q9999 for all appeals
+	 */
+	mapLpaCodesToTest: boolean;
 }
 
 export function loadConfig(): Config {
@@ -57,6 +61,7 @@ export function loadConfig(): Config {
 		MANAGE_APPEALS_DOCUMENTS_ACCOUNT_NAME,
 		MANAGE_APPEALS_DOCUMENTS_CONTAINER_NAME,
 		MANAGE_APPEALS_SQL_CONNECTION_STRING,
+		MAP_LPA_CODES_TO_TEST,
 		MAXIMUM_PARALLELISM,
 		MIGRATION_STEP_UPDATE_CHUNK_SIZE,
 		ODW_CURATED_SQL_CONNECTION_STRING,
@@ -121,7 +126,8 @@ export function loadConfig(): Config {
 				accountName: MANAGE_APPEALS_DOCUMENTS_ACCOUNT_NAME!,
 				containerName: MANAGE_APPEALS_DOCUMENTS_CONTAINER_NAME!
 			}
-		}
+		},
+		mapLpaCodesToTest: MAP_LPA_CODES_TO_TEST === 'true'
 	};
 }
 
