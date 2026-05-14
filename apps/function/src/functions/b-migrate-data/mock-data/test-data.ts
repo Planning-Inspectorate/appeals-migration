@@ -2,6 +2,7 @@ import type { CaseToMigrate, DocumentToMigrate } from '@pins/appeals-migration-d
 
 export const createCaseToMigrate = (overrides: Partial<CaseToMigrate> = {}): CaseToMigrate => ({
 	caseReference: 'TEST/123',
+	sourceCaseId: '123',
 	dataStepId: 1,
 	documentListStepId: 2,
 	documentsStepId: 3,
