@@ -74,7 +74,7 @@
         }) }}
         <div class="govuk-button-group">
             {% for action in actions %}
-                <form method="post" action="/case/{{ caseReference }}/migrate/{{ action.action }}">
+                <form method="post" action="/case/{{ caseReference | urlencode }}/migrate/{{ action.action }}">
                     {{ govukButton({
                         text: action.text,
                         classes: "govuk-button--secondary"

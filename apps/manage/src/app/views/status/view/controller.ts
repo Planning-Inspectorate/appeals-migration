@@ -7,10 +7,12 @@ import { buildCaseStatusViewModel } from './view-model.ts';
 export function buildViewCase(service: ManageService): AsyncRequestHandler {
 	const { db, logger } = service;
 	return async (req, res) => {
-		const { caseReference } = req.params;
+		const caseReference = Array.isArray(req.params.caseReference)
+			? req.params.caseReference.join('/')
+			: req.params.caseReference;
 		logger.info({ caseReference }, 'view case status');
 
-		if (!caseReference || typeof caseReference !== 'string') {
+		if (!caseReference) {
 			return res.status(404).render('views/errors/404.njk');
 		}
 

@@ -165,6 +165,15 @@ describe('buildActionController', () => {
 		assert.strictEqual(mocks.sendMessages.mock.callCount(), 0);
 	});
 
+	test('redirects with encoded caseReference when it contains slashes', async () => {
+		const { service } = buildMockService({ caseToMigrate: null });
+		const handler = buildActionController(service);
+		const { req, res } = buildReqRes(['APP', 'R5510', 'W', '17', '3192120'], MIGRATION_ACTIONS.DATA);
+		await handler(req, res);
+		assert.strictEqual(res.redirect.mock.callCount(), 1);
+		assert.deepStrictEqual(res.redirect.mock.calls[0].arguments, ['/case/APP%2FR5510%2FW%2F17%2F3192120']);
+	});
+
 	test('adds session data on success', async () => {
 		const caseToMigrate = { caseReference: '1234' };
 		const { service, mocks } = buildMockService({ caseToMigrate });
