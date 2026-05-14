@@ -34,7 +34,8 @@ model ToMigrateParameter {
 }
 
 model CaseToMigrate {
-  caseReference String @id
+  caseReference String  @id
+  sourceCaseId  String?
 
   // migration steps tracked per case
 
