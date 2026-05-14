@@ -16,8 +16,8 @@ export function createRoutes(service: ManageService): IRouter {
 
 	router.get('/', asyncHandler(summary));
 	router.get('/cases', asyncHandler(listItems));
-	router.get('/case/:caseReference', asyncHandler(viewCase));
-	router.post('/case/:caseReference/migrate/:migrationAction', asyncHandler(actions));
+	router.get('/case/*caseReference', asyncHandler(viewCase));
+	router.post('/case/*caseReference/migrate/:migrationAction', asyncHandler(actions));
 
 	return router;
 }

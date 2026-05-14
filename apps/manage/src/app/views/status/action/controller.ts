@@ -11,14 +11,17 @@ import {
 export function buildActionController(service: ManageService): AsyncRequestHandler {
 	const { db, logger, serviceBusClient } = service;
 	return async (req, res) => {
-		const { caseReference, migrationAction } = req.params;
+		const caseReference = Array.isArray(req.params.caseReference)
+			? req.params.caseReference.join('/')
+			: req.params.caseReference;
+		const { migrationAction } = req.params;
 		logger.info({ caseReference, migrationAction }, 'migration action');
 
-		if (!caseReference || typeof caseReference !== 'string') {
+		if (!caseReference) {
 			return res.redirect('/cases');
 		}
 
-		const backToCasePage = () => res.redirect(`/case/${caseReference}`);
+		const backToCasePage = () => res.redirect(`/case/${encodeURIComponent(caseReference)}`);
 
 		if (!migrationAction || typeof migrationAction !== 'string') {
 			return backToCasePage();
