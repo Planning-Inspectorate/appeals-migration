@@ -27,7 +27,11 @@ describe('fetchCaseReferences', () => {
 		]);
 
 		const result = await fetchCaseReferences(sourceDatabase, {}, {});
-		assert.deepStrictEqual(result, ['CASE-001', 'CASE-002', 'CASE-003']);
+		assert.deepStrictEqual(result, [
+			{ caseReference: 'CASE-001' },
+			{ caseReference: 'CASE-002' },
+			{ caseReference: 'CASE-003' }
+		]);
 	});
 
 	test('passes where clauses and select to both queries', async () => {
@@ -43,12 +47,12 @@ describe('fetchCaseReferences', () => {
 
 		assert.deepStrictEqual(sourceDatabase.appealHas.findMany.mock.calls[0].arguments[0], {
 			where: hasWhere,
-			select: { caseReference: true }
+			select: { caseReference: true, caseId: true }
 		});
 
 		assert.deepStrictEqual(sourceDatabase.appealS78.findMany.mock.calls[0].arguments[0], {
 			where: s78Where,
-			select: { caseReference: true }
+			select: { caseReference: true, caseId: true }
 		});
 	});
 

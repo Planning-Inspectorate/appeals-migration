@@ -21,16 +21,22 @@ describe('upsertCaseReferences', () => {
 	test('upserts each case reference with nested migration steps', async () => {
 		const migrationDatabase = newMigrationDatabase();
 
-		await upsertCaseReferences(migrationDatabase, ['CASE-001', 'CASE-002']);
+		await upsertCaseReferences(migrationDatabase, [
+			{ caseReference: 'CASE-001', caseId: 1 },
+			{ caseReference: 'CASE-002' }
+		]);
 
 		assert.strictEqual(migrationDatabase.caseToMigrate.upsert.mock.callCount(), 2);
 
 		const call1 = migrationDatabase.caseToMigrate.upsert.mock.calls[0].arguments[0];
 		assert.deepStrictEqual(call1, {
 			where: { caseReference: 'CASE-001' },
-			update: {},
+			update: {
+				sourceCaseId: '1'
+			},
 			create: {
 				caseReference: 'CASE-001',
+				sourceCaseId: '1',
 				DataStep: { create: {} },
 				DocumentListStep: { create: {} },
 				DocumentsStep: { create: {} },
@@ -41,6 +47,7 @@ describe('upsertCaseReferences', () => {
 		const call2 = migrationDatabase.caseToMigrate.upsert.mock.calls[1].arguments[0];
 		assert.strictEqual(call2.where.caseReference, 'CASE-002');
 		assert.strictEqual(call2.create.caseReference, 'CASE-002');
+		assert.strictEqual(call2.create.sourceCaseId, undefined);
 	});
 
 	test('retries on transient Prisma error and succeeds', async () => {
@@ -54,7 +61,7 @@ describe('upsertCaseReferences', () => {
 			return Promise.resolve();
 		});
 
-		await upsertCaseReferences(migrationDatabase, ['CASE-001']);
+		await upsertCaseReferences(migrationDatabase, [{ caseReference: 'CASE-001' }]);
 
 		assert.strictEqual(migrationDatabase.caseToMigrate.upsert.mock.callCount(), 2);
 	});
@@ -67,7 +74,7 @@ describe('upsertCaseReferences', () => {
 		});
 
 		await assert.rejects(
-			() => upsertCaseReferences(migrationDatabase, ['CASE-001']),
+			() => upsertCaseReferences(migrationDatabase, [{ caseReference: 'CASE-001' }]),
 			(thrown) => {
 				assert.strictEqual(thrown, error);
 				return true;
@@ -85,7 +92,7 @@ describe('upsertCaseReferences', () => {
 		});
 
 		await assert.rejects(
-			() => upsertCaseReferences(migrationDatabase, ['CASE-001']),
+			() => upsertCaseReferences(migrationDatabase, [{ caseReference: 'CASE-001' }]),
 			(thrown) => {
 				assert.strictEqual(thrown, error);
 				return true;
