@@ -117,11 +117,11 @@
             },
             {
                 key: { text: "Failed" },
-                value: { html: govukTag({text: (documentStatusSummary.failed) | string, classes: "govuk-tag--red"}) if documentStatusSummary.failed > 0 else (documentStatusSummary.failed) }
+                value: { html: govukTag({text: (documentStatusSummary.failed) | string, classes: "govuk-tag--red"}) if documentStatusSummary.failed > 0 else (documentStatusSummary.failed | string) }
             },
             {
                 key: { text: "Processing" },
-                value: { html: govukTag({text: (documentStatusSummary.processing) | string, classes: "govuk-tag--blue"}) if documentStatusSummary.processing > 0 else (documentStatusSummary.processing) }
+                value: { html: govukTag({text: (documentStatusSummary.processing) | string, classes: "govuk-tag--blue"}) if documentStatusSummary.processing > 0 else (documentStatusSummary.processing | string) }
             },
             {
                 key: { text: "Queued" },
