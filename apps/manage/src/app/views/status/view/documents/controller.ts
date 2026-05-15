@@ -27,9 +27,11 @@ export function buildViewDocuments(service: ManageService): AsyncRequestHandler 
 			return res.status(404).render('views/errors/404.njk');
 		}
 
+		const statusFilter = typeof req.query.status === 'string' ? req.query.status : undefined;
+
 		return res.render(
 			'views/status/view/documents/documents.njk',
-			buildDocumentsDetailViewModel(caseReference, caseToMigrate.DocumentToMigrate)
+			buildDocumentsDetailViewModel(caseReference, caseToMigrate.DocumentToMigrate, statusFilter)
 		);
 	};
 }
