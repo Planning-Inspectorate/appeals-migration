@@ -28,9 +28,11 @@ apps_config = {
   }
 
   migration = {
-    buffer_per_worker   = 500
-    maximum_parallelism = 5
-    map_lpa_codes       = false
+    buffer_per_worker                = 500
+    maximum_parallelism              = 5
+    map_lpa_codes                    = false
+    reclaim_stale_steps_schedule     = "0 0 * * * *" # once an hour
+    reclaim_stale_steps_timeout_mins = 60
   }
 
   redis = {

@@ -43,6 +43,9 @@ module "function_main" {
     BUFFER_PER_WORKER   = var.apps_config.migration.buffer_per_worker
     MAXIMUM_PARALLELISM = var.apps_config.migration.maximum_parallelism
 
+    FUNC_RECLAIM_STALE_STEPS_SCHEDULE        = var.apps_config.migration.reclaim_stale_steps_schedule
+    FUNC_RECLAIM_STALE_STEPS_TIMEOUT_MINUTES = var.apps_config.migration.reclaim_stale_steps_timeout_mins
+
     HORIZON_WEB_BASE_URL    = local.key_vault_refs["horizon-web-base-url"]
     HORIZON_WEB_USERNAME    = local.key_vault_refs["horizon-web-username"]
     HORIZON_WEB_PASSWORD    = local.key_vault_refs["horizon-web-password"]
