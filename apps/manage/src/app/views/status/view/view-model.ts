@@ -2,7 +2,13 @@ import type { MigrationStep, Prisma } from '@pins/appeals-migration-database/src
 import { MIGRATION_ACTIONS } from '../action/actions.ts';
 
 type CaseToMigrateWithSteps = Prisma.CaseToMigrateGetPayload<{
-	include: { DataStep: true; DocumentsStep: true; DocumentListStep: true; ValidationStep: true };
+	include: {
+		DataStep: true;
+		DocumentsStep: true;
+		DocumentListStep: true;
+		ValidationStep: true;
+		DocumentToMigrate: { include: { MigrationStep: true } };
+	};
 }>;
 
 interface StepViewModel {
@@ -11,6 +17,16 @@ interface StepViewModel {
 	invocationId: string | null;
 	startedAt: string | null;
 	completedAt: string | null;
+}
+
+export interface DocumentStatusSummary {
+	total: number;
+	waiting: number;
+	queued: number;
+	processing: number;
+	complete: number;
+	failed: number;
+	detailsUrl: string;
 }
 
 export interface CaseStatusViewModel {
@@ -26,6 +42,7 @@ export interface CaseStatusViewModel {
 	dataValidationErrors: string | null;
 	documentsValidated: boolean | null;
 	documentValidationErrors: string | null;
+	documentStatusSummary: DocumentStatusSummary;
 	actions: { text: string; action: string }[];
 	actionSuccess?: string;
 	actionWarning?: string;
@@ -53,6 +70,15 @@ export function buildCaseStatusViewModel(
 	actionSuccess: string | undefined,
 	actionWarning: string | undefined
 ): CaseStatusViewModel {
+	const documents = caseToMigrate.DocumentToMigrate || [];
+	const statusCounts = { waiting: 0, queued: 0, processing: 0, complete: 0, failed: 0 };
+	for (const doc of documents) {
+		const status = doc.MigrationStep.status as keyof typeof statusCounts;
+		if (status in statusCounts) {
+			statusCounts[status]++;
+		}
+	}
+
 	return {
 		pageHeading: caseToMigrate.caseReference,
 		pageCaption: 'Case migration status',
@@ -62,6 +88,11 @@ export function buildCaseStatusViewModel(
 		documentListStep: formatStep(caseToMigrate.DocumentListStep),
 		documentsStep: formatStep(caseToMigrate.DocumentsStep),
 		validationStep: formatStep(caseToMigrate.ValidationStep),
+		documentStatusSummary: {
+			total: documents.length,
+			...statusCounts,
+			detailsUrl: `/case/${encodeURIComponent(caseToMigrate.caseReference)}/documents`
+		},
 		dataValidated: caseToMigrate.dataValidated,
 		dataValidationErrors: caseToMigrate.dataValidationErrors,
 		documentsValidated: caseToMigrate.documentsValidated,

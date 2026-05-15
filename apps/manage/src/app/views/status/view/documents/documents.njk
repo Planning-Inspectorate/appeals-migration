@@ -1,0 +1,86 @@
+{% extends "views/layouts/main.njk" %}
+
+{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+
+{% macro statusTag(status) %}
+    {% if status === "complete" %}
+        {{ govukTag({text: "Complete", classes: "govuk-tag--green"}) }}
+    {% elif status === "failed" %}
+        {{ govukTag({text: "Failed", classes: "govuk-tag--red"}) }}
+    {% elif status === "processing" %}
+        {{ govukTag({text: "Processing", classes: "govuk-tag--blue"}) }}
+    {% elif status === "queued" %}
+        {{ govukTag({text: "Queued", classes: "govuk-tag--yellow"}) }}
+    {% else %}
+        {{ govukTag({text: "Waiting", classes: "govuk-tag--grey"}) }}
+    {% endif %}
+{% endmacro %}
+
+{% block pageContent %}
+    {{ govukSummaryList({
+        card: {
+            title: {
+                text: "Summary"
+            }
+        },
+        rows: [
+            {
+                key: { text: "Total documents" },
+                value: { text: total }
+            },
+            {
+                key: { text: "Complete" },
+                value: { text: complete }
+            },
+            {
+                key: { text: "Failed" },
+                value: { text: failed }
+            },
+            {
+                key: { text: "Processing" },
+                value: { text: processing }
+            },
+            {
+                key: { text: "Queued" },
+                value: { text: queued }
+            },
+            {
+                key: { text: "Waiting" },
+                value: { text: waiting }
+            }
+        ]
+    }) }}
+
+    {% if documents | length > 0 %}
+        {% set tableRows = [] %}
+        {% for doc in documents %}
+            {% set tableRows = (tableRows.push([
+                { text: doc.documentId },
+                { html: statusTag(doc.status) },
+                { text: doc.startedAt or "–" },
+                { text: doc.completedAt or "–" },
+                { text: doc.errorMessage or "–" }
+            ]), tableRows) %}
+        {% endfor %}
+
+        {{ govukTable({
+            caption: "Documents",
+            captionClasses: "govuk-table__caption--m",
+            firstCellIsHeader: false,
+            head: [
+                { text: "Document ID" },
+                { text: "Status" },
+                { text: "Started at" },
+                { text: "Completed at" },
+                { text: "Error message" }
+            ],
+            rows: tableRows
+        }) }}
+    {% else %}
+        <p class="govuk-body">No documents found for this case.</p>
+    {% endif %}
+{% endblock %}
+
+
