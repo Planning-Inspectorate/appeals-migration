@@ -33,9 +33,11 @@ variable "apps_config" {
     })
 
     migration = object({
-      buffer_per_worker   = number
-      maximum_parallelism = number
-      map_lpa_codes       = bool
+      buffer_per_worker                = number
+      maximum_parallelism              = number
+      map_lpa_codes                    = bool
+      reclaim_stale_steps_schedule     = string
+      reclaim_stale_steps_timeout_mins = number
     })
 
     redis = object({
