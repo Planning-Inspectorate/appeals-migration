@@ -24,6 +24,8 @@ export interface DocumentsDetailViewModel {
 	processing: number;
 	queued: number;
 	waiting: number;
+	statusFilter: string | undefined;
+	baseUrl: string;
 }
 
 const dateFormatter = new Intl.DateTimeFormat('en-GB', {
@@ -42,9 +44,12 @@ function formatDocument(doc: DocumentToMigrateWithStep): DocumentViewModel {
 	};
 }
 
+const VALID_STATUSES = ['waiting', 'queued', 'processing', 'complete', 'failed'] as const;
+
 export function buildDocumentsDetailViewModel(
 	caseReference: string,
-	documents: DocumentToMigrateWithStep[]
+	documents: DocumentToMigrateWithStep[],
+	statusFilter?: string
 ): DocumentsDetailViewModel {
 	const statusCounts = { waiting: 0, queued: 0, processing: 0, complete: 0, failed: 0 };
 	for (const doc of documents) {
@@ -54,13 +59,21 @@ export function buildDocumentsDetailViewModel(
 		}
 	}
 
+	const validFilter = statusFilter && VALID_STATUSES.includes(statusFilter as any) ? statusFilter : undefined;
+	// either there is no filter, so all documents; or there is a filter so check the status matches
+	const statusFilterFunc = (d: DocumentToMigrateWithStep) => !validFilter || d.MigrationStep.status === validFilter;
+	const formatted = documents.filter(statusFilterFunc).map(formatDocument);
+	const baseUrl = `/case/${encodeURIComponent(caseReference)}/documents`;
+
 	return {
 		pageHeading: 'Document migration status',
 		pageCaption: caseReference,
 		backLinkUrl: `/case/${encodeURIComponent(caseReference)}`,
 		caseReference,
-		documents: documents.map(formatDocument),
+		documents: formatted,
 		total: documents.length,
-		...statusCounts
+		...statusCounts,
+		statusFilter: validFilter,
+		baseUrl
 	};
 }

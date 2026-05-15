@@ -53,6 +53,21 @@
         ]
     }) }}
 
+    <p class="govuk-body">
+        Show:
+        {% if statusFilter %}
+            <a class="govuk-link" href="{{ baseUrl }}">All</a>
+        {% else %}
+            <strong>All</strong>
+        {% endif %}
+         |
+        {% if statusFilter === "failed" %}
+            <strong>Failed only</strong>
+        {% else %}
+            <a class="govuk-link" href="{{ baseUrl }}?status=failed">Failed only</a>
+        {% endif %}
+    </p>
+
     {% if documents | length > 0 %}
         {% set tableRows = [] %}
         {% for doc in documents %}
@@ -79,7 +94,7 @@
             rows: tableRows
         }) }}
     {% else %}
-        <p class="govuk-body">No documents found for this case.</p>
+        <p class="govuk-body">{% if statusFilter %}No documents matching the selected filter.{% else %}No documents found for this case.{% endif %}</p>
     {% endif %}
 {% endblock %}
 
