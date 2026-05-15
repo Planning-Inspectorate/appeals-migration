@@ -49,10 +49,13 @@ export function buildActionController(service: ManageService): AsyncRequestHandl
 		let sender: ServiceBusSender | undefined;
 
 		try {
-			if (migrationAction === MIGRATION_ACTIONS.DOCUMENTS) {
-				const documentsToMigrate = await db.documentToMigrate.findMany({
-					where: { caseReference }
-				});
+			if (migrationAction === MIGRATION_ACTIONS.DOCUMENTS || migrationAction === MIGRATION_ACTIONS.FAILED_DOCUMENTS) {
+				const where =
+					migrationAction === MIGRATION_ACTIONS.FAILED_DOCUMENTS
+						? { caseReference, MigrationStep: { status: 'failed' } }
+						: { caseReference };
+
+				const documentsToMigrate = await db.documentToMigrate.findMany({ where });
 				if (documentsToMigrate.length > 0) {
 					const queue = 'appeals-migration-migrate-documents';
 					sender = serviceBusClient.createSender(queue);
@@ -83,7 +86,12 @@ export function buildActionController(service: ManageService): AsyncRequestHandl
 					}
 				} else {
 					logger.info('no documents to migrate');
-					setSessionActionWarning(req, 'No documents to migrate');
+					setSessionActionWarning(
+						req,
+						migrationAction === MIGRATION_ACTIONS.FAILED_DOCUMENTS
+							? 'No failed documents to migrate'
+							: 'No documents to migrate'
+					);
 				}
 			} else {
 				const queue = ACTION_TO_QUEUE_NAME.get(migrationAction as any);

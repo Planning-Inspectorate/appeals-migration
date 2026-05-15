@@ -4,6 +4,7 @@ export const MIGRATION_ACTIONS = Object.freeze({
 	DATA: 'data',
 	LIST_DOCUMENTS: 'list-documents',
 	DOCUMENTS: 'documents',
+	FAILED_DOCUMENTS: 'failed-documents',
 	VALIDATE: 'validate'
 });
 
