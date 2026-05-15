@@ -35,6 +35,7 @@ export function buildActionController(service: ManageService): AsyncRequestHandl
 			where: { caseReference },
 			select: {
 				caseReference: true,
+				sourceCaseId: true,
 				dataStepId: true,
 				documentListStepId: true,
 				documentsStepId: true,
