@@ -22,7 +22,10 @@ export function buildViewCase(service: ManageService): AsyncRequestHandler {
 				DataStep: true,
 				DocumentListStep: true,
 				DocumentsStep: true,
-				ValidationStep: true
+				ValidationStep: true,
+				DocumentToMigrate: {
+					include: { MigrationStep: true }
+				}
 			}
 		});
 
