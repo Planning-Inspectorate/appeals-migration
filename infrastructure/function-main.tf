@@ -43,6 +43,9 @@ module "function_main" {
     BUFFER_PER_WORKER   = var.apps_config.migration.buffer_per_worker
     MAXIMUM_PARALLELISM = var.apps_config.migration.maximum_parallelism
 
+    # configure the Function to only process X messages in parrallel
+    AzureFunctionsJobHost__extensions__serviceBus__maxConcurrentCalls = var.apps_config.migration.maximum_parallelism
+
     FUNC_RECLAIM_STALE_STEPS_SCHEDULE        = var.apps_config.migration.reclaim_stale_steps_schedule
     FUNC_RECLAIM_STALE_STEPS_TIMEOUT_MINUTES = var.apps_config.migration.reclaim_stale_steps_timeout_mins
 
