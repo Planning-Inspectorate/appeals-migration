@@ -112,5 +112,6 @@ const actionDisplayNames = new Map<string, string>([
 	[MIGRATION_ACTIONS.DATA, 'Migrate data'],
 	[MIGRATION_ACTIONS.LIST_DOCUMENTS, 'List documents'],
 	[MIGRATION_ACTIONS.DOCUMENTS, 'Migrate documents'],
+	[MIGRATION_ACTIONS.FAILED_DOCUMENTS, 'Migrate failed documents'],
 	[MIGRATION_ACTIONS.VALIDATE, 'Validate migration']
 ]);
