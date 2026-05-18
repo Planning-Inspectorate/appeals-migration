@@ -298,20 +298,23 @@ const DOCUMENT_TYPE_TO_FOLDER: Record<AppealDocumentType, FolderPath> = {
  * - Callers should log warnings when UNCATEGORISED is used
  */
 export function mapHorizonDocumentTypeAndFolder(
-	horizonDocumentType: string,
+	horizonDocumentType: string | null,
 	logger?: { warn: (message: string) => void }
 ): {
 	appealDocumentType: string;
 	folderPath: string;
 } {
-	const normalizedType = horizonDocumentType.trim();
-
-	let appealDocumentType = HORIZON_TO_APPEAL_DOCUMENT_TYPE[normalizedType];
-
-	// Fallback to UNCATEGORISED for completely unknown Horizon types (migration resilience)
-	if (!appealDocumentType) {
-		appealDocumentType = APPEAL_DOCUMENT_TYPE.UNCATEGORISED;
-		logger?.warn(`Unmapped Horizon document type '${horizonDocumentType}' - defaulting to UNCATEGORISED`);
+	// Fallback to UNCATEGORISED for completely unknown Horizon types
+	let appealDocumentType: AppealDocumentType = APPEAL_DOCUMENT_TYPE.UNCATEGORISED;
+	if (horizonDocumentType) {
+		const normalizedType = horizonDocumentType.trim();
+		if (Object.hasOwn(HORIZON_TO_APPEAL_DOCUMENT_TYPE, normalizedType)) {
+			appealDocumentType = HORIZON_TO_APPEAL_DOCUMENT_TYPE[normalizedType];
+		} else {
+			logger?.warn(`Unmapped Horizon document type '${horizonDocumentType}' - defaulting to UNCATEGORISED`);
+		}
+	} else {
+		logger?.warn(`No Horizon document type - defaulting to UNCATEGORISED`);
 	}
 
 	// Check if it's a representation attachment type first
