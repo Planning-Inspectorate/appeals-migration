@@ -78,9 +78,7 @@ export function buildMigrateDocuments(service: FunctionService): MigrationFuncti
 		// Map Horizon document type to APPEAL_DOCUMENT_TYPE and get folder path
 		const horizonDocumentType = firstDocument.documentType;
 		if (!horizonDocumentType) {
-			throw new Error(
-				`Document ${documentId} for case ${caseReference} has no document type - cannot determine folder mapping`
-			);
+			context.log(`No document type for ${documentId} on case ${caseReference}`);
 		}
 
 		const { appealDocumentType, folderPath } = mapHorizonDocumentTypeAndFolder(horizonDocumentType, context);

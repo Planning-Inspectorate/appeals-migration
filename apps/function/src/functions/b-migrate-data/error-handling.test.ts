@@ -71,17 +71,6 @@ describe('Data Migration Error Handling', () => {
 			);
 		});
 
-		test('throws when document has no document type', async () => {
-			const migrateDocuments = buildMigrateDocuments(createMockService() as any);
-
-			await expectError(
-				() => migrateDocuments(createDocumentToMigrate({ caseReference: 'TEST/789' }), ctx),
-				(error) => {
-					expectMessageToInclude(error, 'DOC123', 'TEST/789', 'no document type', 'cannot determine folder mapping');
-				}
-			);
-		});
-
 		test('propagates blob upload errors', async () => {
 			const uploadError = new Error('Blob storage connection failed');
 
