@@ -14,7 +14,7 @@
     "connect-redis": "*",
     "express-session": "*",
     "httpntlm": "*",
-    "notifications-node-client": "*",
+    "notifications-node-client": "^8.4.0",
     "pino": "*",
     "pino-pretty": "*",
     "redis": "*"
