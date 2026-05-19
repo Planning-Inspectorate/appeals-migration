@@ -20,7 +20,7 @@ export function compareMappedString(
 	sourceValue: string | null | undefined,
 	sinkValue: string | null | undefined
 ): boolean {
-	return stringOrUndefined(sourceValue) === (sinkValue ?? undefined);
+	return stringOrUndefined(sourceValue) === stringOrUndefined(sinkValue);
 }
 
 export function compareMappedDate(
