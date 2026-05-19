@@ -16,7 +16,6 @@ function mapSourceToSinkValues(value: string | null, map: Map<string, string | n
 }
 
 export function mapCaseDecisionOutcome(caseDecisionOutcome: string | null): string | null {
-	// TODO: confirm mappings
 	const map: Map<string, string> = new Map([
 		['Allowed', APPEAL_CASE_DECISION_OUTCOME.ALLOWED],
 		['Allowed in part', APPEAL_CASE_DECISION_OUTCOME.ALLOWED],
@@ -38,7 +37,6 @@ export function mapCaseDecisionOutcome(caseDecisionOutcome: string | null): stri
 }
 
 export function mapCaseStatus(caseStatus: string | null): string | null {
-	// TODO: confirm mappings
 	const map: Map<string, string> = new Map([
 		['Abeyance', APPEAL_CASE_STATUS.AWAITING_TRANSFER],
 		['Appeal Lapsed', APPEAL_CASE_STATUS.INVALID],
@@ -48,19 +46,19 @@ export function mapCaseStatus(caseStatus: string | null): string | null {
 		['Case In Progress', APPEAL_CASE_STATUS.LPA_QUESTIONNAIRE],
 		['Closed - Opened in Error', APPEAL_CASE_STATUS.CLOSED],
 		['Decision Issued', APPEAL_CASE_STATUS.COMPLETE],
-		['Event', APPEAL_CASE_STATUS.EVENT],
-		['File Sent to Chart for Inspector', APPEAL_CASE_STATUS.AWAITING_EVENT],
+		['Event', APPEAL_CASE_STATUS.AWAITING_EVENT],
+		['File Sent to Chart for Inspector', APPEAL_CASE_STATUS.EVENT],
 		['Historic', APPEAL_CASE_STATUS.COMPLETE],
-		['Incomplete', APPEAL_CASE_STATUS.INVALID],
+		['Incomplete', APPEAL_CASE_STATUS.VALIDATION],
 		['Invalid - Missing Information', APPEAL_CASE_STATUS.INVALID],
 		['Invalid - No Right of Appeal', APPEAL_CASE_STATUS.INVALID],
 		['Invalid - Out of Time', APPEAL_CASE_STATUS.INVALID],
 		['New Case', APPEAL_CASE_STATUS.ASSIGN_CASE_OFFICER],
 		['Notice Withdrawn', APPEAL_CASE_STATUS.WITHDRAWN],
 		['Notice withdrawn', APPEAL_CASE_STATUS.WITHDRAWN],
-		['Postponed', APPEAL_CASE_STATUS.AWAITING_TRANSFER],
+		['Postponed', APPEAL_CASE_STATUS.AWAITING_EVENT],
 		['Ready for Inspector Action/Awaiting Event', APPEAL_CASE_STATUS.AWAITING_EVENT],
-		['Report Sent to Decision Branch', APPEAL_CASE_STATUS.AWAITING_TRANSFER],
+		['Report Sent to Decision Branch', APPEAL_CASE_STATUS.ISSUE_DETERMINATION],
 		['Turned Away', APPEAL_CASE_STATUS.INVALID],
 		['Validated', APPEAL_CASE_STATUS.READY_TO_START],
 		['Validation Review', APPEAL_CASE_STATUS.VALIDATION]
