@@ -95,7 +95,11 @@ function addStatusIfDateExists(
 	}
 }
 
-function validateAppealStatus(source: AppealHas | AppealS78, sinkStatuses: SinkCase['appealStatus']): boolean {
+function validateAppealStatus(
+	source: AppealHas | AppealS78,
+	sinkStatuses: SinkCase['appealStatus']
+): { isValid: boolean; errors: string[] } {
+	const validationErrors: string[] = [];
 	const expected: Array<{ status: string; createdAt: Date | undefined }> = [];
 
 	const statusMappings: Array<{ status: string; dateField: string | Date | null | undefined }> = [
@@ -114,11 +118,40 @@ function validateAppealStatus(source: AppealHas | AppealS78, sinkStatuses: SinkC
 		}
 	});
 
-	if (sinkStatuses.length !== expected.length) return false;
+	// Check count mismatch
+	if (sinkStatuses.length !== expected.length) {
+		validationErrors.push(
+			`Expected ${expected.length} appeal statuses but found ${sinkStatuses.length}. Expected statuses: ${expected.map((e) => e.status).join(', ')}`
+		);
+	}
 
-	return expected.every((exp) =>
-		sinkStatuses.some((sink) => sink.status === exp.status && compareMappedDate(exp.createdAt, sink.createdAt))
+	// Check for missing or mismatched statuses
+	const missingStatuses = expected.filter(
+		(exp) =>
+			!sinkStatuses.some((sink) => sink.status === exp.status && compareMappedDate(exp.createdAt, sink.createdAt))
 	);
+
+	missingStatuses.forEach((missing) => {
+		validationErrors.push(
+			`Status '${missing.status}' with creation date '${missing.createdAt?.toISOString() ?? 'null'}' not found in sink or dates do not match`
+		);
+	});
+
+	// Check for unexpected statuses in sink
+	const unexpectedStatuses = sinkStatuses.filter(
+		(sink) => !expected.some((exp) => exp.status === sink.status && compareMappedDate(exp.createdAt, sink.createdAt))
+	);
+
+	unexpectedStatuses.forEach((unexpected) => {
+		validationErrors.push(
+			`Unexpected status '${unexpected.status}' found in sink with creation date '${unexpected.createdAt?.toISOString() ?? 'null'}'`
+		);
+	});
+
+	return {
+		isValid: validationErrors.length === 0,
+		errors: validationErrors
+	};
 }
 
 function validateSpecialisms(source: AppealHas | AppealS78, sinkSpecialisms: SinkCase['specialisms']): boolean {
@@ -623,7 +656,6 @@ export function validateData(
 		{ fn: () => validateParentAppeals(source, sinkCase.parentAppeals), fieldName: 'parentAppeals' },
 		{ fn: () => validateAppealTimetable(source, sinkCase.appealTimetable), fieldName: 'appealTimetable' },
 		{ fn: () => validateAllocation(source, sinkCase.allocation), fieldName: 'allocation' },
-		{ fn: () => validateAppealStatus(source, sinkCase.appealStatus), fieldName: 'appealStatus' },
 		{ fn: () => validateSpecialisms(source, sinkCase.specialisms), fieldName: 'specialisms' },
 		{ fn: () => validateAddress(source, sinkCase.address), fieldName: 'address' },
 		{ fn: () => validateInspectorDecision(source, sinkCase.inspectorDecision), fieldName: 'inspectorDecision' },
@@ -640,6 +672,14 @@ export function validateData(
 	complexValidations.forEach((validation) =>
 		runComplexValidation(validation.fn, validation.fieldName, sourceModel, errors)
 	);
+
+	// Validate appeal status with detailed error messages
+	const appealStatusResult = validateAppealStatus(source, sinkCase.appealStatus);
+	if (!appealStatusResult.isValid) {
+		appealStatusResult.errors.forEach((error) => {
+			errors.push(createValidationError(sourceModel, 'appealStatus', error));
+		});
+	}
 
 	const isValid = errors.length === 0;
 	return {
