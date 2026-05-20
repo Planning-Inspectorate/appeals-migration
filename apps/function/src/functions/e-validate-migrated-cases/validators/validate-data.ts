@@ -5,6 +5,7 @@ import type {
 	AppealServiceUser
 } from '@pins/odw-curated-database/src/client/client.ts';
 import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
+import { mapCaseDecisionOutcome, mapCaseProcedure, mapCaseStatus } from '../../b-migrate-data/mappers/map-enum.ts';
 import { mapEventToSink } from '../../b-migrate-data/mappers/map-event-to-sink.ts';
 import { getServiceUserRole, mapServiceUser } from '../../b-migrate-data/mappers/map-service-user.ts';
 import { APPEAL_REPRESENTATION_TYPE } from '../../b-migrate-data/mappers/map-source-to-sink.ts';
@@ -98,7 +99,7 @@ function validateAppealStatus(source: AppealHas | AppealS78, sinkStatuses: SinkC
 	const expected: Array<{ status: string; createdAt: Date | undefined }> = [];
 
 	const statusMappings: Array<{ status: string; dateField: string | Date | null | undefined }> = [
-		{ status: source.caseStatus || '', dateField: source.caseUpdatedDate },
+		{ status: mapCaseStatus(source.caseStatus || '')!, dateField: source.caseUpdatedDate },
 		{ status: APPEAL_CASE_STATUS.READY_TO_START, dateField: source.caseValidationDate },
 		{ status: APPEAL_CASE_STATUS.EVENT, dateField: source.lpaQuestionnairePublishedDate },
 		{ status: APPEAL_CASE_STATUS.WITHDRAWN, dateField: source.caseWithdrawnDate },
@@ -171,7 +172,7 @@ function validateInspectorDecision(source: AppealHas | AppealS78, sink: SinkCase
 	if (!source.caseDecisionOutcome) return !sink;
 	if (!sink) return false;
 	return (
-		sink.outcome === source.caseDecisionOutcome &&
+		sink.outcome === mapCaseDecisionOutcome(source.caseDecisionOutcome) &&
 		compareMappedDate(source.caseDecisionOutcomeDate, sink.caseDecisionOutcomeDate)
 	);
 }
@@ -539,7 +540,7 @@ export function validateData(
 		},
 		{
 			fieldName: 'caseProcedure',
-			sourceValue: source.caseProcedure,
+			sourceValue: mapCaseProcedure(source.caseProcedure),
 			sinkValue: sinkCase.procedureType?.key,
 			compare: compareMappedString
 		},
