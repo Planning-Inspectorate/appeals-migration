@@ -7,6 +7,7 @@ import type {
 import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
 import { mapCaseDecisionOutcome, mapCaseProcedure, mapCaseStatus } from '../../b-migrate-data/mappers/map-enum.ts';
 import { mapEventToSink } from '../../b-migrate-data/mappers/map-event-to-sink.ts';
+import { mapLpaInTest } from '../../b-migrate-data/mappers/map-lpa.ts';
 import { getServiceUserRole, mapServiceUser } from '../../b-migrate-data/mappers/map-service-user.ts';
 import { APPEAL_REPRESENTATION_TYPE } from '../../b-migrate-data/mappers/map-source-to-sink.ts';
 import { parseDateOrUndefined, parseJsonArray, parseNumber, stringOrUndefined } from '../../shared/helpers/index.ts';
@@ -546,7 +547,8 @@ export function validateData(
 	sourceCase: SourceCase,
 	sinkCase: SinkCase,
 	events: AppealEvent[] = [],
-	serviceUsers: AppealServiceUser[] = []
+	serviceUsers: AppealServiceUser[] = [],
+	mapLpaCodesToTest = false
 ): DataValidationResult {
 	const source = sourceCase.data;
 	const errors: ValidationError[] = [];
@@ -579,7 +581,7 @@ export function validateData(
 		},
 		{
 			fieldName: 'lpaCode',
-			sourceValue: source.lpaCode,
+			sourceValue: mapLpaInTest(source, mapLpaCodesToTest),
 			sinkValue: sinkCase.lpa?.lpaCode,
 			compare: compareMappedString
 		},

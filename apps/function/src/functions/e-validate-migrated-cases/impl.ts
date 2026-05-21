@@ -81,7 +81,13 @@ export function buildValidateMigratedCases(
 			throw new Error(`Case ${caseReference} not found in sink database`);
 		}
 
-		const dataValidationResult = validators.validateData(sourceCase, sinkCase, sourceEvents, sourceServiceUsers);
+		const dataValidationResult = validators.validateData(
+			sourceCase,
+			sinkCase,
+			sourceEvents,
+			sourceServiceUsers,
+			service.mapLpaCodesToTest
+		);
 		context.log(`Case ${caseReference} data validation result: ${dataValidationResult.isValid}`);
 
 		const documentsExistResult = await validators.validateDocuments(sourceDocuments, sinkDocumentClient);

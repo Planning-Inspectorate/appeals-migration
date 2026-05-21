@@ -1,4 +1,5 @@
 import type { PrismaClient as SourcePrismaClient } from '@pins/odw-curated-database/src/client/client.ts';
+import { mapLpaInTest } from '../mappers/map-lpa.ts';
 
 export async function fetchCaseDetails(
 	sourceDatabase: SourcePrismaClient,
@@ -10,10 +11,7 @@ export async function fetchCaseDetails(
 	});
 
 	if (hasCase) {
-		if (mapLpaCodesToTest && hasCase.lpaCode) {
-			// override all LPA codes in TEST, to ensure they exist in the sync system
-			hasCase.lpaCode = 'Q9999';
-		}
+		hasCase.lpaCode = mapLpaInTest(hasCase, mapLpaCodesToTest);
 		return { type: 'has' as const, data: hasCase };
 	}
 
@@ -22,10 +20,7 @@ export async function fetchCaseDetails(
 	});
 
 	if (s78Case) {
-		if (mapLpaCodesToTest && s78Case.lpaCode) {
-			// override all LPA codes in TEST, to ensure they exist in the sync system
-			s78Case.lpaCode = 'Q9999';
-		}
+		s78Case.lpaCode = mapLpaInTest(s78Case, mapLpaCodesToTest);
 		return { type: 's78' as const, data: s78Case };
 	}
 
