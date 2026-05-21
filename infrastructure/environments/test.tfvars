@@ -12,6 +12,7 @@ apps_config = {
   }
 
   functions_node_version = 22
+  private_endpoint_enabled = true
 
   logging = {
     level = "info"
