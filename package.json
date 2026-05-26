@@ -30,9 +30,9 @@
     "test-coverage": "node --test --experimental-test-coverage"
   },
   "dependencies": {
-    "@azure/functions": "^4.14.0",
+    "@azure/functions": "^4.16.0",
     "@azure/identity": "^4.13.1",
-    "@azure/msal-node": "^5.2.1",
+    "@azure/msal-node": "^5.2.2",
     "@azure/service-bus": "^7.9.5",
     "@azure/storage-blob": "^12.31.0",
     "@planning-inspectorate/data-model": "^2.39.0",
@@ -41,12 +41,12 @@
     "accessible-autocomplete": "^3.0.1",
     "body-parser": "^2.2.2",
     "connect-redis": "^9.0.0",
-    "date-fns": "^4.2.1",
+    "date-fns": "^4.3.0",
     "date-fns-tz": "^3.2.0",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
     "govuk-frontend": "^6.1.0",
-    "helmet": "^8.1.0",
+    "helmet": "^8.2.0",
     "httpntlm": "^1.8.13",
     "lodash.chunk": "^4.2.0",
     "nunjucks": "^3.2.4",
@@ -62,7 +62,7 @@
     "@types/express": "^5.0.6",
     "@types/express-session": "^1.19.0",
     "@types/lodash.chunk": "^4.2.9",
-    "@types/node": "^25.9.0",
+    "@types/node": "^25.9.1",
     "@types/nunjucks": "^3.2.6",
     "eslint": "^10.4.0",
     "eslint-config-prettier": "^10.1.8",
@@ -74,7 +74,7 @@
     "prettier-plugin-prisma": "^5.0.0",
     "prisma": "^7.8.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.59.4"
+    "typescript-eslint": "^8.60.0"
   },
   "lint-staged": {
     "*.{js,ts}": [
