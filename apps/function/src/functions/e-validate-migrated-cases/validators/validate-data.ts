@@ -55,7 +55,9 @@ function validateArrayMatch<S, T>(
 	getSinkKey: (item: T) => string | null | undefined
 ): boolean {
 	if (expected.length !== sinkItems.length) return false;
-	return expected.every((e) => sinkItems.some((s) => getSinkKey(s) === getExpectedKey(e)));
+	const expectedKeys = expected.map(getExpectedKey).sort();
+	const sinkKeys = sinkItems.map(getSinkKey).sort();
+	return expectedKeys.every((key, i) => key === sinkKeys[i]);
 }
 
 function validateAppealTimetable(source: AppealHas | AppealS78, sink: SinkCase['appealTimetable']): ValidationResult {
@@ -163,14 +165,20 @@ function validateAppealStatus(source: AppealHas | AppealS78, sinkStatuses: SinkC
 	// Check count mismatch
 	if (sinkStatuses.length !== expected.length) {
 		validationErrors.push(
-			`Expected ${expected.length} appeal statuses but found ${sinkStatuses.length}. Expected statuses: ${expected.map((e) => e.status).join(', ')}`
+			`Expected ${expected.length} appeal statuses but found ${sinkStatuses.length}. Expected statuses: ${expected
+				.map((e) => e.status)
+				.sort()
+				.join(', ')}`
 		);
 	}
 
+	// Sort for deterministic comparison
+	const sortedExpected = [...expected].sort((a, b) => a.status.localeCompare(b.status));
+	const sortedSink = [...sinkStatuses].sort((a, b) => (a.status ?? '').localeCompare(b.status ?? ''));
+
 	// Check for missing or mismatched statuses
-	const missingStatuses = expected.filter(
-		(exp) =>
-			!sinkStatuses.some((sink) => sink.status === exp.status && compareMappedDate(exp.createdAt, sink.createdAt))
+	const missingStatuses = sortedExpected.filter(
+		(exp) => !sortedSink.some((sink) => sink.status === exp.status && compareMappedDate(exp.createdAt, sink.createdAt))
 	);
 
 	missingStatuses.forEach((missing) => {
@@ -180,8 +188,9 @@ function validateAppealStatus(source: AppealHas | AppealS78, sinkStatuses: SinkC
 	});
 
 	// Check for unexpected statuses in sink
-	const unexpectedStatuses = sinkStatuses.filter(
-		(sink) => !expected.some((exp) => exp.status === sink.status && compareMappedDate(exp.createdAt, sink.createdAt))
+	const unexpectedStatuses = sortedSink.filter(
+		(sink) =>
+			!sortedExpected.some((exp) => exp.status === sink.status && compareMappedDate(exp.createdAt, sink.createdAt))
 	);
 
 	unexpectedStatuses.forEach((unexpected) => {
@@ -553,18 +562,21 @@ function validateRepresentations(
 
 	if (expected.length !== nonCommentReps.length) {
 		validationErrors.push(
-			`Expected ${expected.length} representations but found ${nonCommentReps.length}. Expected types: ${expected.join(', ')}`
+			`Expected ${expected.length} representations but found ${nonCommentReps.length}. Expected types: ${[...expected].sort().join(', ')}`
 		);
 	}
 
-	const missingTypes = expected.filter((type) => !nonCommentReps.some((r) => r.representationType === type));
+	const sortedExpected = [...expected].sort();
+	const sortedSinkTypes = nonCommentReps.map((r) => r.representationType).sort();
+
+	const missingTypes = sortedExpected.filter((type) => !sortedSinkTypes.includes(type));
 	missingTypes.forEach((type) => {
 		validationErrors.push(`Representation type '${type}' not found in sink`);
 	});
 
-	const unexpectedTypes = nonCommentReps.filter((r) => !expected.includes(r.representationType));
-	unexpectedTypes.forEach((r) => {
-		validationErrors.push(`Unexpected representation type '${r.representationType}' found in sink`);
+	const unexpectedTypes = sortedSinkTypes.filter((type) => !sortedExpected.includes(type));
+	unexpectedTypes.forEach((type) => {
+		validationErrors.push(`Unexpected representation type '${type}' found in sink`);
 	});
 
 	return { isValid: validationErrors.length === 0, errors: validationErrors };
@@ -577,9 +589,13 @@ function validateAppealGrounds(source: AppealHas | AppealS78, sinkGrounds: SinkC
 		source.enforcementAppealGroundsDetails,
 		'enforcementAppealGroundsDetails'
 	);
-	const expected = grounds.filter((g) => g.appealGroundLetter).map((g) => g.appealGroundLetter as string);
+	const expected = grounds
+		.filter((g) => g.appealGroundLetter)
+		.map((g) => g.appealGroundLetter as string)
+		.sort();
 	if (expected.length !== sinkGrounds.length) return false;
-	return expected.every((ref) => sinkGrounds.some((g) => g.ground?.groundRef === ref));
+	const sinkRefs = sinkGrounds.map((g) => g.ground?.groundRef ?? '').sort();
+	return expected.every((ref, i) => ref === sinkRefs[i]);
 }
 
 function validateEventAddress(
@@ -723,16 +739,21 @@ function validateServiceUserMatches<T>(
 ): boolean {
 	if (sourceUsers.length !== sinkItems.length) return false;
 
-	for (const source of sourceUsers) {
-		const mapped = mapServiceUser(source);
-		const match = sinkItems.find((item) => {
-			const sinkUser = getSinkUser(item);
-			return sinkUser?.email === mapped.email && sinkUser?.firstName === mapped.firstName;
-		});
-		if (!match) return false;
-	}
+	const sourceKeys = sourceUsers
+		.map((source) => {
+			const mapped = mapServiceUser(source);
+			return `${mapped.email ?? ''}|${mapped.firstName ?? ''}`;
+		})
+		.sort();
 
-	return true;
+	const sinkKeys = sinkItems
+		.map((item) => {
+			const sinkUser = getSinkUser(item);
+			return `${sinkUser?.email ?? ''}|${sinkUser?.firstName ?? ''}`;
+		})
+		.sort();
+
+	return sourceKeys.every((key, i) => key === sinkKeys[i]);
 }
 
 function validateServiceUsers(serviceUsers: AppealServiceUser[], sink: SinkCase): ValidationResult {

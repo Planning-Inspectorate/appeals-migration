@@ -1098,6 +1098,188 @@ describe('validateData', () => {
 		});
 	});
 
+	describe('array order independence', () => {
+		test('specialisms match regardless of order', () => {
+			const source = createSource({ caseSpecialisms: '["enforcement","heritage","environment"]' });
+			const sink = createSink({
+				specialisms: [
+					{ specialism: { name: 'environment' } },
+					{ specialism: { name: 'enforcement' } },
+					{ specialism: { name: 'heritage' } }
+				]
+			});
+			assert.strictEqual(validate(source, sink), true);
+		});
+
+		test('child appeals match regardless of order', () => {
+			const source = createSource({ nearbyCaseReferences: '["CASE-003","CASE-002","CASE-004"]' });
+			const sink = createSink({
+				childAppeals: [
+					{ childRef: 'CASE-004', parentRef: 'CASE-001' },
+					{ childRef: 'CASE-002', parentRef: 'CASE-001' },
+					{ childRef: 'CASE-003', parentRef: 'CASE-001' }
+				]
+			});
+			assert.strictEqual(validate(source, sink), true);
+		});
+
+		test('neighbouring sites match regardless of order', () => {
+			const source = createSource({
+				neighbouringSiteAddresses:
+					'[{"neighbouringSiteAddressLine1":"3 High St"},{"neighbouringSiteAddressLine1":"1 Low St"},{"neighbouringSiteAddressLine1":"2 Mid St"}]'
+			});
+			const sink = createSink({
+				neighbouringSites: [
+					{ address: { addressLine1: '2 Mid St' } },
+					{ address: { addressLine1: '3 High St' } },
+					{ address: { addressLine1: '1 Low St' } }
+				]
+			});
+			assert.strictEqual(validate(source, sink), true);
+		});
+
+		test('appeal statuses match regardless of order', () => {
+			const source = createSource({
+				caseValidationDate: '2024-01-15T00:00:00.000Z',
+				caseCompletedDate: '2024-04-01T00:00:00.000Z'
+			});
+			const sink = createSink({
+				appealStatus: [
+					{ status: 'complete', createdAt: new Date('2024-04-01T00:00:00.000Z') },
+					{ status: 'ready_to_start', createdAt: new Date('2024-01-15T00:00:00.000Z') },
+					{ status: 'new', createdAt: new Date('2024-01-20T14:30:00.000Z') }
+				]
+			});
+			assert.strictEqual(validate(source, sink), true);
+		});
+
+		test('representations match regardless of order', () => {
+			const source = createSource({
+				appellantStatementSubmittedDate: '2024-04-01T00:00:00.000Z',
+				lpaStatementSubmittedDate: '2024-04-02T00:00:00.000Z',
+				appellantCommentsSubmittedDate: '2024-04-03T00:00:00.000Z'
+			});
+			const sink = createSink({
+				representations: [
+					{ representationType: 'lpa_statement' },
+					{ representationType: 'appellant_final_comment' },
+					{ representationType: 'appellant_statement' }
+				]
+			});
+			assert.strictEqual(validateData({ type: 's78', data: source }, sink, [], []).isValid, true);
+		});
+
+		test('appeal grounds match regardless of order', () => {
+			const source = createSource({
+				enforcementAppealGroundsDetails:
+					'[{"appealGroundLetter":"c"},{"appealGroundLetter":"a"},{"appealGroundLetter":"b"}]'
+			});
+			const sink = createSink({
+				appealGrounds: [
+					{ ground: { groundRef: 'b' }, factsForGround: null },
+					{ ground: { groundRef: 'a' }, factsForGround: null },
+					{ ground: { groundRef: 'c' }, factsForGround: null }
+				]
+			});
+			assert.strictEqual(validateData({ type: 's78', data: source }, sink, [], []).isValid, true);
+		});
+
+		test('lpa notification methods match regardless of order', () => {
+			const source = createSource({
+				lpaStatement: 'note',
+				notificationMethod: '["site-notice","letter","press-advert"]'
+			});
+			const lpaQuestionnaire = {
+				lpaQuestionnaireSubmittedDate: null,
+				lpaStatement: 'note',
+				lpaProcedurePreference: null,
+				importantInformation: null,
+				isCorrectAppealType: null,
+				inConservationArea: null,
+				targetDate: null,
+				lpaNotificationMethods: [
+					{ lpaNotificationMethod: { key: 'press-advert' } },
+					{ lpaNotificationMethod: { key: 'site-notice' } },
+					{ lpaNotificationMethod: { key: 'letter' } }
+				],
+				listedBuildingDetails: [],
+				designatedSiteNames: []
+			};
+			assert.strictEqual(validate(source, createSink({ lpaQuestionnaire })), true);
+		});
+
+		test('listed building details match regardless of order', () => {
+			const source = createSource({
+				lpaStatement: 'note',
+				affectedListedBuildingNumbers: '["LB-001","LB-003"]',
+				changedListedBuildingNumbers: '["LB-002"]'
+			});
+			const lpaQuestionnaire = {
+				lpaQuestionnaireSubmittedDate: null,
+				lpaStatement: 'note',
+				lpaProcedurePreference: null,
+				importantInformation: null,
+				isCorrectAppealType: null,
+				inConservationArea: null,
+				targetDate: null,
+				lpaNotificationMethods: [],
+				listedBuildingDetails: [{ listEntry: 'LB-002' }, { listEntry: 'LB-001' }, { listEntry: 'LB-003' }],
+				designatedSiteNames: []
+			};
+			assert.strictEqual(validate(source, createSink({ lpaQuestionnaire })), true);
+		});
+
+		test('interested parties match regardless of order', () => {
+			const ip1 = createServiceUser({
+				serviceUserType: 'InterestedParty',
+				firstName: 'Alice',
+				lastName: 'Smith',
+				emailAddress: 'alice@example.com'
+			});
+			const ip2 = createServiceUser({
+				serviceUserType: 'InterestedParty',
+				firstName: 'Bob',
+				lastName: 'Jones',
+				emailAddress: 'bob@example.com'
+			});
+			const sink = createSink({
+				representations: [
+					{
+						representationType: 'comment',
+						represented: { firstName: 'Bob', lastName: 'Jones', email: 'bob@example.com' }
+					},
+					{
+						representationType: 'comment',
+						represented: { firstName: 'Alice', lastName: 'Smith', email: 'alice@example.com' }
+					}
+				]
+			});
+			assert.strictEqual(validate(createSource(), sink, [], [ip1, ip2]), true);
+		});
+
+		test('rule 6 parties match regardless of order', () => {
+			const r6a = createServiceUser({
+				serviceUserType: 'Rule6Party',
+				firstName: 'Charlie',
+				lastName: 'Brown',
+				emailAddress: 'charlie@example.com'
+			});
+			const r6b = createServiceUser({
+				serviceUserType: 'Rule6Party',
+				firstName: 'Diana',
+				lastName: 'Prince',
+				emailAddress: 'diana@example.com'
+			});
+			const sink = createSink({
+				appealRule6Parties: [
+					{ serviceUser: { firstName: 'Diana', lastName: 'Prince', email: 'diana@example.com' } },
+					{ serviceUser: { firstName: 'Charlie', lastName: 'Brown', email: 'charlie@example.com' } }
+				]
+			});
+			assert.strictEqual(validate(createSource(), sink, [], [r6a, r6b]), true);
+		});
+	});
+
 	describe('validateAppellantCase errors', () => {
 		test('reports missing appellantCase', () => {
 			const result = validateData({ type: 'has', data: createSource() }, createSink({ appellantCase: null }));
