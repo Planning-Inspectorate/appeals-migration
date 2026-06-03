@@ -612,7 +612,8 @@ function validateEventAddress(
 	);
 }
 
-function validateEvents(events: AppealEvent[], sink: SinkCase): boolean {
+function validateEvents(events: AppealEvent[], sink: SinkCase): ValidationResult {
+	const validationErrors: string[] = [];
 	let hasSourceHearing = false;
 	let hasSourceInquiry = false;
 	let hasSourceSiteVisit = false;
@@ -621,30 +622,67 @@ function validateEvents(events: AppealEvent[], sink: SinkCase): boolean {
 		const mapped = mapEventToSink(event);
 		if (mapped.hearing) {
 			hasSourceHearing = true;
-			if (!sink.hearing) return false;
-			const hearing = mapped.hearing.create;
-			if (!compareMappedDate(hearing.hearingStartTime, sink.hearing.hearingStartTime)) return false;
-			if (!compareMappedDate(hearing.hearingEndTime, sink.hearing.hearingEndTime)) return false;
-			if (!validateEventAddress(hearing.address?.create, sink.hearing.address)) return false;
+			if (!sink.hearing) {
+				validationErrors.push('hearing event exists in source but hearing is missing in sink');
+			} else {
+				const hearing = mapped.hearing.create;
+				if (!compareMappedDate(hearing.hearingStartTime, sink.hearing.hearingStartTime)) {
+					validationErrors.push(
+						`hearing.hearingStartTime: expected '${hearing.hearingStartTime ?? 'null'}' got '${sink.hearing.hearingStartTime?.toISOString() ?? 'null'}'`
+					);
+				}
+				if (!compareMappedDate(hearing.hearingEndTime, sink.hearing.hearingEndTime)) {
+					validationErrors.push(
+						`hearing.hearingEndTime: expected '${hearing.hearingEndTime ?? 'null'}' got '${sink.hearing.hearingEndTime?.toISOString() ?? 'null'}'`
+					);
+				}
+				if (!validateEventAddress(hearing.address?.create, sink.hearing.address)) {
+					validationErrors.push('hearing.address validation failed');
+				}
+			}
 		} else if (mapped.inquiry) {
 			hasSourceInquiry = true;
-			if (!sink.inquiry) return false;
-			const inquiry = mapped.inquiry.create;
-			if (!compareMappedDate(inquiry.inquiryStartTime, sink.inquiry.inquiryStartTime)) return false;
-			if (!compareMappedDate(inquiry.inquiryEndTime, sink.inquiry.inquiryEndTime)) return false;
-			if (!validateEventAddress(inquiry.address?.create, sink.inquiry.address)) return false;
+			if (!sink.inquiry) {
+				validationErrors.push('inquiry event exists in source but inquiry is missing in sink');
+			} else {
+				const inquiry = mapped.inquiry.create;
+				if (!compareMappedDate(inquiry.inquiryStartTime, sink.inquiry.inquiryStartTime)) {
+					validationErrors.push(
+						`inquiry.inquiryStartTime: expected '${inquiry.inquiryStartTime ?? 'null'}' got '${sink.inquiry.inquiryStartTime?.toISOString() ?? 'null'}'`
+					);
+				}
+				if (!compareMappedDate(inquiry.inquiryEndTime, sink.inquiry.inquiryEndTime)) {
+					validationErrors.push(
+						`inquiry.inquiryEndTime: expected '${inquiry.inquiryEndTime ?? 'null'}' got '${sink.inquiry.inquiryEndTime?.toISOString() ?? 'null'}'`
+					);
+				}
+				if (!validateEventAddress(inquiry.address?.create, sink.inquiry.address)) {
+					validationErrors.push('inquiry.address validation failed');
+				}
+			}
 		} else if (mapped.siteVisit) {
 			hasSourceSiteVisit = true;
-			if (!sink.siteVisit || !sink.siteVisit.visitDate || !mapped.siteVisit.create.visitDate) return false;
-			if (!compareMappedDate(mapped.siteVisit.create.visitDate, sink.siteVisit.visitDate)) return false;
+			if (!sink.siteVisit || !sink.siteVisit.visitDate || !mapped.siteVisit.create.visitDate) {
+				validationErrors.push('siteVisit event exists in source but siteVisit is missing or has no visitDate in sink');
+			} else if (!compareMappedDate(mapped.siteVisit.create.visitDate, sink.siteVisit.visitDate)) {
+				validationErrors.push(
+					`siteVisit.visitDate: expected '${mapped.siteVisit.create.visitDate ?? 'null'}' got '${sink.siteVisit.visitDate?.toISOString() ?? 'null'}'`
+				);
+			}
 		}
 	}
 
-	if (sink.hearing && !hasSourceHearing) return false;
-	if (sink.inquiry && !hasSourceInquiry) return false;
-	if (sink.siteVisit && !hasSourceSiteVisit) return false;
+	if (sink.hearing && !hasSourceHearing) {
+		validationErrors.push('hearing exists in sink but no hearing event found in source');
+	}
+	if (sink.inquiry && !hasSourceInquiry) {
+		validationErrors.push('inquiry exists in sink but no inquiry event found in source');
+	}
+	if (sink.siteVisit && !hasSourceSiteVisit) {
+		validationErrors.push('siteVisit exists in sink but no siteVisit event found in source');
+	}
 
-	return true;
+	return { isValid: validationErrors.length === 0, errors: validationErrors };
 }
 
 function validateServiceUser(
@@ -870,9 +908,7 @@ export function validateData(
 		{ fn: () => validateSpecialisms(source, sinkCase.specialisms), fieldName: 'specialisms' },
 		{ fn: () => validateChildAppeals(source, sinkCase.childAppeals), fieldName: 'childAppeals' },
 		{ fn: () => validateNeighbouringSites(source, sinkCase.neighbouringSites), fieldName: 'neighbouringSites' },
-		{ fn: () => validateRepresentations(source, sinkCase.representations), fieldName: 'representations' },
 		{ fn: () => validateAppealGrounds(source, sinkCase.appealGrounds), fieldName: 'appealGrounds' },
-		{ fn: () => validateEvents(events, sinkCase), fieldName: 'events' },
 		{ fn: () => validateServiceUsers(serviceUsers, sinkCase), fieldName: 'serviceUsers' }
 	];
 
@@ -887,6 +923,7 @@ export function validateData(
 		{ fn: () => validateInspectorDecision(source, sinkCase.inspectorDecision), fieldName: 'inspectorDecision' },
 		{ fn: () => validateLpaQuestionnaire(source, sinkCase.lpaQuestionnaire), fieldName: 'lpaQuestionnaire' },
 		{ fn: () => validateRepresentations(source, sinkCase.representations), fieldName: 'representations' },
+		{ fn: () => validateEvents(events, sinkCase), fieldName: 'events' },
 		{ fn: () => validateAppealStatus(source, sinkCase.appealStatus), fieldName: 'appealStatus' },
 		{ fn: () => validateAppellantCase(source, sinkCase.appellantCase), fieldName: 'appellantCase' }
 	];
