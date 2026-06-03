@@ -841,4 +841,78 @@ describe('validateData', () => {
 			assert.strictEqual(errors.length, 0);
 		});
 	});
+
+	describe('validateEvents errors', () => {
+		test('reports missing hearing in sink', () => {
+			const event = createEvent({ eventType: 'hearing', eventStartDateTime: '2024-07-01T10:00:00.000Z' });
+			const result = validateData({ type: 'has', data: createSource() }, createSink(), [event], []);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'events');
+			assert.ok(errors.some((e) => e.error.includes('hearing') && e.error.includes('missing in sink')));
+		});
+
+		test('reports hearing start time mismatch', () => {
+			const event = createEvent({ eventType: 'hearing', eventStartDateTime: '2024-07-01T10:00:00.000Z' });
+			const sink = createSink({
+				hearing: { hearingStartTime: new Date('2024-08-01T10:00:00.000Z'), hearingEndTime: null, address: null }
+			});
+			const result = validateData({ type: 'has', data: createSource() }, sink, [event], []);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'events');
+			assert.ok(errors.some((e) => e.error.includes('hearingStartTime')));
+		});
+
+		test('reports inquiry in sink but not in source', () => {
+			const sink = createSink({
+				inquiry: { inquiryStartTime: new Date('2024-08-01T10:00:00.000Z'), inquiryEndTime: null, address: null }
+			});
+			const result = validateData({ type: 'has', data: createSource() }, sink, [], []);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'events');
+			assert.ok(errors.some((e) => e.error.includes('inquiry exists in sink')));
+		});
+
+		test('reports siteVisit in sink but not in source', () => {
+			const sink = createSink({
+				siteVisit: {
+					visitDate: new Date('2024-07-15T09:00:00.000Z'),
+					visitStartTime: new Date('2024-07-15T09:00:00.000Z'),
+					visitEndTime: null
+				}
+			});
+			const result = validateData({ type: 'has', data: createSource() }, sink, [], []);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'events');
+			assert.ok(errors.some((e) => e.error.includes('siteVisit exists in sink')));
+		});
+
+		test('reports siteVisit date mismatch', () => {
+			const event = createEvent({
+				eventType: 'site_visit_accompanied',
+				eventStartDateTime: '2024-07-15T09:00:00.000Z'
+			});
+			const sink = createSink({
+				siteVisit: {
+					visitDate: new Date('2024-08-15T09:00:00.000Z'),
+					visitStartTime: new Date('2024-08-15T09:00:00.000Z'),
+					visitEndTime: null
+				}
+			});
+			const result = validateData({ type: 'has', data: createSource() }, sink, [event], []);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'events');
+			assert.ok(errors.some((e) => e.error.includes('siteVisit.visitDate')));
+		});
+
+		test('no errors when events match', () => {
+			const event = createEvent({ eventType: 'hearing', eventStartDateTime: '2024-07-01T10:00:00.000Z' });
+			const sink = createSink({
+				hearing: { hearingStartTime: new Date('2024-07-01T10:00:00.000Z'), hearingEndTime: null, address: null }
+			});
+			const result = validateData({ type: 'has', data: createSource() }, sink, [event], []);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'events');
+			assert.strictEqual(errors.length, 0);
+		});
+	});
 });
