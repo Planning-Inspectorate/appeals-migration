@@ -23,7 +23,7 @@ describe('impl - buildListDocumentsToMigrate', () => {
 		};
 
 		const source = {
-			fetchDocumentsByCaseReference: mock.fn(async () => documents)
+			fetchDocumentsForCase: mock.fn(async () => documents)
 		};
 
 		const tx = {};
@@ -42,7 +42,7 @@ describe('impl - buildListDocumentsToMigrate', () => {
 
 		await handler(caseToMigrate as any, context as any);
 
-		assert.deepEqual(source.fetchDocumentsByCaseReference.mock.calls[0].arguments, [{}, 'CASE-1']);
+		assert.deepEqual(source.fetchDocumentsForCase.mock.calls[0].arguments, [{}, 'CASE-1', undefined]);
 		assert.equal(migrationDb.$transaction.mock.calls.length, 1);
 		assert.deepEqual(migration.upsertDocumentsToMigrate.mock.calls[0].arguments, [tx, documents]);
 
@@ -57,7 +57,7 @@ describe('impl - buildListDocumentsToMigrate', () => {
 		};
 
 		const source = {
-			fetchDocumentsByCaseReference: mock.fn(async () => {
+			fetchDocumentsForCase: mock.fn(async () => {
 				throw new Error('boom');
 			})
 		};
@@ -83,7 +83,7 @@ describe('impl - buildListDocumentsToMigrate', () => {
 		};
 
 		const source = {
-			fetchDocumentsByCaseReference: mock.fn(async () => documents)
+			fetchDocumentsForCase: mock.fn(async () => documents)
 		};
 
 		const tx = {};
@@ -120,7 +120,7 @@ describe('impl - buildListDocumentsToMigrate', () => {
 		};
 
 		const source = {
-			fetchDocumentsByCaseReference: mock.fn(async () => documents)
+			fetchDocumentsForCase: mock.fn(async () => documents)
 		};
 
 		const error = createPrismaError('P1001');

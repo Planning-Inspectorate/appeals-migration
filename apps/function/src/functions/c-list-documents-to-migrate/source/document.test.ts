@@ -1,7 +1,7 @@
 // @ts-nocheck
 import assert from 'node:assert/strict';
 import { describe, mock, test } from 'node:test';
-import { fetchDocumentsByCaseReference } from './document.ts';
+import { fetchDocumentsForCase } from './document.ts';
 
 type SourceDbMock = {
 	appealDocument: {
@@ -19,7 +19,7 @@ describe('document', () => {
 
 			const db: SourceDbMock = { appealDocument: { findMany } };
 
-			const result = await fetchDocumentsByCaseReference(db as any, 'CASE-1');
+			const result = await fetchDocumentsForCase(db as any, 'CASE-1');
 
 			assert.deepEqual(result, [
 				{ documentId: 'DOC-1', caseReference: 'CASE-1' },
@@ -43,7 +43,7 @@ describe('document', () => {
 
 			const db: SourceDbMock = { appealDocument: { findMany } };
 
-			const result = await fetchDocumentsByCaseReference(db as any, 'CASE-1');
+			const result = await fetchDocumentsForCase(db as any, 'CASE-1');
 
 			assert.deepEqual(result, [{ documentId: 'DOC-1', caseReference: 'CASE-1' }]);
 		});

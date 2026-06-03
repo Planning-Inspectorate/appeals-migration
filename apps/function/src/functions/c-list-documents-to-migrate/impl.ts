@@ -4,14 +4,14 @@ import { withRetry } from '@pins/appeals-migration-lib/util/retry.ts';
 import type { FunctionService } from '../../service.ts';
 import type { MigrationFunction } from '../../types.ts';
 import { upsertDocumentsToMigrate } from './migration/document-to-migrate.ts';
-import { fetchDocumentsByCaseReference } from './source/document.ts';
+import { fetchDocumentsForCase } from './source/document.ts';
 
 type Migration = {
 	upsertDocumentsToMigrate: typeof upsertDocumentsToMigrate;
 };
 
 type Source = {
-	fetchDocumentsByCaseReference: typeof fetchDocumentsByCaseReference;
+	fetchDocumentsForCase: typeof fetchDocumentsForCase;
 };
 
 const defaultMigration: Migration = {
@@ -19,7 +19,7 @@ const defaultMigration: Migration = {
 };
 
 const defaultSource: Source = {
-	fetchDocumentsByCaseReference
+	fetchDocumentsForCase: fetchDocumentsForCase
 };
 
 export function buildListDocumentsToMigrate(
@@ -34,7 +34,7 @@ export function buildListDocumentsToMigrate(
 		const caseReference = caseToMigrate.caseReference;
 		context.log(`Processing case: ${caseReference}`);
 
-		const documents = await source.fetchDocumentsByCaseReference(sourceDatabase, caseReference);
+		const documents = await source.fetchDocumentsForCase(sourceDatabase, caseReference, caseToMigrate.sourceCaseId);
 
 		context.log(`Found ${documents.length} documents for case ${caseReference}`);
 
