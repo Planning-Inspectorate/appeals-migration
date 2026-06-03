@@ -526,7 +526,11 @@ function validateDesignatedSiteNames(
 	);
 }
 
-function validateRepresentations(source: AppealHas | AppealS78, sinkReps: SinkCase['representations']): boolean {
+function validateRepresentations(
+	source: AppealHas | AppealS78,
+	sinkReps: SinkCase['representations']
+): ValidationResult {
+	const validationErrors: string[] = [];
 	const s78 = source as AppealS78;
 	const expected: string[] = [];
 
@@ -546,8 +550,24 @@ function validateRepresentations(source: AppealHas | AppealS78, sinkReps: SinkCa
 	});
 
 	const nonCommentReps = sinkReps.filter((r) => r.representationType !== APPEAL_REPRESENTATION_TYPE.COMMENT);
-	if (expected.length !== nonCommentReps.length) return false;
-	return expected.every((type) => nonCommentReps.some((r) => r.representationType === type));
+
+	if (expected.length !== nonCommentReps.length) {
+		validationErrors.push(
+			`Expected ${expected.length} representations but found ${nonCommentReps.length}. Expected types: ${expected.join(', ')}`
+		);
+	}
+
+	const missingTypes = expected.filter((type) => !nonCommentReps.some((r) => r.representationType === type));
+	missingTypes.forEach((type) => {
+		validationErrors.push(`Representation type '${type}' not found in sink`);
+	});
+
+	const unexpectedTypes = nonCommentReps.filter((r) => !expected.includes(r.representationType));
+	unexpectedTypes.forEach((r) => {
+		validationErrors.push(`Unexpected representation type '${r.representationType}' found in sink`);
+	});
+
+	return { isValid: validationErrors.length === 0, errors: validationErrors };
 }
 
 function validateAppealGrounds(source: AppealHas | AppealS78, sinkGrounds: SinkCase['appealGrounds']): boolean {
@@ -866,6 +886,7 @@ export function validateData(
 		{ fn: () => validateAddress(source, sinkCase.address), fieldName: 'address' },
 		{ fn: () => validateInspectorDecision(source, sinkCase.inspectorDecision), fieldName: 'inspectorDecision' },
 		{ fn: () => validateLpaQuestionnaire(source, sinkCase.lpaQuestionnaire), fieldName: 'lpaQuestionnaire' },
+		{ fn: () => validateRepresentations(source, sinkCase.representations), fieldName: 'representations' },
 		{ fn: () => validateAppealStatus(source, sinkCase.appealStatus), fieldName: 'appealStatus' },
 		{ fn: () => validateAppellantCase(source, sinkCase.appellantCase), fieldName: 'appellantCase' }
 	];
