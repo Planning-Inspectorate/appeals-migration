@@ -211,26 +211,99 @@ function validateInspectorDecision(source: AppealHas | AppealS78, sink: SinkCase
 	);
 }
 
-function validateAppellantCase(source: AppealHas | AppealS78, sink: SinkCase['appellantCase']): boolean {
-	if (!sink) return false;
+function validateAppellantCase(
+	source: AppealHas | AppealS78,
+	sink: SinkCase['appellantCase']
+): { isValid: boolean; errors: string[] } {
+	const validationErrors: string[] = [];
+
+	if (!sink) {
+		validationErrors.push('appellantCase is missing in sink');
+		return { isValid: false, errors: validationErrors };
+	}
+
 	const s78 = source as AppealS78;
-	return (
-		compareMappedDate(source.caseSubmittedDate, sink.caseSubmittedDate) &&
-		compareMappedString(source.applicationDecision, sink.applicationDecision) &&
-		compareMappedDate(source.applicationDate, sink.applicationDate) &&
-		compareMappedDate(source.applicationDecisionDate, sink.applicationDecisionDate) &&
-		compareMappedString(source.siteAccessDetails, sink.siteAccessDetails) &&
-		compareMappedString(source.siteSafetyDetails, sink.siteSafetyDetails) &&
-		compareMappedString(source.originalDevelopmentDescription, sink.originalDevelopmentDescription) &&
-		(sink.ownsAllLand ?? null) === (source.ownsAllLand ?? null) &&
-		(sink.ownsSomeLand ?? null) === (source.ownsSomeLand ?? null) &&
-		compareMappedString(source.typeOfPlanningApplication, sink.typeOfPlanningApplication) &&
-		compareMappedString(source.jurisdiction, sink.jurisdiction) &&
-		compareMappedDate(s78.issueDateOfEnforcementNotice, sink.enforcementIssueDate) &&
-		compareMappedString(s78.ownerOccupancyStatus, sink.interestInLand) &&
-		compareMappedString(s78.appellantProcedurePreference, sink.appellantProcedurePreference) &&
-		compareMappedNumber(s78.appellantProcedurePreferenceDuration, sink.appellantProcedurePreferenceDuration)
-	);
+
+	if (!compareMappedDate(source.caseSubmittedDate, sink.caseSubmittedDate)) {
+		validationErrors.push(
+			`caseSubmittedDate: expected '${source.caseSubmittedDate ?? 'null'}' got '${sink.caseSubmittedDate?.toISOString() ?? 'null'}'`
+		);
+	}
+	if (!compareMappedString(source.applicationDecision, sink.applicationDecision)) {
+		validationErrors.push(
+			`applicationDecision: expected '${source.applicationDecision ?? 'null'}' got '${sink.applicationDecision ?? 'null'}'`
+		);
+	}
+	if (!compareMappedDate(source.applicationDate, sink.applicationDate)) {
+		validationErrors.push(
+			`applicationDate: expected '${source.applicationDate ?? 'null'}' got '${sink.applicationDate?.toISOString() ?? 'null'}'`
+		);
+	}
+	if (!compareMappedDate(source.applicationDecisionDate, sink.applicationDecisionDate)) {
+		validationErrors.push(
+			`applicationDecisionDate: expected '${source.applicationDecisionDate ?? 'null'}' got '${sink.applicationDecisionDate?.toISOString() ?? 'null'}'`
+		);
+	}
+	if (!compareMappedString(source.siteAccessDetails, sink.siteAccessDetails)) {
+		validationErrors.push(
+			`siteAccessDetails: expected '${source.siteAccessDetails ?? 'null'}' got '${sink.siteAccessDetails ?? 'null'}'`
+		);
+	}
+	if (!compareMappedString(source.siteSafetyDetails, sink.siteSafetyDetails)) {
+		validationErrors.push(
+			`siteSafetyDetails: expected '${source.siteSafetyDetails ?? 'null'}' got '${sink.siteSafetyDetails ?? 'null'}'`
+		);
+	}
+	if (!compareMappedString(source.originalDevelopmentDescription, sink.originalDevelopmentDescription)) {
+		validationErrors.push(
+			`originalDevelopmentDescription: expected '${source.originalDevelopmentDescription ?? 'null'}' got '${sink.originalDevelopmentDescription ?? 'null'}'`
+		);
+	}
+	if ((sink.ownsAllLand ?? null) !== (source.ownsAllLand ?? null)) {
+		validationErrors.push(
+			`ownsAllLand: expected '${source.ownsAllLand ?? 'null'}' got '${sink.ownsAllLand ?? 'null'}'`
+		);
+	}
+	if ((sink.ownsSomeLand ?? null) !== (source.ownsSomeLand ?? null)) {
+		validationErrors.push(
+			`ownsSomeLand: expected '${source.ownsSomeLand ?? 'null'}' got '${sink.ownsSomeLand ?? 'null'}'`
+		);
+	}
+	if (!compareMappedString(source.typeOfPlanningApplication, sink.typeOfPlanningApplication)) {
+		validationErrors.push(
+			`typeOfPlanningApplication: expected '${source.typeOfPlanningApplication ?? 'null'}' got '${sink.typeOfPlanningApplication ?? 'null'}'`
+		);
+	}
+	if (!compareMappedString(source.jurisdiction, sink.jurisdiction)) {
+		validationErrors.push(
+			`jurisdiction: expected '${source.jurisdiction ?? 'null'}' got '${sink.jurisdiction ?? 'null'}'`
+		);
+	}
+	if (!compareMappedDate(s78.issueDateOfEnforcementNotice, sink.enforcementIssueDate)) {
+		validationErrors.push(
+			`enforcementIssueDate: expected '${s78.issueDateOfEnforcementNotice ?? 'null'}' got '${sink.enforcementIssueDate?.toISOString() ?? 'null'}'`
+		);
+	}
+	if (!compareMappedString(s78.ownerOccupancyStatus, sink.interestInLand)) {
+		validationErrors.push(
+			`interestInLand: expected '${s78.ownerOccupancyStatus ?? 'null'}' got '${sink.interestInLand ?? 'null'}'`
+		);
+	}
+	if (!compareMappedString(s78.appellantProcedurePreference, sink.appellantProcedurePreference)) {
+		validationErrors.push(
+			`appellantProcedurePreference: expected '${s78.appellantProcedurePreference ?? 'null'}' got '${sink.appellantProcedurePreference ?? 'null'}'`
+		);
+	}
+	if (!compareMappedNumber(s78.appellantProcedurePreferenceDuration, sink.appellantProcedurePreferenceDuration)) {
+		validationErrors.push(
+			`appellantProcedurePreferenceDuration: expected '${s78.appellantProcedurePreferenceDuration ?? 'null'}' got '${sink.appellantProcedurePreferenceDuration ?? 'null'}'`
+		);
+	}
+
+	return {
+		isValid: validationErrors.length === 0,
+		errors: validationErrors
+	};
 }
 
 function validateChildAppeals(source: AppealHas | AppealS78, sinkAppeals: SinkCase['childAppeals']): boolean {
@@ -661,7 +734,6 @@ export function validateData(
 		{ fn: () => validateSpecialisms(source, sinkCase.specialisms), fieldName: 'specialisms' },
 		{ fn: () => validateAddress(source, sinkCase.address), fieldName: 'address' },
 		{ fn: () => validateInspectorDecision(source, sinkCase.inspectorDecision), fieldName: 'inspectorDecision' },
-		{ fn: () => validateAppellantCase(source, sinkCase.appellantCase), fieldName: 'appellantCase' },
 		{ fn: () => validateChildAppeals(source, sinkCase.childAppeals), fieldName: 'childAppeals' },
 		{ fn: () => validateNeighbouringSites(source, sinkCase.neighbouringSites), fieldName: 'neighbouringSites' },
 		{ fn: () => validateLpaQuestionnaire(source, sinkCase.lpaQuestionnaire), fieldName: 'lpaQuestionnaire' },
@@ -680,6 +752,14 @@ export function validateData(
 	if (!appealStatusResult.isValid) {
 		appealStatusResult.errors.forEach((error) => {
 			errors.push(createValidationError(sourceModel, 'appealStatus', error));
+		});
+	}
+
+	// Validate appellant case with detailed error messages
+	const appellantCaseResult = validateAppellantCase(source, sinkCase.appellantCase);
+	if (!appellantCaseResult.isValid) {
+		appellantCaseResult.errors.forEach((error) => {
+			errors.push(createValidationError(sourceModel, 'appellantCase', error));
 		});
 	}
 
