@@ -4,6 +4,7 @@
 {% from "govuk/components/details/macro.njk" import govukDetails %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% macro statusTag(status) %}
@@ -136,30 +137,61 @@
 
     {{ stepSummary("Validation", validationStep) }}
 
+    <h2 class="govuk-heading-m">Validation outcome</h2>
+
     {{ govukSummaryList({
-        card: {
-            title: {
-                text: "Validation outcome"
-            }
-        },
         rows: [
             {
                 key: { text: "Data validated" },
-                value: { text: "Yes" if dataValidated else ("No" if dataValidated === false else "–") }
-            },
-            {
-                key: { text: "Data validation errors" },
-                value: { text: dataValidationErrors or "–" }
+                value: { text: "Yes" if dataValidated else ("No (see errors below)" if dataValidated === false else "–") }
             },
             {
                 key: { text: "Documents validated" },
-                value: { text: "Yes" if documentsValidated else ("No" if documentsValidated === false else "–") }
-            },
-            {
-                key: { text: "Document validation errors" },
-                value: { text: documentValidationErrors or "–" }
+                value: { text: "Yes" if documentsValidated else ("No (see errors below)" if documentsValidated === false else "–") }
             }
         ]
     }) }}
+
+    {% if dataValidationErrors.length > 0 %}
+        {% set dataErrorRows = [] %}
+        {% for error in dataValidationErrors %}
+            {% set dataErrorRows = (dataErrorRows.push([
+                { text: error.sourceModel },
+                { text: error.sourceField },
+                { text: error.error }
+            ]), dataErrorRows) %}
+        {% endfor %}
+        {{ govukTable({
+            caption: "Data validation errors",
+            captionClasses: "govuk-table__caption--s",
+            head: [
+                { text: "Source model" },
+                { text: "Source field" },
+                { text: "Error" }
+            ],
+            rows: dataErrorRows
+        }) }}
+    {% endif %}
+
+    {% if documentValidationErrors.length > 0 %}
+        {% set docErrorRows = [] %}
+        {% for error in documentValidationErrors %}
+            {% set docErrorRows = (docErrorRows.push([
+                { text: error.sourceModel },
+                { text: error.sourceField },
+                { text: error.error }
+            ]), docErrorRows) %}
+        {% endfor %}
+        {{ govukTable({
+            caption: "Document validation errors",
+            captionClasses: "govuk-table__caption--s",
+            head: [
+                { text: "Source model" },
+                { text: "Source field" },
+                { text: "Error" }
+            ],
+            rows: docErrorRows
+        }) }}
+    {% endif %}
 {% endblock %}
 

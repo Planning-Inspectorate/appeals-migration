@@ -19,6 +19,12 @@ interface StepViewModel {
 	completedAt: string | null;
 }
 
+export interface ValidationError {
+	sourceModel: string;
+	sourceField: string;
+	error: string;
+}
+
 export interface DocumentStatusSummary {
 	total: number;
 	waiting: number;
@@ -39,9 +45,9 @@ export interface CaseStatusViewModel {
 	documentsStep: StepViewModel;
 	validationStep: StepViewModel;
 	dataValidated: boolean | null;
-	dataValidationErrors: string | null;
+	dataValidationErrors: ValidationError[];
 	documentsValidated: boolean | null;
-	documentValidationErrors: string | null;
+	documentValidationErrors: ValidationError[];
 	documentStatusSummary: DocumentStatusSummary;
 	actions: { text: string; action: string }[];
 	actionSuccess?: string;
@@ -62,6 +68,21 @@ function formatStep(step: MigrationStep): StepViewModel {
 		startedAt: step.startedAt ? dateFormatter.format(step.startedAt) : null,
 		completedAt: step.completedAt ? dateFormatter.format(step.completedAt) : null
 	};
+}
+
+function parseValidationErrors(json: string | null): ValidationError[] {
+	if (!json) {
+		return [];
+	}
+	try {
+		const parsed = JSON.parse(json);
+		if (Array.isArray(parsed)) {
+			return parsed;
+		}
+		return [];
+	} catch {
+		return [];
+	}
 }
 
 export function buildCaseStatusViewModel(
@@ -94,9 +115,9 @@ export function buildCaseStatusViewModel(
 			detailsUrl: `/case/${encodeURIComponent(caseToMigrate.caseReference)}/documents`
 		},
 		dataValidated: caseToMigrate.dataValidated,
-		dataValidationErrors: caseToMigrate.dataValidationErrors,
+		dataValidationErrors: parseValidationErrors(caseToMigrate.dataValidationErrors),
 		documentsValidated: caseToMigrate.documentsValidated,
-		documentValidationErrors: caseToMigrate.documentValidationErrors,
+		documentValidationErrors: parseValidationErrors(caseToMigrate.documentValidationErrors),
 		actionSuccess: actionSuccess && actionDisplayNames.get(actionSuccess),
 		actionWarning,
 		actions: [...actionDisplayNames.entries()].map(([k, v]) => {
