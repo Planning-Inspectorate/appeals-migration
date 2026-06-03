@@ -230,17 +230,36 @@ function compareAddressFields(
 	);
 }
 
-function validateAddress(source: AppealHas | AppealS78, sink: SinkCase['address']): boolean {
-	if (!source.siteAddressLine1) return !sink;
-	if (!sink) return false;
-	return compareAddressFields(
-		source.siteAddressLine1,
-		source.siteAddressLine2,
-		source.siteAddressTown,
-		source.siteAddressCounty,
-		source.siteAddressPostcode,
-		sink
-	);
+function validateAddress(source: AppealHas | AppealS78, sink: SinkCase['address']): ValidationResult {
+	const validationErrors: string[] = [];
+
+	if (!source.siteAddressLine1) {
+		if (sink) {
+			validationErrors.push('address exists in sink but source has no siteAddressLine1');
+		}
+		return { isValid: validationErrors.length === 0, errors: validationErrors };
+	}
+
+	if (!sink) {
+		validationErrors.push('address is missing in sink');
+		return { isValid: false, errors: validationErrors };
+	}
+
+	const checks: Array<{ field: string; source: string | null | undefined; sink: string | null }> = [
+		{ field: 'addressLine1', source: source.siteAddressLine1, sink: sink.addressLine1 },
+		{ field: 'addressLine2', source: source.siteAddressLine2, sink: sink.addressLine2 },
+		{ field: 'addressTown', source: source.siteAddressTown, sink: sink.addressTown },
+		{ field: 'addressCounty', source: source.siteAddressCounty, sink: sink.addressCounty },
+		{ field: 'postcode', source: source.siteAddressPostcode, sink: sink.postcode }
+	];
+
+	checks.forEach(({ field, source: srcVal, sink: sinkVal }) => {
+		if (!compareMappedString(srcVal, sinkVal)) {
+			validationErrors.push(`${field}: expected '${srcVal ?? 'null'}' got '${sinkVal ?? 'null'}'`);
+		}
+	});
+
+	return { isValid: validationErrors.length === 0, errors: validationErrors };
 }
 
 function validateInspectorDecision(source: AppealHas | AppealS78, sink: SinkCase['inspectorDecision']): boolean {
@@ -768,7 +787,6 @@ export function validateData(
 	const complexValidations: Array<{ fn: () => boolean; fieldName: string }> = [
 		{ fn: () => validateParentAppeals(source, sinkCase.parentAppeals), fieldName: 'parentAppeals' },
 		{ fn: () => validateSpecialisms(source, sinkCase.specialisms), fieldName: 'specialisms' },
-		{ fn: () => validateAddress(source, sinkCase.address), fieldName: 'address' },
 		{ fn: () => validateInspectorDecision(source, sinkCase.inspectorDecision), fieldName: 'inspectorDecision' },
 		{ fn: () => validateChildAppeals(source, sinkCase.childAppeals), fieldName: 'childAppeals' },
 		{ fn: () => validateNeighbouringSites(source, sinkCase.neighbouringSites), fieldName: 'neighbouringSites' },
@@ -786,6 +804,7 @@ export function validateData(
 	const detailedValidations: Array<{ fn: () => ValidationResult; fieldName: string }> = [
 		{ fn: () => validateAppealTimetable(source, sinkCase.appealTimetable), fieldName: 'appealTimetable' },
 		{ fn: () => validateAllocation(source, sinkCase.allocation), fieldName: 'allocation' },
+		{ fn: () => validateAddress(source, sinkCase.address), fieldName: 'address' },
 		{ fn: () => validateAppealStatus(source, sinkCase.appealStatus), fieldName: 'appealStatus' },
 		{ fn: () => validateAppellantCase(source, sinkCase.appellantCase), fieldName: 'appellantCase' }
 	];
