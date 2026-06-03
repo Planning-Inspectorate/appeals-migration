@@ -58,7 +58,8 @@ function validateArrayMatch<S, T>(
 	return expected.every((e) => sinkItems.some((s) => getSinkKey(s) === getExpectedKey(e)));
 }
 
-function validateAppealTimetable(source: AppealHas | AppealS78, sink: SinkCase['appealTimetable']): boolean {
+function validateAppealTimetable(source: AppealHas | AppealS78, sink: SinkCase['appealTimetable']): ValidationResult {
+	const validationErrors: string[] = [];
 	const s78 = source as AppealS78;
 	const shouldExist = [
 		source.lpaQuestionnaireDueDate,
@@ -70,18 +71,37 @@ function validateAppealTimetable(source: AppealHas | AppealS78, sink: SinkCase['
 		s78.statementOfCommonGroundDueDate
 	].some((v) => parseDateOrUndefined(v) !== undefined);
 
-	if (!shouldExist && !sink) return true;
-	if (!sink) return false;
+	if (!shouldExist && !sink) return { isValid: true, errors: [] };
+	if (!sink) {
+		validationErrors.push('appealTimetable is missing in sink but expected to exist');
+		return { isValid: false, errors: validationErrors };
+	}
 
-	return (
-		compareMappedDate(source.lpaQuestionnaireDueDate, sink.lpaQuestionnaireDueDate) &&
-		compareMappedDate(s78.planningObligationDueDate, sink.planningObligationDueDate) &&
-		compareMappedDate(s78.finalCommentsDueDate, sink.finalCommentsDueDate) &&
-		compareMappedDate(s78.interestedPartyRepsDueDate, sink.ipCommentsDueDate) &&
-		compareMappedDate(s78.proofsOfEvidenceDueDate, sink.proofOfEvidenceAndWitnessesDueDate) &&
-		compareMappedDate(s78.statementDueDate, sink.lpaStatementDueDate) &&
-		compareMappedDate(s78.statementOfCommonGroundDueDate, sink.statementOfCommonGroundDueDate)
-	);
+	const dateChecks: Array<{ field: string; source: string | Date | null | undefined; sink: Date | null }> = [
+		{ field: 'lpaQuestionnaireDueDate', source: source.lpaQuestionnaireDueDate, sink: sink.lpaQuestionnaireDueDate },
+		{ field: 'planningObligationDueDate', source: s78.planningObligationDueDate, sink: sink.planningObligationDueDate },
+		{ field: 'finalCommentsDueDate', source: s78.finalCommentsDueDate, sink: sink.finalCommentsDueDate },
+		{ field: 'interestedPartyRepsDueDate', source: s78.interestedPartyRepsDueDate, sink: sink.ipCommentsDueDate },
+		{
+			field: 'proofsOfEvidenceDueDate',
+			source: s78.proofsOfEvidenceDueDate,
+			sink: sink.proofOfEvidenceAndWitnessesDueDate
+		},
+		{ field: 'statementDueDate', source: s78.statementDueDate, sink: sink.lpaStatementDueDate },
+		{
+			field: 'statementOfCommonGroundDueDate',
+			source: s78.statementOfCommonGroundDueDate,
+			sink: sink.statementOfCommonGroundDueDate
+		}
+	];
+
+	dateChecks.forEach(({ field, source: srcVal, sink: sinkVal }) => {
+		if (!compareMappedDate(srcVal, sinkVal)) {
+			validationErrors.push(`${field}: expected '${srcVal ?? 'null'}' got '${sinkVal?.toISOString() ?? 'null'}'`);
+		}
+	});
+
+	return { isValid: validationErrors.length === 0, errors: validationErrors };
 }
 
 function validateAllocation(source: AppealHas | AppealS78, sink: SinkCase['allocation']): boolean {
@@ -728,7 +748,6 @@ export function validateData(
 
 	const complexValidations: Array<{ fn: () => boolean; fieldName: string }> = [
 		{ fn: () => validateParentAppeals(source, sinkCase.parentAppeals), fieldName: 'parentAppeals' },
-		{ fn: () => validateAppealTimetable(source, sinkCase.appealTimetable), fieldName: 'appealTimetable' },
 		{ fn: () => validateAllocation(source, sinkCase.allocation), fieldName: 'allocation' },
 		{ fn: () => validateSpecialisms(source, sinkCase.specialisms), fieldName: 'specialisms' },
 		{ fn: () => validateAddress(source, sinkCase.address), fieldName: 'address' },
@@ -747,6 +766,7 @@ export function validateData(
 	);
 
 	const detailedValidations: Array<{ fn: () => ValidationResult; fieldName: string }> = [
+		{ fn: () => validateAppealTimetable(source, sinkCase.appealTimetable), fieldName: 'appealTimetable' },
 		{ fn: () => validateAppealStatus(source, sinkCase.appealStatus), fieldName: 'appealStatus' },
 		{ fn: () => validateAppellantCase(source, sinkCase.appellantCase), fieldName: 'appellantCase' }
 	];
