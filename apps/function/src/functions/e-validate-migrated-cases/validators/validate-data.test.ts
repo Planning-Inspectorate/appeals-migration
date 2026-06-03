@@ -806,4 +806,39 @@ describe('validateData', () => {
 			assert.strictEqual(errors.length, 0);
 		});
 	});
+
+	describe('validateRepresentations errors', () => {
+		test('reports count mismatch', () => {
+			const source = createSource({ appellantStatementSubmittedDate: '2024-04-01T00:00:00.000Z' });
+			const result = validateData({ type: 's78', data: source }, createSink(), [], []);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'representations');
+			assert.ok(errors.some((e) => e.error.includes('Expected 1') && e.error.includes('found 0')));
+		});
+
+		test('reports missing representation type', () => {
+			const source = createSource({ appellantStatementSubmittedDate: '2024-04-01T00:00:00.000Z' });
+			const result = validateData({ type: 's78', data: source }, createSink(), [], []);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'representations');
+			assert.ok(errors.some((e) => e.error.includes('appellant_statement') && e.error.includes('not found')));
+		});
+
+		test('reports unexpected representation type', () => {
+			const sink = createSink({ representations: [{ representationType: 'appellant_statement' }] });
+			const result = validateData({ type: 's78', data: createSource() }, sink, [], []);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'representations');
+			assert.ok(errors.some((e) => e.error.includes('Unexpected') && e.error.includes('appellant_statement')));
+		});
+
+		test('no errors when representations match', () => {
+			const source = createSource({ appellantStatementSubmittedDate: '2024-04-01T00:00:00.000Z' });
+			const sink = createSink({ representations: [{ representationType: 'appellant_statement' }] });
+			const result = validateData({ type: 's78', data: source }, sink, [], []);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'representations');
+			assert.strictEqual(errors.length, 0);
+		});
+	});
 });
