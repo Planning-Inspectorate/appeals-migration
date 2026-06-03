@@ -104,10 +104,29 @@ function validateAppealTimetable(source: AppealHas | AppealS78, sink: SinkCase['
 	return { isValid: validationErrors.length === 0, errors: validationErrors };
 }
 
-function validateAllocation(source: AppealHas | AppealS78, sink: SinkCase['allocation']): boolean {
-	if (!source.allocationLevel || parseNumber(source.allocationBand) === undefined) return !sink;
-	if (!sink) return false;
-	return sink.level === source.allocationLevel && compareMappedNumber(source.allocationBand, sink.band);
+function validateAllocation(source: AppealHas | AppealS78, sink: SinkCase['allocation']): ValidationResult {
+	const validationErrors: string[] = [];
+
+	if (!source.allocationLevel || parseNumber(source.allocationBand) === undefined) {
+		if (sink) {
+			validationErrors.push('allocation exists in sink but source has no allocation data');
+		}
+		return { isValid: validationErrors.length === 0, errors: validationErrors };
+	}
+
+	if (!sink) {
+		validationErrors.push('allocation is missing in sink');
+		return { isValid: false, errors: validationErrors };
+	}
+
+	if (sink.level !== source.allocationLevel) {
+		validationErrors.push(`level: expected '${source.allocationLevel}' got '${sink.level ?? 'null'}'`);
+	}
+	if (!compareMappedNumber(source.allocationBand, sink.band)) {
+		validationErrors.push(`band: expected '${source.allocationBand ?? 'null'}' got '${sink.band ?? 'null'}'`);
+	}
+
+	return { isValid: validationErrors.length === 0, errors: validationErrors };
 }
 
 function addStatusIfDateExists(
@@ -748,7 +767,6 @@ export function validateData(
 
 	const complexValidations: Array<{ fn: () => boolean; fieldName: string }> = [
 		{ fn: () => validateParentAppeals(source, sinkCase.parentAppeals), fieldName: 'parentAppeals' },
-		{ fn: () => validateAllocation(source, sinkCase.allocation), fieldName: 'allocation' },
 		{ fn: () => validateSpecialisms(source, sinkCase.specialisms), fieldName: 'specialisms' },
 		{ fn: () => validateAddress(source, sinkCase.address), fieldName: 'address' },
 		{ fn: () => validateInspectorDecision(source, sinkCase.inspectorDecision), fieldName: 'inspectorDecision' },
@@ -767,6 +785,7 @@ export function validateData(
 
 	const detailedValidations: Array<{ fn: () => ValidationResult; fieldName: string }> = [
 		{ fn: () => validateAppealTimetable(source, sinkCase.appealTimetable), fieldName: 'appealTimetable' },
+		{ fn: () => validateAllocation(source, sinkCase.allocation), fieldName: 'allocation' },
 		{ fn: () => validateAppealStatus(source, sinkCase.appealStatus), fieldName: 'appealStatus' },
 		{ fn: () => validateAppellantCase(source, sinkCase.appellantCase), fieldName: 'appellantCase' }
 	];
