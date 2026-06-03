@@ -406,7 +406,9 @@ function validateNeighbouringSites(source: AppealHas | AppealS78, sinkSites: Sin
 	);
 }
 
-function validateLpaQuestionnaire(source: AppealHas | AppealS78, sink: SinkCase['lpaQuestionnaire']): boolean {
+function validateLpaQuestionnaire(source: AppealHas | AppealS78, sink: SinkCase['lpaQuestionnaire']): ValidationResult {
+	const validationErrors: string[] = [];
+
 	const shouldExist = [
 		parseDateOrUndefined(source.lpaQuestionnaireSubmittedDate),
 		parseDateOrUndefined(source.lpaQuestionnaireCreatedDate),
@@ -418,21 +420,58 @@ function validateLpaQuestionnaire(source: AppealHas | AppealS78, sink: SinkCase[
 		parseDateOrUndefined(source.targetDate)
 	].some((v) => v !== undefined);
 
-	if (!shouldExist && !sink) return true;
-	if (!sink) return false;
+	if (!shouldExist && !sink) return { isValid: true, errors: [] };
+	if (!sink) {
+		validationErrors.push('lpaQuestionnaire is missing in sink but expected to exist');
+		return { isValid: false, errors: validationErrors };
+	}
 
-	return (
-		compareMappedDate(source.lpaQuestionnaireSubmittedDate, sink.lpaQuestionnaireSubmittedDate) &&
-		compareMappedString(source.lpaStatement, sink.lpaStatement) &&
-		compareMappedString(source.lpaProcedurePreference, sink.lpaProcedurePreference) &&
-		compareMappedString(source.importantInformation, sink.importantInformation) &&
-		(sink.isCorrectAppealType ?? null) === (source.isCorrectAppealType ?? null) &&
-		(sink.inConservationArea ?? null) === (source.inConservationArea ?? null) &&
-		compareMappedDate(source.targetDate, sink.targetDate) &&
-		validateLpaNotificationMethods(source, sink.lpaNotificationMethods) &&
-		validateListedBuildingDetails(source, sink.listedBuildingDetails) &&
-		validateDesignatedSiteNames(source, sink.designatedSiteNames)
-	);
+	if (!compareMappedDate(source.lpaQuestionnaireSubmittedDate, sink.lpaQuestionnaireSubmittedDate)) {
+		validationErrors.push(
+			`lpaQuestionnaireSubmittedDate: expected '${source.lpaQuestionnaireSubmittedDate ?? 'null'}' got '${sink.lpaQuestionnaireSubmittedDate?.toISOString() ?? 'null'}'`
+		);
+	}
+	if (!compareMappedString(source.lpaStatement, sink.lpaStatement)) {
+		validationErrors.push(
+			`lpaStatement: expected '${source.lpaStatement ?? 'null'}' got '${sink.lpaStatement ?? 'null'}'`
+		);
+	}
+	if (!compareMappedString(source.lpaProcedurePreference, sink.lpaProcedurePreference)) {
+		validationErrors.push(
+			`lpaProcedurePreference: expected '${source.lpaProcedurePreference ?? 'null'}' got '${sink.lpaProcedurePreference ?? 'null'}'`
+		);
+	}
+	if (!compareMappedString(source.importantInformation, sink.importantInformation)) {
+		validationErrors.push(
+			`importantInformation: expected '${source.importantInformation ?? 'null'}' got '${sink.importantInformation ?? 'null'}'`
+		);
+	}
+	if ((sink.isCorrectAppealType ?? null) !== (source.isCorrectAppealType ?? null)) {
+		validationErrors.push(
+			`isCorrectAppealType: expected '${source.isCorrectAppealType ?? 'null'}' got '${sink.isCorrectAppealType ?? 'null'}'`
+		);
+	}
+	if ((sink.inConservationArea ?? null) !== (source.inConservationArea ?? null)) {
+		validationErrors.push(
+			`inConservationArea: expected '${source.inConservationArea ?? 'null'}' got '${sink.inConservationArea ?? 'null'}'`
+		);
+	}
+	if (!compareMappedDate(source.targetDate, sink.targetDate)) {
+		validationErrors.push(
+			`targetDate: expected '${source.targetDate ?? 'null'}' got '${sink.targetDate?.toISOString() ?? 'null'}'`
+		);
+	}
+	if (!validateLpaNotificationMethods(source, sink.lpaNotificationMethods)) {
+		validationErrors.push('lpaNotificationMethods validation failed');
+	}
+	if (!validateListedBuildingDetails(source, sink.listedBuildingDetails)) {
+		validationErrors.push('listedBuildingDetails validation failed');
+	}
+	if (!validateDesignatedSiteNames(source, sink.designatedSiteNames)) {
+		validationErrors.push('designatedSiteNames validation failed');
+	}
+
+	return { isValid: validationErrors.length === 0, errors: validationErrors };
 }
 
 function validateLpaNotificationMethods(
@@ -809,10 +848,8 @@ export function validateData(
 	const complexValidations: Array<{ fn: () => boolean; fieldName: string }> = [
 		{ fn: () => validateParentAppeals(source, sinkCase.parentAppeals), fieldName: 'parentAppeals' },
 		{ fn: () => validateSpecialisms(source, sinkCase.specialisms), fieldName: 'specialisms' },
-		{ fn: () => validateInspectorDecision(source, sinkCase.inspectorDecision), fieldName: 'inspectorDecision' },
 		{ fn: () => validateChildAppeals(source, sinkCase.childAppeals), fieldName: 'childAppeals' },
 		{ fn: () => validateNeighbouringSites(source, sinkCase.neighbouringSites), fieldName: 'neighbouringSites' },
-		{ fn: () => validateLpaQuestionnaire(source, sinkCase.lpaQuestionnaire), fieldName: 'lpaQuestionnaire' },
 		{ fn: () => validateRepresentations(source, sinkCase.representations), fieldName: 'representations' },
 		{ fn: () => validateAppealGrounds(source, sinkCase.appealGrounds), fieldName: 'appealGrounds' },
 		{ fn: () => validateEvents(events, sinkCase), fieldName: 'events' },
@@ -828,6 +865,7 @@ export function validateData(
 		{ fn: () => validateAllocation(source, sinkCase.allocation), fieldName: 'allocation' },
 		{ fn: () => validateAddress(source, sinkCase.address), fieldName: 'address' },
 		{ fn: () => validateInspectorDecision(source, sinkCase.inspectorDecision), fieldName: 'inspectorDecision' },
+		{ fn: () => validateLpaQuestionnaire(source, sinkCase.lpaQuestionnaire), fieldName: 'lpaQuestionnaire' },
 		{ fn: () => validateAppealStatus(source, sinkCase.appealStatus), fieldName: 'appealStatus' },
 		{ fn: () => validateAppellantCase(source, sinkCase.appellantCase), fieldName: 'appellantCase' }
 	];
