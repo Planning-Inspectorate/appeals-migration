@@ -1001,4 +1001,62 @@ describe('validateData', () => {
 			assert.strictEqual(errors.length, 0);
 		});
 	});
+
+	describe('validateParentAppeals errors', () => {
+		test('reports unexpected parent appeals when not a child case', () => {
+			const source = createSource({ linkedCaseStatus: null });
+			const sink = createSink({ parentAppeals: [{ parentRef: 'PARENT-001', childRef: 'CASE-001' }] });
+			const result = validateData({ type: 'has', data: source }, sink);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'parentAppeals');
+			assert.ok(errors.some((e) => e.error.includes('Expected no parent appeals') && e.error.includes('found 1')));
+		});
+
+		test('reports missing leadCaseReference', () => {
+			const source = createSource({ linkedCaseStatus: 'child', leadCaseReference: null });
+			const result = validateData({ type: 'has', data: source }, createSink());
+
+			const errors = result.errors.filter((e) => e.sourceField === 'parentAppeals');
+			assert.ok(errors.some((e) => e.error.includes('leadCaseReference is missing')));
+		});
+
+		test('reports wrong parent appeal count', () => {
+			const source = createSource({ linkedCaseStatus: 'child', leadCaseReference: 'PARENT-001' });
+			const result = validateData({ type: 'has', data: source }, createSink({ parentAppeals: [] }));
+
+			const errors = result.errors.filter((e) => e.sourceField === 'parentAppeals');
+			assert.ok(errors.some((e) => e.error.includes('Expected 1') && e.error.includes('found 0')));
+		});
+
+		test('reports parentRef mismatch', () => {
+			const source = createSource({ linkedCaseStatus: 'child', leadCaseReference: 'PARENT-001' });
+			const sink = createSink({ parentAppeals: [{ parentRef: 'WRONG', childRef: 'CASE-001' }] });
+			const result = validateData({ type: 'has', data: source }, sink);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'parentAppeals');
+			assert.ok(
+				errors.some((e) => e.error.includes('parentRef') && e.error.includes('PARENT-001') && e.error.includes('WRONG'))
+			);
+		});
+
+		test('reports childRef mismatch', () => {
+			const source = createSource({ linkedCaseStatus: 'child', leadCaseReference: 'PARENT-001' });
+			const sink = createSink({ parentAppeals: [{ parentRef: 'PARENT-001', childRef: 'WRONG' }] });
+			const result = validateData({ type: 'has', data: source }, sink);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'parentAppeals');
+			assert.ok(
+				errors.some((e) => e.error.includes('childRef') && e.error.includes('CASE-001') && e.error.includes('WRONG'))
+			);
+		});
+
+		test('no errors when parentAppeals match', () => {
+			const source = createSource({ linkedCaseStatus: 'child', leadCaseReference: 'PARENT-001' });
+			const sink = createSink({ parentAppeals: [{ parentRef: 'PARENT-001', childRef: 'CASE-001' }] });
+			const result = validateData({ type: 'has', data: source }, sink);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'parentAppeals');
+			assert.strictEqual(errors.length, 0);
+		});
+	});
 });
