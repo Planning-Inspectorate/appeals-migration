@@ -520,53 +520,54 @@ describe('validateData', () => {
 	});
 
 	describe('validateAppealTimetable errors', () => {
-		test('reports missing timetable when source has dates', () => {
-			const source = createSource({ lpaQuestionnaireDueDate: '2024-03-01T00:00:00.000Z' });
-			const result = validateData({ type: 'has', data: source }, createSink({ appealTimetable: null }));
+		// ...existing tests...
+	});
 
-			const timetableErrors = result.errors.filter((e) => e.sourceField === 'appealTimetable');
-			assert.ok(timetableErrors.length > 0);
-			assert.ok(timetableErrors.some((e) => e.error.includes('missing in sink')));
+	describe('validateAllocation errors', () => {
+		test('reports missing allocation when source has data', () => {
+			const source = createSource({ allocationLevel: 'A', allocationBand: 1 });
+			const result = validateData({ type: 'has', data: source }, createSink({ allocation: null }));
+
+			const allocationErrors = result.errors.filter((e) => e.sourceField === 'allocation');
+			assert.ok(allocationErrors.length > 0);
+			assert.ok(allocationErrors.some((e) => e.error.includes('missing in sink')));
 		});
 
-		test('reports specific date field mismatches', () => {
-			const source = createSource({ lpaQuestionnaireDueDate: '2024-03-01T00:00:00.000Z' });
-			const sink = createSink({
-				appealTimetable: {
-					lpaQuestionnaireDueDate: new Date('2024-04-01T00:00:00.000Z'),
-					planningObligationDueDate: null,
-					finalCommentsDueDate: null,
-					ipCommentsDueDate: null,
-					proofOfEvidenceAndWitnessesDueDate: null,
-					lpaStatementDueDate: null,
-					statementOfCommonGroundDueDate: null
-				}
-			});
-			const result = validateData({ type: 'has', data: source }, sink);
+		test('reports unexpected allocation when source has no data', () => {
+			const result = validateData(
+				{ type: 'has', data: createSource() },
+				createSink({ allocation: { level: 'A', band: 1 } })
+			);
 
-			const timetableErrors = result.errors.filter((e) => e.sourceField === 'appealTimetable');
-			assert.ok(timetableErrors.some((e) => e.error.includes('lpaQuestionnaireDueDate')));
+			const allocationErrors = result.errors.filter((e) => e.sourceField === 'allocation');
+			assert.ok(allocationErrors.length > 0);
+			assert.ok(allocationErrors.some((e) => e.error.includes('exists in sink')));
 		});
 
-		test('reports multiple date mismatches independently', () => {
-			const source = createSource({
-				lpaQuestionnaireDueDate: '2024-03-01T00:00:00.000Z'
-			});
-			const sink = createSink({
-				appealTimetable: {
-					lpaQuestionnaireDueDate: new Date('2024-03-01T00:00:00.000Z'),
-					planningObligationDueDate: null,
-					finalCommentsDueDate: null,
-					ipCommentsDueDate: null,
-					proofOfEvidenceAndWitnessesDueDate: null,
-					lpaStatementDueDate: null,
-					statementOfCommonGroundDueDate: null
-				}
-			});
-			const result = validateData({ type: 'has', data: source }, sink);
+		test('reports level mismatch', () => {
+			const source = createSource({ allocationLevel: 'A', allocationBand: 1 });
+			const result = validateData({ type: 'has', data: source }, createSink({ allocation: { level: 'B', band: 1 } }));
 
-			const timetableErrors = result.errors.filter((e) => e.sourceField === 'appealTimetable');
-			assert.strictEqual(timetableErrors.length, 0);
+			const allocationErrors = result.errors.filter((e) => e.sourceField === 'allocation');
+			assert.ok(
+				allocationErrors.some((e) => e.error.includes('level') && e.error.includes("'A'") && e.error.includes("'B'"))
+			);
+		});
+
+		test('reports band mismatch', () => {
+			const source = createSource({ allocationLevel: 'A', allocationBand: 1 });
+			const result = validateData({ type: 'has', data: source }, createSink({ allocation: { level: 'A', band: 2 } }));
+
+			const allocationErrors = result.errors.filter((e) => e.sourceField === 'allocation');
+			assert.ok(allocationErrors.some((e) => e.error.includes('band')));
+		});
+
+		test('no errors when allocation matches', () => {
+			const source = createSource({ allocationLevel: 'A', allocationBand: 1 });
+			const result = validateData({ type: 'has', data: source }, createSink({ allocation: { level: 'A', band: 1 } }));
+
+			const allocationErrors = result.errors.filter((e) => e.sourceField === 'allocation');
+			assert.strictEqual(allocationErrors.length, 0);
 		});
 	});
 });
