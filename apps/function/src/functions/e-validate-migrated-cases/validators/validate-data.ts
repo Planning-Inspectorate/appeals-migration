@@ -773,14 +773,40 @@ function validateServiceUsers(serviceUsers: AppealServiceUser[], sink: SinkCase)
 	return { isValid: validationErrors.length === 0, errors: validationErrors };
 }
 
-function validateParentAppeals(source: AppealHas | AppealS78, sinkParentAppeals: SinkCase['parentAppeals']): boolean {
+function validateParentAppeals(
+	source: AppealHas | AppealS78,
+	sinkParentAppeals: SinkCase['parentAppeals']
+): ValidationResult {
+	const validationErrors: string[] = [];
+
 	if (source.linkedCaseStatus !== 'child') {
-		return sinkParentAppeals.length === 0;
+		if (sinkParentAppeals.length !== 0) {
+			validationErrors.push(
+				`Expected no parent appeals (linkedCaseStatus is '${source.linkedCaseStatus ?? 'null'}') but found ${sinkParentAppeals.length}`
+			);
+		}
+		return { isValid: validationErrors.length === 0, errors: validationErrors };
 	}
-	if (!source.leadCaseReference) return false;
-	if (sinkParentAppeals.length !== 1) return false;
+
+	if (!source.leadCaseReference) {
+		validationErrors.push('linkedCaseStatus is child but leadCaseReference is missing');
+		return { isValid: false, errors: validationErrors };
+	}
+
+	if (sinkParentAppeals.length !== 1) {
+		validationErrors.push(`Expected 1 parent appeal but found ${sinkParentAppeals.length}`);
+		return { isValid: false, errors: validationErrors };
+	}
+
 	const parent = sinkParentAppeals[0];
-	return parent.parentRef === source.leadCaseReference && parent.childRef === source.caseReference;
+	if (parent.parentRef !== source.leadCaseReference) {
+		validationErrors.push(`parentRef: expected '${source.leadCaseReference}' got '${parent.parentRef ?? 'null'}'`);
+	}
+	if (parent.childRef !== source.caseReference) {
+		validationErrors.push(`childRef: expected '${source.caseReference}' got '${parent.childRef ?? 'null'}'`);
+	}
+
+	return { isValid: validationErrors.length === 0, errors: validationErrors };
 }
 
 type FieldValidator<T = any, U = any> = {
@@ -921,7 +947,6 @@ export function validateData(
 	dateFieldValidators.forEach((validator) => validateField(validator, sourceModel, errors));
 
 	const complexValidations: Array<{ fn: () => boolean; fieldName: string }> = [
-		{ fn: () => validateParentAppeals(source, sinkCase.parentAppeals), fieldName: 'parentAppeals' },
 		{ fn: () => validateSpecialisms(source, sinkCase.specialisms), fieldName: 'specialisms' },
 		{ fn: () => validateChildAppeals(source, sinkCase.childAppeals), fieldName: 'childAppeals' },
 		{ fn: () => validateNeighbouringSites(source, sinkCase.neighbouringSites), fieldName: 'neighbouringSites' },
@@ -933,6 +958,7 @@ export function validateData(
 	);
 
 	const detailedValidations: Array<{ fn: () => ValidationResult; fieldName: string }> = [
+		{ fn: () => validateParentAppeals(source, sinkCase.parentAppeals), fieldName: 'parentAppeals' },
 		{ fn: () => validateAppealTimetable(source, sinkCase.appealTimetable), fieldName: 'appealTimetable' },
 		{ fn: () => validateAllocation(source, sinkCase.allocation), fieldName: 'allocation' },
 		{ fn: () => validateAddress(source, sinkCase.address), fieldName: 'address' },
