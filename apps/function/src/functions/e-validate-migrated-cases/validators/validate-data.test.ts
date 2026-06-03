@@ -711,4 +711,99 @@ describe('validateData', () => {
 			assert.strictEqual(errors.length, 0);
 		});
 	});
+
+	describe('validateLpaQuestionnaire errors', () => {
+		test('reports missing lpaQuestionnaire when source has data', () => {
+			const source = createSource({ lpaStatement: 'We object' });
+			const result = validateData({ type: 'has', data: source }, createSink({ lpaQuestionnaire: null }));
+
+			const errors = result.errors.filter((e) => e.sourceField === 'lpaQuestionnaire');
+			assert.ok(errors.length > 0);
+			assert.ok(errors.some((e) => e.error.includes('missing in sink')));
+		});
+
+		test('reports lpaStatement mismatch', () => {
+			const source = createSource({ lpaStatement: 'We object' });
+			const lpaQuestionnaire = {
+				lpaQuestionnaireSubmittedDate: null,
+				lpaStatement: 'WRONG',
+				lpaProcedurePreference: null,
+				importantInformation: null,
+				isCorrectAppealType: null,
+				inConservationArea: null,
+				targetDate: null,
+				lpaNotificationMethods: [],
+				listedBuildingDetails: [],
+				designatedSiteNames: []
+			};
+			const result = validateData({ type: 'has', data: source }, createSink({ lpaQuestionnaire }));
+
+			const errors = result.errors.filter((e) => e.sourceField === 'lpaQuestionnaire');
+			assert.ok(
+				errors.some(
+					(e) => e.error.includes('lpaStatement') && e.error.includes('We object') && e.error.includes('WRONG')
+				)
+			);
+		});
+
+		test('reports isCorrectAppealType mismatch', () => {
+			const source = createSource({ lpaStatement: 'note', isCorrectAppealType: true });
+			const lpaQuestionnaire = {
+				lpaQuestionnaireSubmittedDate: null,
+				lpaStatement: 'note',
+				lpaProcedurePreference: null,
+				importantInformation: null,
+				isCorrectAppealType: false,
+				inConservationArea: null,
+				targetDate: null,
+				lpaNotificationMethods: [],
+				listedBuildingDetails: [],
+				designatedSiteNames: []
+			};
+			const result = validateData({ type: 'has', data: source }, createSink({ lpaQuestionnaire }));
+
+			const errors = result.errors.filter((e) => e.sourceField === 'lpaQuestionnaire');
+			assert.ok(errors.some((e) => e.error.includes('isCorrectAppealType')));
+		});
+
+		test('reports lpaNotificationMethods failure', () => {
+			const source = createSource({ lpaStatement: 'note', notificationMethod: '["site-notice"]' });
+			const lpaQuestionnaire = {
+				lpaQuestionnaireSubmittedDate: null,
+				lpaStatement: 'note',
+				lpaProcedurePreference: null,
+				importantInformation: null,
+				isCorrectAppealType: null,
+				inConservationArea: null,
+				targetDate: null,
+				lpaNotificationMethods: [],
+				listedBuildingDetails: [],
+				designatedSiteNames: []
+			};
+			const result = validateData({ type: 'has', data: source }, createSink({ lpaQuestionnaire }));
+
+			const errors = result.errors.filter((e) => e.sourceField === 'lpaQuestionnaire');
+			assert.ok(errors.some((e) => e.error.includes('lpaNotificationMethods')));
+		});
+
+		test('no errors when lpaQuestionnaire matches', () => {
+			const source = createSource({ lpaStatement: 'We object', isCorrectAppealType: true });
+			const lpaQuestionnaire = {
+				lpaQuestionnaireSubmittedDate: null,
+				lpaStatement: 'We object',
+				lpaProcedurePreference: null,
+				importantInformation: null,
+				isCorrectAppealType: true,
+				inConservationArea: null,
+				targetDate: null,
+				lpaNotificationMethods: [],
+				listedBuildingDetails: [],
+				designatedSiteNames: []
+			};
+			const result = validateData({ type: 'has', data: source }, createSink({ lpaQuestionnaire }));
+
+			const errors = result.errors.filter((e) => e.sourceField === 'lpaQuestionnaire');
+			assert.strictEqual(errors.length, 0);
+		});
+	});
 });
