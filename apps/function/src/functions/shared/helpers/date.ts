@@ -33,6 +33,10 @@ export function parseDateOrUndefined(value: string | Date | null | undefined): D
 	return parseDate(value) ?? undefined;
 }
 
+export function parseDateOrZero(value: string | Date | null | undefined): Date | undefined {
+	return parseDate(value) ?? ZERO_DATE;
+}
+
 export function createDateRange(from?: Date | null, to?: Date | null): { gte?: string; lte?: string } | undefined {
 	if (!from && !to) {
 		return undefined;

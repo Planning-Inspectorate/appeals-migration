@@ -6,7 +6,7 @@ import type {
 	AppealServiceUser
 } from '@pins/odw-curated-database/src/client/client.ts';
 import { APPEAL_CASE_STATUS, APPEAL_LINKED_CASE_STATUS, type Schemas } from '@planning-inspectorate/data-model';
-import { ZERO_DATE } from '../../shared/helpers/date.ts';
+import { parseDateOrZero, ZERO_DATE } from '../../shared/helpers/date.ts';
 import {
 	booleanOrUndefined,
 	parseDateOrUndefined,
@@ -107,7 +107,7 @@ function buildAppealStatus(source: AppealHas | AppealS78) {
 			status: mapCaseStatus(source.caseStatus),
 			valid: true,
 			// Use caseUpdatedDate as best guess for when this status was set
-			createdAt: parseDateOrUndefined(source.caseUpdatedDate) || ZERO_DATE
+			createdAt: parseDateOrZero(source.caseUpdatedDate)
 		}
 	];
 
@@ -127,7 +127,7 @@ function buildAppealStatus(source: AppealHas | AppealS78) {
 		statuses.push({
 			status,
 			valid,
-			createdAt: parseDateOrUndefined(date) || ZERO_DATE
+			createdAt: parseDateOrZero(date)
 		});
 	};
 
@@ -617,7 +617,7 @@ function buildAppellantCase(
 
 	// AppellantCase is required for all appeals, so we always create it
 	// Use placeholders for missing required fields to allow migration of incomplete cases
-	const caseSubmittedDate = parseDateOrUndefined(source.caseSubmittedDate) ?? ZERO_DATE;
+	const caseSubmittedDate = parseDateOrZero(source.caseSubmittedDate);
 	const applicationDecision = stringOrUndefined(source.applicationDecision) ?? `Not available ${source.caseReference}`;
 
 	const s78 = source as AppealS78;
@@ -634,7 +634,7 @@ function buildAppellantCase(
 			appellantCaseInvalidReasonsSelected: invalidReasons,
 
 			// Application details
-			applicationDate: parseDateOrUndefined(source.applicationDate) || ZERO_DATE, // sink schema has a default of now, so we set an explicit value
+			applicationDate: parseDateOrZero(source.applicationDate), // sink schema has a default of now, so we set an explicit value
 			applicationDecision,
 			applicationDecisionDate: parseDateOrUndefined(source.applicationDecisionDate),
 
@@ -797,7 +797,8 @@ export function mapSourceToSinkAppeal(
 
 		applicationReference: stringOrUndefined(sourceCase.applicationReference),
 		caseCreatedDate: parseDateOrUndefined(sourceCase.caseCreatedDate),
-		caseUpdatedDate: parseDateOrUndefined(sourceCase.caseUpdatedDate),
+		// caseUpdatedDate will default to now, instead default to the zero date so its deterministic
+		caseUpdatedDate: parseDateOrZero(sourceCase.caseUpdatedDate),
 		caseValidDate: parseDateOrUndefined(sourceCase.caseValidDate),
 		caseExtensionDate: parseDateOrUndefined(sourceCase.caseExtensionDate),
 		caseStartedDate: parseDateOrUndefined(sourceCase.caseStartedDate),

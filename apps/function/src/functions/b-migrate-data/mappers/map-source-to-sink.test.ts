@@ -390,7 +390,7 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 		const result = mapSourceToSinkAppeal(MockCases.mockCaseWithNullDates, mockValidationReasonLookups);
 
 		assert.strictEqual(result.caseCreatedDate, undefined);
-		assert.strictEqual(result.caseUpdatedDate, undefined);
+		assert.strictEqual(result.caseUpdatedDate, ZERO_DATE);
 		assert.strictEqual(result.caseValidDate, undefined);
 		assert.strictEqual(result.caseExtensionDate, undefined);
 		assert.strictEqual(result.caseStartedDate, undefined);
