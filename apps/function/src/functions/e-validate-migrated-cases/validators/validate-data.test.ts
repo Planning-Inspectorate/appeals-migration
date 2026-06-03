@@ -518,4 +518,55 @@ describe('validateData', () => {
 		assert.strictEqual(result.isValid, true);
 		assert.strictEqual(result.errors.length, 0);
 	});
+
+	describe('validateAppealTimetable errors', () => {
+		test('reports missing timetable when source has dates', () => {
+			const source = createSource({ lpaQuestionnaireDueDate: '2024-03-01T00:00:00.000Z' });
+			const result = validateData({ type: 'has', data: source }, createSink({ appealTimetable: null }));
+
+			const timetableErrors = result.errors.filter((e) => e.sourceField === 'appealTimetable');
+			assert.ok(timetableErrors.length > 0);
+			assert.ok(timetableErrors.some((e) => e.error.includes('missing in sink')));
+		});
+
+		test('reports specific date field mismatches', () => {
+			const source = createSource({ lpaQuestionnaireDueDate: '2024-03-01T00:00:00.000Z' });
+			const sink = createSink({
+				appealTimetable: {
+					lpaQuestionnaireDueDate: new Date('2024-04-01T00:00:00.000Z'),
+					planningObligationDueDate: null,
+					finalCommentsDueDate: null,
+					ipCommentsDueDate: null,
+					proofOfEvidenceAndWitnessesDueDate: null,
+					lpaStatementDueDate: null,
+					statementOfCommonGroundDueDate: null
+				}
+			});
+			const result = validateData({ type: 'has', data: source }, sink);
+
+			const timetableErrors = result.errors.filter((e) => e.sourceField === 'appealTimetable');
+			assert.ok(timetableErrors.some((e) => e.error.includes('lpaQuestionnaireDueDate')));
+		});
+
+		test('reports multiple date mismatches independently', () => {
+			const source = createSource({
+				lpaQuestionnaireDueDate: '2024-03-01T00:00:00.000Z'
+			});
+			const sink = createSink({
+				appealTimetable: {
+					lpaQuestionnaireDueDate: new Date('2024-03-01T00:00:00.000Z'),
+					planningObligationDueDate: null,
+					finalCommentsDueDate: null,
+					ipCommentsDueDate: null,
+					proofOfEvidenceAndWitnessesDueDate: null,
+					lpaStatementDueDate: null,
+					statementOfCommonGroundDueDate: null
+				}
+			});
+			const result = validateData({ type: 'has', data: source }, sink);
+
+			const timetableErrors = result.errors.filter((e) => e.sourceField === 'appealTimetable');
+			assert.strictEqual(timetableErrors.length, 0);
+		});
+	});
 });
