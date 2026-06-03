@@ -735,25 +735,42 @@ function validateServiceUserMatches<T>(
 	return true;
 }
 
-function validateServiceUsers(serviceUsers: AppealServiceUser[], sink: SinkCase): boolean {
+function validateServiceUsers(serviceUsers: AppealServiceUser[], sink: SinkCase): ValidationResult {
+	const validationErrors: string[] = [];
 	const appellant = serviceUsers.find((user) => getServiceUserRole(user).isAppellant);
 	const agent = serviceUsers.find((user) => getServiceUserRole(user).isAgent);
 	const interestedParties = serviceUsers.filter((user) => getServiceUserRole(user).isInterestedParty);
 	const rule6Parties = serviceUsers.filter((user) => getServiceUserRole(user).isRule6Party);
 
-	if (appellant && !validateServiceUser(sink.appellant, appellant)) return false;
-	if (!appellant && sink.appellant) return false;
-	if (agent && !validateServiceUser(sink.agent, agent)) return false;
-	if (!agent && sink.agent) return false;
+	if (appellant && !validateServiceUser(sink.appellant, appellant)) {
+		validationErrors.push('appellant service user validation failed');
+	}
+	if (!appellant && sink.appellant) {
+		validationErrors.push('appellant exists in sink but not found in source service users');
+	}
+	if (agent && !validateServiceUser(sink.agent, agent)) {
+		validationErrors.push('agent service user validation failed');
+	}
+	if (!agent && sink.agent) {
+		validationErrors.push('agent exists in sink but not found in source service users');
+	}
 
 	const sinkInterestedPartyReps = sink.representations.filter(
 		(r) => r.representationType === APPEAL_REPRESENTATION_TYPE.COMMENT && r.represented
 	);
-	if (!validateServiceUserMatches(interestedParties, sinkInterestedPartyReps, (r) => r.represented)) return false;
+	if (!validateServiceUserMatches(interestedParties, sinkInterestedPartyReps, (r) => r.represented)) {
+		validationErrors.push(
+			`interestedParties: expected ${interestedParties.length} but found ${sinkInterestedPartyReps.length} in sink, or users do not match`
+		);
+	}
 
-	if (!validateServiceUserMatches(rule6Parties, sink.appealRule6Parties, (r) => r.serviceUser)) return false;
+	if (!validateServiceUserMatches(rule6Parties, sink.appealRule6Parties, (r) => r.serviceUser)) {
+		validationErrors.push(
+			`rule6Parties: expected ${rule6Parties.length} but found ${sink.appealRule6Parties.length} in sink, or users do not match`
+		);
+	}
 
-	return true;
+	return { isValid: validationErrors.length === 0, errors: validationErrors };
 }
 
 function validateParentAppeals(source: AppealHas | AppealS78, sinkParentAppeals: SinkCase['parentAppeals']): boolean {
@@ -908,8 +925,7 @@ export function validateData(
 		{ fn: () => validateSpecialisms(source, sinkCase.specialisms), fieldName: 'specialisms' },
 		{ fn: () => validateChildAppeals(source, sinkCase.childAppeals), fieldName: 'childAppeals' },
 		{ fn: () => validateNeighbouringSites(source, sinkCase.neighbouringSites), fieldName: 'neighbouringSites' },
-		{ fn: () => validateAppealGrounds(source, sinkCase.appealGrounds), fieldName: 'appealGrounds' },
-		{ fn: () => validateServiceUsers(serviceUsers, sinkCase), fieldName: 'serviceUsers' }
+		{ fn: () => validateAppealGrounds(source, sinkCase.appealGrounds), fieldName: 'appealGrounds' }
 	];
 
 	complexValidations.forEach((validation) =>
@@ -924,6 +940,7 @@ export function validateData(
 		{ fn: () => validateLpaQuestionnaire(source, sinkCase.lpaQuestionnaire), fieldName: 'lpaQuestionnaire' },
 		{ fn: () => validateRepresentations(source, sinkCase.representations), fieldName: 'representations' },
 		{ fn: () => validateEvents(events, sinkCase), fieldName: 'events' },
+		{ fn: () => validateServiceUsers(serviceUsers, sinkCase), fieldName: 'serviceUsers' },
 		{ fn: () => validateAppealStatus(source, sinkCase.appealStatus), fieldName: 'appealStatus' },
 		{ fn: () => validateAppellantCase(source, sinkCase.appellantCase), fieldName: 'appellantCase' }
 	];
