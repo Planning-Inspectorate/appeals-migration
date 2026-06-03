@@ -262,13 +262,35 @@ function validateAddress(source: AppealHas | AppealS78, sink: SinkCase['address'
 	return { isValid: validationErrors.length === 0, errors: validationErrors };
 }
 
-function validateInspectorDecision(source: AppealHas | AppealS78, sink: SinkCase['inspectorDecision']): boolean {
-	if (!source.caseDecisionOutcome) return !sink;
-	if (!sink) return false;
-	return (
-		sink.outcome === mapCaseDecisionOutcome(source.caseDecisionOutcome) &&
-		compareMappedDate(source.caseDecisionOutcomeDate, sink.caseDecisionOutcomeDate)
-	);
+function validateInspectorDecision(
+	source: AppealHas | AppealS78,
+	sink: SinkCase['inspectorDecision']
+): ValidationResult {
+	const validationErrors: string[] = [];
+
+	if (!source.caseDecisionOutcome) {
+		if (sink) {
+			validationErrors.push('inspectorDecision exists in sink but source has no caseDecisionOutcome');
+		}
+		return { isValid: validationErrors.length === 0, errors: validationErrors };
+	}
+
+	if (!sink) {
+		validationErrors.push('inspectorDecision is missing in sink');
+		return { isValid: false, errors: validationErrors };
+	}
+
+	const expectedOutcome = mapCaseDecisionOutcome(source.caseDecisionOutcome);
+	if (sink.outcome !== expectedOutcome) {
+		validationErrors.push(`outcome: expected '${expectedOutcome ?? 'null'}' got '${sink.outcome ?? 'null'}'`);
+	}
+	if (!compareMappedDate(source.caseDecisionOutcomeDate, sink.caseDecisionOutcomeDate)) {
+		validationErrors.push(
+			`caseDecisionOutcomeDate: expected '${source.caseDecisionOutcomeDate ?? 'null'}' got '${sink.caseDecisionOutcomeDate?.toISOString() ?? 'null'}'`
+		);
+	}
+
+	return { isValid: validationErrors.length === 0, errors: validationErrors };
 }
 
 function validateAppellantCase(source: AppealHas | AppealS78, sink: SinkCase['appellantCase']): ValidationResult {
@@ -805,6 +827,7 @@ export function validateData(
 		{ fn: () => validateAppealTimetable(source, sinkCase.appealTimetable), fieldName: 'appealTimetable' },
 		{ fn: () => validateAllocation(source, sinkCase.allocation), fieldName: 'allocation' },
 		{ fn: () => validateAddress(source, sinkCase.address), fieldName: 'address' },
+		{ fn: () => validateInspectorDecision(source, sinkCase.inspectorDecision), fieldName: 'inspectorDecision' },
 		{ fn: () => validateAppealStatus(source, sinkCase.appealStatus), fieldName: 'appealStatus' },
 		{ fn: () => validateAppellantCase(source, sinkCase.appellantCase), fieldName: 'appellantCase' }
 	];
