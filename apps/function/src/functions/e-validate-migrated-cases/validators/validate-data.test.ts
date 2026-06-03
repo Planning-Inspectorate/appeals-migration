@@ -915,4 +915,90 @@ describe('validateData', () => {
 			assert.strictEqual(errors.length, 0);
 		});
 	});
+
+	describe('validateServiceUsers errors', () => {
+		test('reports appellant validation failure', () => {
+			const appellantUser = createServiceUser({
+				serviceUserType: 'Appellant',
+				firstName: 'Jane',
+				lastName: 'Doe',
+				emailAddress: 'jane@example.com'
+			});
+			const sink = createSink({
+				appellant: { firstName: 'WRONG', lastName: 'Doe', email: 'jane@example.com', phoneNumber: null, address: null }
+			});
+			const result = validateData({ type: 'has', data: createSource() }, sink, [], [appellantUser]);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'serviceUsers');
+			assert.ok(errors.some((e) => e.error.includes('appellant')));
+		});
+
+		test('reports appellant exists in sink but not in source', () => {
+			const sink = createSink({
+				appellant: { firstName: 'Jane', lastName: 'Doe', email: 'jane@example.com', phoneNumber: null, address: null }
+			});
+			const result = validateData({ type: 'has', data: createSource() }, sink, [], []);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'serviceUsers');
+			assert.ok(errors.some((e) => e.error.includes('appellant exists in sink')));
+		});
+
+		test('reports agent validation failure', () => {
+			const agentUser = createServiceUser({
+				serviceUserType: 'Agent',
+				firstName: 'Bob',
+				lastName: 'Agent',
+				emailAddress: 'bob@example.com'
+			});
+			const sink = createSink({
+				agent: { firstName: 'WRONG', lastName: 'Agent', email: 'bob@example.com', phoneNumber: null, address: null }
+			});
+			const result = validateData({ type: 'has', data: createSource() }, sink, [], [agentUser]);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'serviceUsers');
+			assert.ok(errors.some((e) => e.error.includes('agent')));
+		});
+
+		test('reports interestedParties mismatch', () => {
+			const interestedParty = createServiceUser({
+				serviceUserType: 'InterestedParty',
+				firstName: 'Alice',
+				lastName: 'Smith',
+				emailAddress: 'alice@example.com'
+			});
+			const result = validateData({ type: 'has', data: createSource() }, createSink(), [], [interestedParty]);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'serviceUsers');
+			assert.ok(errors.some((e) => e.error.includes('interestedParties')));
+		});
+
+		test('reports rule6Parties mismatch', () => {
+			const rule6Party = createServiceUser({
+				serviceUserType: 'Rule6Party',
+				firstName: 'Bob',
+				lastName: 'Jones',
+				emailAddress: 'bob@example.com'
+			});
+			const result = validateData({ type: 'has', data: createSource() }, createSink(), [], [rule6Party]);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'serviceUsers');
+			assert.ok(errors.some((e) => e.error.includes('rule6Parties')));
+		});
+
+		test('no errors when service users match', () => {
+			const appellantUser = createServiceUser({
+				serviceUserType: 'Appellant',
+				firstName: 'Jane',
+				lastName: 'Doe',
+				emailAddress: 'jane@example.com'
+			});
+			const sink = createSink({
+				appellant: { firstName: 'Jane', lastName: 'Doe', email: 'jane@example.com', phoneNumber: null, address: null }
+			});
+			const result = validateData({ type: 'has', data: createSource() }, sink, [], [appellantUser]);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'serviceUsers');
+			assert.strictEqual(errors.length, 0);
+		});
+	});
 });
