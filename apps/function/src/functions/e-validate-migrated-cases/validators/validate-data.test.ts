@@ -1059,4 +1059,91 @@ describe('validateData', () => {
 			assert.strictEqual(errors.length, 0);
 		});
 	});
+
+	describe('validateAppealStatus errors', () => {
+		test('reports count mismatch', () => {
+			const source = createSource({ caseValidationDate: '2024-01-15T00:00:00.000Z' });
+			const result = validateData({ type: 'has', data: source }, createSink());
+
+			const errors = result.errors.filter((e) => e.sourceField === 'appealStatus');
+			assert.ok(errors.some((e) => e.error.includes('Expected 2') && e.error.includes('found 1')));
+		});
+
+		test('reports missing status with date', () => {
+			const source = createSource({ caseValidationDate: '2024-01-15T00:00:00.000Z' });
+			const result = validateData({ type: 'has', data: source }, createSink());
+
+			const errors = result.errors.filter((e) => e.sourceField === 'appealStatus');
+			assert.ok(errors.some((e) => e.error.includes('ready_to_start') && e.error.includes('not found')));
+		});
+
+		test('reports unexpected status in sink', () => {
+			const sink = createSink({
+				appealStatus: [
+					{ status: 'new', createdAt: new Date('2024-01-20T14:30:00.000Z') },
+					{ status: 'unexpected_status', createdAt: new Date('2024-02-01T00:00:00.000Z') }
+				]
+			});
+			const result = validateData({ type: 'has', data: createSource() }, sink);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'appealStatus');
+			assert.ok(errors.some((e) => e.error.includes('Unexpected') && e.error.includes('unexpected_status')));
+		});
+
+		test('no errors when statuses match', () => {
+			const result = validateData({ type: 'has', data: createSource() }, createSink());
+
+			const errors = result.errors.filter((e) => e.sourceField === 'appealStatus');
+			assert.strictEqual(errors.length, 0);
+		});
+	});
+
+	describe('validateAppellantCase errors', () => {
+		test('reports missing appellantCase', () => {
+			const result = validateData({ type: 'has', data: createSource() }, createSink({ appellantCase: null }));
+
+			const errors = result.errors.filter((e) => e.sourceField === 'appellantCase');
+			assert.ok(errors.some((e) => e.error.includes('missing in sink')));
+		});
+
+		test('reports applicationDecision mismatch', () => {
+			const source = createSource({ applicationDecision: 'refused' });
+			const sink = createSink({ appellantCase: createAppellantCase({ applicationDecision: 'granted' }) });
+			const result = validateData({ type: 'has', data: source }, sink);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'appellantCase');
+			assert.ok(
+				errors.some(
+					(e) => e.error.includes('applicationDecision') && e.error.includes('refused') && e.error.includes('granted')
+				)
+			);
+		});
+
+		test('reports caseSubmittedDate mismatch', () => {
+			const source = createSource({ caseSubmittedDate: '2024-01-05T09:00:00.000Z' });
+			const sink = createSink({
+				appellantCase: createAppellantCase({ caseSubmittedDate: new Date('2024-02-05T09:00:00.000Z') })
+			});
+			const result = validateData({ type: 'has', data: source }, sink);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'appellantCase');
+			assert.ok(errors.some((e) => e.error.includes('caseSubmittedDate')));
+		});
+
+		test('reports ownsAllLand mismatch', () => {
+			const source = createSource({ ownsAllLand: true });
+			const sink = createSink({ appellantCase: createAppellantCase({ ownsAllLand: false }) });
+			const result = validateData({ type: 'has', data: source }, sink);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'appellantCase');
+			assert.ok(errors.some((e) => e.error.includes('ownsAllLand')));
+		});
+
+		test('no errors when appellantCase matches', () => {
+			const result = validateData({ type: 'has', data: createSource() }, createSink());
+
+			const errors = result.errors.filter((e) => e.sourceField === 'appellantCase');
+			assert.strictEqual(errors.length, 0);
+		});
+	});
 });
