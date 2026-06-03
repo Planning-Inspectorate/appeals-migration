@@ -570,4 +570,76 @@ describe('validateData', () => {
 			assert.strictEqual(allocationErrors.length, 0);
 		});
 	});
+
+	describe('validateAddress errors', () => {
+		test('reports missing address when source has data', () => {
+			const source = createSource({ siteAddressLine1: '1 Test St' });
+			const result = validateData({ type: 'has', data: source }, createSink({ address: null }));
+
+			const addressErrors = result.errors.filter((e) => e.sourceField === 'address');
+			assert.ok(addressErrors.length > 0);
+			assert.ok(addressErrors.some((e) => e.error.includes('missing in sink')));
+		});
+
+		test('reports unexpected address when source has no data', () => {
+			const result = validateData(
+				{ type: 'has', data: createSource() },
+				createSink({
+					address: {
+						addressLine1: '1 Test St',
+						addressLine2: null,
+						addressTown: null,
+						addressCounty: null,
+						postcode: null
+					}
+				})
+			);
+
+			const addressErrors = result.errors.filter((e) => e.sourceField === 'address');
+			assert.ok(addressErrors.length > 0);
+			assert.ok(addressErrors.some((e) => e.error.includes('exists in sink')));
+		});
+
+		test('reports specific field mismatches', () => {
+			const source = createSource({
+				siteAddressLine1: '1 Test St',
+				siteAddressTown: 'London',
+				siteAddressPostcode: 'SW1A 1AA'
+			});
+			const sink = createSink({
+				address: {
+					addressLine1: '1 Test St',
+					addressLine2: null,
+					addressTown: 'Bristol',
+					addressCounty: null,
+					postcode: 'SW1A 1AA'
+				}
+			});
+			const result = validateData({ type: 'has', data: source }, sink);
+
+			const addressErrors = result.errors.filter((e) => e.sourceField === 'address');
+			assert.ok(
+				addressErrors.some(
+					(e) => e.error.includes('addressTown') && e.error.includes('London') && e.error.includes('Bristol')
+				)
+			);
+		});
+
+		test('no errors when address matches', () => {
+			const source = createSource({ siteAddressLine1: '1 Test St', siteAddressPostcode: 'SW1A 1AA' });
+			const sink = createSink({
+				address: {
+					addressLine1: '1 Test St',
+					addressLine2: null,
+					addressTown: null,
+					addressCounty: null,
+					postcode: 'SW1A 1AA'
+				}
+			});
+			const result = validateData({ type: 'has', data: source }, sink);
+
+			const addressErrors = result.errors.filter((e) => e.sourceField === 'address');
+			assert.strictEqual(addressErrors.length, 0);
+		});
+	});
 });
