@@ -18,6 +18,11 @@ import { createValidationError } from '../types/validation-types.ts';
 export type SourceCase = { type: 'has'; data: AppealHas } | { type: 's78'; data: AppealS78 };
 type SinkCase = NonNullable<Awaited<ReturnType<typeof fetchSinkCaseDetails>>>;
 
+interface ValidationResult {
+	isValid: boolean;
+	errors: string[];
+}
+
 export function compareMappedString(
 	sourceValue: string | null | undefined,
 	sinkValue: string | null | undefined
@@ -96,10 +101,7 @@ function addStatusIfDateExists(
 	}
 }
 
-function validateAppealStatus(
-	source: AppealHas | AppealS78,
-	sinkStatuses: SinkCase['appealStatus']
-): { isValid: boolean; errors: string[] } {
+function validateAppealStatus(source: AppealHas | AppealS78, sinkStatuses: SinkCase['appealStatus']): ValidationResult {
 	const validationErrors: string[] = [];
 	const expected: Array<{ status: string; createdAt: Date | undefined }> = [];
 
@@ -211,10 +213,7 @@ function validateInspectorDecision(source: AppealHas | AppealS78, sink: SinkCase
 	);
 }
 
-function validateAppellantCase(
-	source: AppealHas | AppealS78,
-	sink: SinkCase['appellantCase']
-): { isValid: boolean; errors: string[] } {
+function validateAppellantCase(source: AppealHas | AppealS78, sink: SinkCase['appellantCase']): ValidationResult {
 	const validationErrors: string[] = [];
 
 	if (!sink) {
@@ -747,21 +746,19 @@ export function validateData(
 		runComplexValidation(validation.fn, validation.fieldName, sourceModel, errors)
 	);
 
-	// Validate appeal status with detailed error messages
-	const appealStatusResult = validateAppealStatus(source, sinkCase.appealStatus);
-	if (!appealStatusResult.isValid) {
-		appealStatusResult.errors.forEach((error) => {
-			errors.push(createValidationError(sourceModel, 'appealStatus', error));
-		});
-	}
+	const detailedValidations: Array<{ fn: () => ValidationResult; fieldName: string }> = [
+		{ fn: () => validateAppealStatus(source, sinkCase.appealStatus), fieldName: 'appealStatus' },
+		{ fn: () => validateAppellantCase(source, sinkCase.appellantCase), fieldName: 'appellantCase' }
+	];
 
-	// Validate appellant case with detailed error messages
-	const appellantCaseResult = validateAppellantCase(source, sinkCase.appellantCase);
-	if (!appellantCaseResult.isValid) {
-		appellantCaseResult.errors.forEach((error) => {
-			errors.push(createValidationError(sourceModel, 'appellantCase', error));
-		});
-	}
+	detailedValidations.forEach((validation) => {
+		const result = validation.fn();
+		if (!result.isValid) {
+			result.errors.forEach((error) => {
+				errors.push(createValidationError(sourceModel, validation.fieldName, error));
+			});
+		}
+	});
 
 	const isValid = errors.length === 0;
 	return {
