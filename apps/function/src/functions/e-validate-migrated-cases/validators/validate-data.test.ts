@@ -642,4 +642,73 @@ describe('validateData', () => {
 			assert.strictEqual(addressErrors.length, 0);
 		});
 	});
+
+	describe('validateInspectorDecision errors', () => {
+		test('reports missing inspectorDecision when source has outcome', () => {
+			const source = createSource({
+				caseDecisionOutcome: 'allowed',
+				caseDecisionOutcomeDate: '2024-06-01T00:00:00.000Z'
+			});
+			const result = validateData({ type: 'has', data: source }, createSink({ inspectorDecision: null }));
+
+			const errors = result.errors.filter((e) => e.sourceField === 'inspectorDecision');
+			assert.ok(errors.length > 0);
+			assert.ok(errors.some((e) => e.error.includes('missing in sink')));
+		});
+
+		test('reports unexpected inspectorDecision when source has no outcome', () => {
+			const result = validateData(
+				{ type: 'has', data: createSource() },
+				createSink({
+					inspectorDecision: { outcome: 'allowed', caseDecisionOutcomeDate: new Date('2024-06-01T00:00:00.000Z') }
+				})
+			);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'inspectorDecision');
+			assert.ok(errors.length > 0);
+			assert.ok(errors.some((e) => e.error.includes('exists in sink')));
+		});
+
+		test('reports outcome mismatch', () => {
+			const source = createSource({
+				caseDecisionOutcome: 'allowed',
+				caseDecisionOutcomeDate: '2024-06-01T00:00:00.000Z'
+			});
+			const sink = createSink({
+				inspectorDecision: { outcome: 'dismissed', caseDecisionOutcomeDate: new Date('2024-06-01T00:00:00.000Z') }
+			});
+			const result = validateData({ type: 'has', data: source }, sink);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'inspectorDecision');
+			assert.ok(errors.some((e) => e.error.includes('outcome')));
+		});
+
+		test('reports date mismatch', () => {
+			const source = createSource({
+				caseDecisionOutcome: 'allowed',
+				caseDecisionOutcomeDate: '2024-06-01T00:00:00.000Z'
+			});
+			const sink = createSink({
+				inspectorDecision: { outcome: 'allowed', caseDecisionOutcomeDate: new Date('2024-07-01T00:00:00.000Z') }
+			});
+			const result = validateData({ type: 'has', data: source }, sink);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'inspectorDecision');
+			assert.ok(errors.some((e) => e.error.includes('caseDecisionOutcomeDate')));
+		});
+
+		test('no errors when inspectorDecision matches', () => {
+			const source = createSource({
+				caseDecisionOutcome: 'allowed',
+				caseDecisionOutcomeDate: '2024-06-01T00:00:00.000Z'
+			});
+			const sink = createSink({
+				inspectorDecision: { outcome: 'allowed', caseDecisionOutcomeDate: new Date('2024-06-01T00:00:00.000Z') }
+			});
+			const result = validateData({ type: 'has', data: source }, sink);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'inspectorDecision');
+			assert.strictEqual(errors.length, 0);
+		});
+	});
 });
