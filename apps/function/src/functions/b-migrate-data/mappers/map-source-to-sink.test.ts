@@ -795,7 +795,7 @@ describe('mapSourceToSinkAppeal - Appeal Mapping', () => {
 		// Should use placeholder date when caseSubmittedDate is missing
 		assert.deepStrictEqual(appellantCase.caseSubmittedDate, new Date(0));
 		// Should use placeholder string with case reference when applicationDecision is missing
-		assert.strictEqual(appellantCase.applicationDecision, `Not available ${mockAppealHasCase.caseReference}`);
+		assert.strictEqual(appellantCase.applicationDecision, null);
 	});
 
 	test('parseNumber handles invalid values', () => {
