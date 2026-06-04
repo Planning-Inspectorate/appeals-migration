@@ -33,9 +33,17 @@ interface ValidationResult {
 
 export function compareMappedString(
 	sourceValue: string | null | undefined,
-	sinkValue: string | null | undefined
+	sinkValue: string | null | undefined,
+	ignoreCase?: boolean
 ): boolean {
-	return stringOrUndefined(sourceValue) === stringOrUndefined(sinkValue);
+	const getValue = (value: string | null | undefined) => {
+		const s = stringOrUndefined(value);
+		if (ignoreCase) {
+			return s?.toLowerCase();
+		}
+		return s;
+	};
+	return getValue(sourceValue) === getValue(sinkValue);
 }
 
 export function compareMappedDate(
@@ -430,7 +438,7 @@ function validateAppellantCase(source: AppealHas | AppealS78, sink: SinkCase['ap
 		);
 	}
 	const expectedValidationOutcome = mapCaseValidationOutcome(source.caseValidationOutcome);
-	if (!compareMappedString(expectedValidationOutcome, sink.appellantCaseValidationOutcome?.name)) {
+	if (!compareMappedString(expectedValidationOutcome, sink.appellantCaseValidationOutcome?.name, true)) {
 		validationErrors.push(
 			`appellantCaseValidationOutcome: expected '${expectedValidationOutcome ?? 'null'}' got '${sink.appellantCaseValidationOutcome?.name ?? 'null'}'`
 		);
