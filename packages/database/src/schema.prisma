@@ -21,6 +21,7 @@ datasource db {
 model ToMigrateParameter {
   id Int @id @default(autoincrement())
 
+  // actually this is case type codes (e.g. H, Z)
   caseTypeName     String?
   dateReceivedFrom DateTime?
   dateReceivedTo   DateTime?
