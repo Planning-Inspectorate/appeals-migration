@@ -108,32 +108,32 @@
                     }) }}
                 {% endcall %}
 
-                {% call govukFieldset({
-                    legend: {
-                        text: "Start date",
-                        classes: "govuk-fieldset__legend--m"
-                    }
-                }) %}
-                    {{ govukInput({
-                        id: "startDateFrom",
-                        name: "startDateFrom",
-                        label: { text: "From" },
-                        value: values.startDateFrom,
-                        classes: "govuk-input--width-10",
-                        type: "date",
-                        errorMessage: errors.startDateFrom if errors and errors.startDateFrom
-                    }) }}
+{#                {% call govukFieldset({#}
+{#                    legend: {#}
+{#                        text: "Start date",#}
+{#                        classes: "govuk-fieldset__legend--m"#}
+{#                    }#}
+{#                }) %}#}
+{#                    {{ govukInput({#}
+{#                        id: "startDateFrom",#}
+{#                        name: "startDateFrom",#}
+{#                        label: { text: "From" },#}
+{#                        value: values.startDateFrom,#}
+{#                        classes: "govuk-input--width-10",#}
+{#                        type: "date",#}
+{#                        errorMessage: errors.startDateFrom if errors and errors.startDateFrom#}
+{#                    }) }}#}
 
-                    {{ govukInput({
-                        id: "startDateTo",
-                        name: "startDateTo",
-                        label: { text: "To" },
-                        value: values.startDateTo,
-                        classes: "govuk-input--width-10",
-                        type: "date",
-                        errorMessage: errors.startDateTo if errors and errors.startDateTo
-                    }) }}
-                {% endcall %}
+{#                    {{ govukInput({#}
+{#                        id: "startDateTo",#}
+{#                        name: "startDateTo",#}
+{#                        label: { text: "To" },#}
+{#                        value: values.startDateTo,#}
+{#                        classes: "govuk-input--width-10",#}
+{#                        type: "date",#}
+{#                        errorMessage: errors.startDateTo if errors and errors.startDateTo#}
+{#                    }) }}#}
+{#                {% endcall %}#}
 
                 <div class="govuk-button-group">
                     {{ govukButton({
