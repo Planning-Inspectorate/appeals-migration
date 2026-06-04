@@ -13,6 +13,7 @@ export function mapToMigrateParameterToWhere(
 ): Prisma.AppealHasWhereInput & Prisma.AppealS78WhereInput {
 	const where: Prisma.AppealHasWhereInput & Prisma.AppealS78WhereInput = {};
 
+	addIfPresent(where, 'caseType', param.caseTypeName);
 	addIfPresent(where, 'caseStatus', param.status);
 	addIfPresent(where, 'caseProcedure', param.procedureType);
 	addIfPresent(where, 'lpaCode', param.lpa);
