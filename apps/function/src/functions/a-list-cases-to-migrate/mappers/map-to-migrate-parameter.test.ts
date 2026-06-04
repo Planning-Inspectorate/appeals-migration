@@ -4,37 +4,49 @@ import { describe, test } from 'node:test';
 import { mapToMigrateParameterToWhere } from './map-to-migrate-parameter.ts';
 
 describe('mapToMigrateParameterToWhere', () => {
+	const defaultWhere = {
+		caseReference: { not: { startsWith: '6' } },
+		lpaCode: { notIn: ['X6666', 'Q9999'] }
+	};
 	test('always includes caseReference filter to exclude Manage Appeals cases', () => {
-		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, status: null, procedureType: null }), {
-			caseReference: {
-				not: {
-					startsWith: '6'
-				}
+		let where = mapToMigrateParameterToWhere({ id: 1, status: null, procedureType: null });
+		assert.deepStrictEqual(where.caseReference, {
+			not: {
+				startsWith: '6'
 			}
 		});
-		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, status: '', procedureType: '' }), {
-			caseReference: {
-				not: {
-					startsWith: '6'
-				}
+		where = mapToMigrateParameterToWhere({ id: 1, status: '', procedureType: '' });
+		assert.deepStrictEqual(where.caseReference, {
+			not: {
+				startsWith: '6'
 			}
+		});
+	});
+	test('always includes LPA filter to exclude test cases', () => {
+		let where = mapToMigrateParameterToWhere({ id: 1, status: null, procedureType: null });
+		assert.deepStrictEqual(where.lpaCode, {
+			notIn: ['X6666', 'Q9999']
+		});
+		where = mapToMigrateParameterToWhere({ id: 1, status: '', procedureType: '' });
+		assert.deepStrictEqual(where.lpaCode, {
+			notIn: ['X6666', 'Q9999']
 		});
 	});
 
 	test('maps each field when provided', () => {
 		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, status: 'open', procedureType: null }), {
 			caseStatus: 'open',
-			caseReference: { not: { startsWith: '6' } }
+			...defaultWhere
 		});
 
 		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, status: null, procedureType: 'written' }), {
 			caseProcedure: 'written',
-			caseReference: { not: { startsWith: '6' } }
+			...defaultWhere
 		});
 
 		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, status: null, procedureType: null, lpa: 'ABC' }), {
-			lpaCode: 'ABC',
-			caseReference: { not: { startsWith: '6' } }
+			...defaultWhere,
+			lpaCode: 'ABC'
 		});
 	});
 
@@ -42,10 +54,10 @@ describe('mapToMigrateParameterToWhere', () => {
 		assert.deepStrictEqual(
 			mapToMigrateParameterToWhere({ id: 1, status: 'open', procedureType: 'written', lpa: 'ABC' }),
 			{
+				...defaultWhere,
 				caseStatus: 'open',
 				caseProcedure: 'written',
-				lpaCode: 'ABC',
-				caseReference: { not: { startsWith: '6' } }
+				lpaCode: 'ABC'
 			}
 		);
 	});
@@ -54,7 +66,7 @@ describe('mapToMigrateParameterToWhere', () => {
 		const dateFrom = new Date('2024-01-01T00:00:00.000Z');
 		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, dateReceivedFrom: dateFrom }), {
 			caseSubmittedDate: { gte: '2024-01-01T00:00:00.000Z' },
-			caseReference: { not: { startsWith: '6' } }
+			...defaultWhere
 		});
 	});
 
@@ -62,7 +74,7 @@ describe('mapToMigrateParameterToWhere', () => {
 		const dateTo = new Date('2024-12-31T23:59:59.999Z');
 		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, dateReceivedTo: dateTo }), {
 			caseSubmittedDate: { lte: '2024-12-31T23:59:59.999Z' },
-			caseReference: { not: { startsWith: '6' } }
+			...defaultWhere
 		});
 	});
 
@@ -76,7 +88,7 @@ describe('mapToMigrateParameterToWhere', () => {
 					gte: '2024-01-01T00:00:00.000Z',
 					lte: '2024-12-31T23:59:59.999Z'
 				},
-				caseReference: { not: { startsWith: '6' } }
+				...defaultWhere
 			}
 		);
 	});
@@ -97,7 +109,7 @@ describe('mapToMigrateParameterToWhere', () => {
 					gte: '2024-01-01T00:00:00.000Z',
 					lte: '2024-12-31T23:59:59.999Z'
 				},
-				caseReference: { not: { startsWith: '6' } }
+				...defaultWhere
 			}
 		);
 	});
@@ -106,7 +118,7 @@ describe('mapToMigrateParameterToWhere', () => {
 		const dateFrom = new Date('2024-01-01T00:00:00.000Z');
 		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, decisionDateFrom: dateFrom }), {
 			caseDecisionOutcomeDate: { gte: '2024-01-01T00:00:00.000Z' },
-			caseReference: { not: { startsWith: '6' } }
+			...defaultWhere
 		});
 	});
 
@@ -114,7 +126,7 @@ describe('mapToMigrateParameterToWhere', () => {
 		const dateTo = new Date('2024-12-31T23:59:59.999Z');
 		assert.deepStrictEqual(mapToMigrateParameterToWhere({ id: 1, decisionDateTo: dateTo }), {
 			caseDecisionOutcomeDate: { lte: '2024-12-31T23:59:59.999Z' },
-			caseReference: { not: { startsWith: '6' } }
+			...defaultWhere
 		});
 	});
 
@@ -128,7 +140,7 @@ describe('mapToMigrateParameterToWhere', () => {
 					gte: '2024-01-01T00:00:00.000Z',
 					lte: '2024-12-31T23:59:59.999Z'
 				},
-				caseReference: { not: { startsWith: '6' } }
+				...defaultWhere
 			}
 		);
 	});
@@ -157,7 +169,7 @@ describe('mapToMigrateParameterToWhere', () => {
 					gte: '2024-07-01T00:00:00.000Z',
 					lte: '2024-12-31T23:59:59.999Z'
 				},
-				caseReference: { not: { startsWith: '6' } }
+				...defaultWhere
 			}
 		);
 	});

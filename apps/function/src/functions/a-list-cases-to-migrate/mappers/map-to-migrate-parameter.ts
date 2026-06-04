@@ -32,6 +32,12 @@ export function mapToMigrateParameterToWhere(
 			startsWith: '6'
 		}
 	};
+	if (!where.lpaCode) {
+		// exclude Test LPAs by default
+		where.lpaCode = {
+			notIn: ['X6666', 'Q9999']
+		};
+	}
 
 	return where;
 }
