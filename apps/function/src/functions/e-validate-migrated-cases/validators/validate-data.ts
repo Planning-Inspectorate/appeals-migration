@@ -233,8 +233,8 @@ function validateSpecialisms(
 	return validateArrayMatch(
 		expected,
 		sinkSpecialisms,
-		(name) => name,
-		(s) => s.specialism.name,
+		(name) => name.toLowerCase(),
+		(s) => s.specialism.name.toLowerCase(),
 		'specialisms'
 	);
 }
