@@ -9,6 +9,8 @@ import {
 	mapCaseDecisionOutcome,
 	mapCaseProcedure,
 	mapCaseStatus,
+	mapCaseValidationOutcome,
+	mapDevelopmentType,
 	mapTypeOfPlanningApplication
 } from '../../b-migrate-data/mappers/map-enum.ts';
 import { mapEventToSink } from '../../b-migrate-data/mappers/map-event-to-sink.ts';
@@ -408,6 +410,29 @@ function validateAppellantCase(source: AppealHas | AppealS78, sink: SinkCase['ap
 	if (!compareMappedNumber(s78.appellantProcedurePreferenceDuration, sink.appellantProcedurePreferenceDuration)) {
 		validationErrors.push(
 			`appellantProcedurePreferenceDuration: expected '${s78.appellantProcedurePreferenceDuration ?? 'null'}' got '${sink.appellantProcedurePreferenceDuration ?? 'null'}'`
+		);
+	}
+	const sourceDevelopmentType = mapDevelopmentType(s78.developmentType);
+	if (!compareMappedString(sourceDevelopmentType, sink.developmentType)) {
+		validationErrors.push(
+			`developmentType: expected '${sourceDevelopmentType ?? 'null'}' got '${sink.developmentType ?? 'null'}'`
+		);
+	}
+	const expectedWrittenOrVerbalPermission =
+		s78.occupancyConditionsMet === null || s78.occupancyConditionsMet === undefined
+			? undefined
+			: s78.occupancyConditionsMet
+				? 'yes'
+				: 'no';
+	if (!compareMappedString(expectedWrittenOrVerbalPermission, sink.writtenOrVerbalPermission)) {
+		validationErrors.push(
+			`writtenOrVerbalPermission: expected '${expectedWrittenOrVerbalPermission ?? 'null'}' got '${sink.writtenOrVerbalPermission ?? 'null'}'`
+		);
+	}
+	const expectedValidationOutcome = mapCaseValidationOutcome(source.caseValidationOutcome);
+	if (!compareMappedString(expectedValidationOutcome, sink.appellantCaseValidationOutcome?.name)) {
+		validationErrors.push(
+			`appellantCaseValidationOutcome: expected '${expectedValidationOutcome ?? 'null'}' got '${sink.appellantCaseValidationOutcome?.name ?? 'null'}'`
 		);
 	}
 

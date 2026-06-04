@@ -17,7 +17,7 @@ export async function fetchSinkCaseDetails(sinkDatabase: SinkPrismaClient, caseR
 			specialisms: { include: { specialism: true } },
 			address: true,
 			inspectorDecision: true,
-			appellantCase: true,
+			appellantCase: { include: { appellantCaseValidationOutcome: true } },
 			childAppeals: true,
 			neighbouringSites: { include: { address: true } },
 			lpaQuestionnaire: {
