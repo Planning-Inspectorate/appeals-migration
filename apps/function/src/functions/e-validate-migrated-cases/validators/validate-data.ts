@@ -487,9 +487,10 @@ function validateLpaQuestionnaire(source: AppealHas | AppealS78, sink: SinkCase[
 			`lpaStatement: expected '${source.lpaStatement ?? 'null'}' got '${sink.lpaStatement ?? 'null'}'`
 		);
 	}
-	if (!compareMappedString(source.lpaProcedurePreference, sink.lpaProcedurePreference)) {
+	const sourceLpaProcedurePreference = mapCaseProcedure(source.lpaProcedurePreference);
+	if (!compareMappedString(sourceLpaProcedurePreference, sink.lpaProcedurePreference)) {
 		validationErrors.push(
-			`lpaProcedurePreference: expected '${source.lpaProcedurePreference ?? 'null'}' got '${sink.lpaProcedurePreference ?? 'null'}'`
+			`lpaProcedurePreference: expected '${sourceLpaProcedurePreference ?? 'null'}' got '${sink.lpaProcedurePreference ?? 'null'}'`
 		);
 	}
 	if (!compareMappedString(source.importantInformation, sink.importantInformation)) {
