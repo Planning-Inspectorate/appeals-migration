@@ -15,6 +15,7 @@ import { mapEventToSink } from '../../b-migrate-data/mappers/map-event-to-sink.t
 import { mapLpaInTest } from '../../b-migrate-data/mappers/map-lpa.ts';
 import { getServiceUserRole, mapServiceUser } from '../../b-migrate-data/mappers/map-service-user.ts';
 import { APPEAL_REPRESENTATION_TYPE } from '../../b-migrate-data/mappers/map-source-to-sink.ts';
+import { parseDateOrZero } from '../../shared/helpers/date.ts';
 import { parseDateOrUndefined, parseJsonArray, parseNumber, stringOrUndefined } from '../../shared/helpers/index.ts';
 import type { fetchSinkCaseDetails } from '../sink/case-details.ts';
 import type { DataValidationResult, ValidationError } from '../types/validation-types.ts';
@@ -37,9 +38,10 @@ export function compareMappedString(
 
 export function compareMappedDate(
 	sourceValue: string | Date | null | undefined,
-	sinkValue: string | Date | null | undefined
+	sinkValue: string | Date | null | undefined,
+	zeroDate?: boolean
 ): boolean {
-	const mapped = parseDateOrUndefined(sourceValue);
+	const mapped = zeroDate ? parseDateOrZero(sourceValue) : parseDateOrUndefined(sourceValue);
 	const sinkDate = parseDateOrUndefined(sinkValue);
 	if (mapped === undefined && sinkDate === undefined) return true;
 	if (mapped === undefined || sinkDate === undefined) return false;
@@ -195,7 +197,9 @@ function validateAppealStatus(source: AppealHas | AppealS78, sinkStatuses: SinkC
 	// Check for unexpected statuses in sink
 	const unexpectedStatuses = sortedSink.filter(
 		(sink) =>
-			!sortedExpected.some((exp) => exp.status === sink.status && compareMappedDate(exp.createdAt, sink.createdAt))
+			!sortedExpected.some(
+				(exp) => exp.status === sink.status && compareMappedDate(exp.createdAt, sink.createdAt, true)
+			)
 	);
 
 	unexpectedStatuses.forEach((unexpected) => {
@@ -317,7 +321,7 @@ function validateAppellantCase(source: AppealHas | AppealS78, sink: SinkCase['ap
 
 	const s78 = source as AppealS78;
 
-	if (!compareMappedDate(source.caseSubmittedDate, sink.caseSubmittedDate)) {
+	if (!compareMappedDate(source.caseSubmittedDate, sink.caseSubmittedDate, true)) {
 		validationErrors.push(
 			`caseSubmittedDate: expected '${source.caseSubmittedDate ?? 'null'}' got '${sink.caseSubmittedDate?.toISOString() ?? 'null'}'`
 		);
@@ -327,7 +331,7 @@ function validateAppellantCase(source: AppealHas | AppealS78, sink: SinkCase['ap
 			`applicationDecision: expected '${source.applicationDecision ?? 'null'}' got '${sink.applicationDecision ?? 'null'}'`
 		);
 	}
-	if (!compareMappedDate(source.applicationDate, sink.applicationDate)) {
+	if (!compareMappedDate(source.applicationDate, sink.applicationDate, true)) {
 		validationErrors.push(
 			`applicationDate: expected '${source.applicationDate ?? 'null'}' got '${sink.applicationDate?.toISOString() ?? 'null'}'`
 		);
@@ -943,7 +947,7 @@ export function validateData(
 			fieldName: 'caseUpdatedDate',
 			sourceValue: source.caseUpdatedDate,
 			sinkValue: sinkCase.caseUpdatedDate,
-			compare: compareMappedDate
+			compare: (sourceValue, sinkValue) => compareMappedDate(sourceValue, sinkValue, true)
 		},
 		{
 			fieldName: 'caseValidDate',

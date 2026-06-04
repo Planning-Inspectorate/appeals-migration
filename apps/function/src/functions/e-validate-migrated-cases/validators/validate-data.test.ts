@@ -1,6 +1,7 @@
 // @ts-nocheck
 import assert from 'node:assert';
 import { describe, test } from 'node:test';
+import { ZERO_DATE } from '../../shared/helpers/date.ts';
 import {
 	createAppellantCase,
 	createEvent,
@@ -162,7 +163,9 @@ describe('validateData', () => {
 
 	test('validates appellantCase fields', () => {
 		const source = createSource({ siteAccessDetails: 'ring bell' });
-		const sink = createSink({ appellantCase: createAppellantCase({ siteAccessDetails: 'ring bell' }) });
+		const sink = createSink({
+			appellantCase: createAppellantCase({ siteAccessDetails: 'ring bell', applicationDate: ZERO_DATE })
+		});
 		assert.strictEqual(validate(source, sink), true);
 		assert.strictEqual(validate(source, createSink()), false);
 		assert.strictEqual(validate(createSource(), createSink({ appellantCase: null })), false);

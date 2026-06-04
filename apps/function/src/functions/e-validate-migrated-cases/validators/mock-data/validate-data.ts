@@ -1,3 +1,5 @@
+import { ZERO_DATE } from '../../../shared/helpers/date.ts';
+
 const baseAppellantCase = {
 	caseSubmittedDate: new Date('2024-01-05T09:00:00.000Z'),
 	applicationDecision: 'refused',
@@ -62,7 +64,10 @@ const baseSink = {
 	specialisms: [],
 	address: null,
 	inspectorDecision: null,
-	appellantCase: { ...baseAppellantCase },
+	appellantCase: {
+		...baseAppellantCase,
+		applicationDate: ZERO_DATE
+	},
 	childAppeals: [],
 	neighbouringSites: [],
 	lpaQuestionnaire: null,
