@@ -5,7 +5,12 @@ import type {
 	AppealServiceUser
 } from '@pins/odw-curated-database/src/client/client.ts';
 import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
-import { mapCaseDecisionOutcome, mapCaseProcedure, mapCaseStatus } from '../../b-migrate-data/mappers/map-enum.ts';
+import {
+	mapCaseDecisionOutcome,
+	mapCaseProcedure,
+	mapCaseStatus,
+	mapTypeOfPlanningApplication
+} from '../../b-migrate-data/mappers/map-enum.ts';
 import { mapEventToSink } from '../../b-migrate-data/mappers/map-event-to-sink.ts';
 import { mapLpaInTest } from '../../b-migrate-data/mappers/map-lpa.ts';
 import { getServiceUserRole, mapServiceUser } from '../../b-migrate-data/mappers/map-service-user.ts';
@@ -357,9 +362,10 @@ function validateAppellantCase(source: AppealHas | AppealS78, sink: SinkCase['ap
 			`ownsSomeLand: expected '${source.ownsSomeLand ?? 'null'}' got '${sink.ownsSomeLand ?? 'null'}'`
 		);
 	}
-	if (!compareMappedString(source.typeOfPlanningApplication, sink.typeOfPlanningApplication)) {
+	const sourceTypeOfPlanningApplication = mapTypeOfPlanningApplication(source.typeOfPlanningApplication);
+	if (!compareMappedString(sourceTypeOfPlanningApplication, sink.typeOfPlanningApplication)) {
 		validationErrors.push(
-			`typeOfPlanningApplication: expected '${source.typeOfPlanningApplication ?? 'null'}' got '${sink.typeOfPlanningApplication ?? 'null'}'`
+			`typeOfPlanningApplication: expected '${sourceTypeOfPlanningApplication ?? 'null'}' got '${sink.typeOfPlanningApplication ?? 'null'}'`
 		);
 	}
 	if (!compareMappedString(source.jurisdiction, sink.jurisdiction)) {
