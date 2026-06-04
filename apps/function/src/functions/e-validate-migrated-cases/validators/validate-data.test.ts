@@ -1283,6 +1283,151 @@ describe('validateData', () => {
 		});
 	});
 
+	describe('validateArrayMatch errors', () => {
+		test('reports count mismatch for specialisms', () => {
+			const source = createSource({ caseSpecialisms: '["enforcement","heritage"]' });
+			const result = validateData(
+				{ type: 'has', data: source },
+				createSink({ specialisms: [{ specialism: { name: 'enforcement' } }] })
+			);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'specialisms');
+			assert.ok(errors.length > 0);
+			assert.ok(errors.some((e) => e.error.includes('expected 2 items but found 1')));
+		});
+
+		test('reports key mismatch for specialisms', () => {
+			const source = createSource({ caseSpecialisms: '["enforcement","heritage"]' });
+			const sink = createSink({
+				specialisms: [{ specialism: { name: 'enforcement' } }, { specialism: { name: 'environment' } }]
+			});
+			const result = validateData({ type: 'has', data: source }, sink);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'specialisms');
+			assert.ok(errors.length > 0);
+			assert.ok(errors.some((e) => e.error.includes('expected keys') && e.error.includes('heritage')));
+		});
+
+		test('reports count mismatch for childAppeals', () => {
+			const source = createSource({ nearbyCaseReferences: '["CASE-002","CASE-003"]' });
+			const result = validateData({ type: 'has', data: source }, createSink());
+
+			const errors = result.errors.filter((e) => e.sourceField === 'childAppeals');
+			assert.ok(errors.length > 0);
+			assert.ok(errors.some((e) => e.error.includes('expected 2 items but found 0')));
+		});
+
+		test('reports key mismatch for childAppeals', () => {
+			const source = createSource({ nearbyCaseReferences: '["CASE-002"]' });
+			const sink = createSink({ childAppeals: [{ childRef: 'CASE-099', parentRef: 'CASE-001' }] });
+			const result = validateData({ type: 'has', data: source }, sink);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'childAppeals');
+			assert.ok(errors.length > 0);
+			assert.ok(errors.some((e) => e.error.includes('expected keys') && e.error.includes('CASE-002')));
+		});
+
+		test('reports count mismatch for neighbouringSites', () => {
+			const source = createSource({ neighbouringSiteAddresses: '[{"neighbouringSiteAddressLine1":"1 High St"}]' });
+			const result = validateData({ type: 'has', data: source }, createSink());
+
+			const errors = result.errors.filter((e) => e.sourceField === 'neighbouringSites');
+			assert.ok(errors.length > 0);
+			assert.ok(errors.some((e) => e.error.includes('expected 1 items but found 0')));
+		});
+
+		test('reports key mismatch for neighbouringSites', () => {
+			const source = createSource({ neighbouringSiteAddresses: '[{"neighbouringSiteAddressLine1":"1 High St"}]' });
+			const sink = createSink({ neighbouringSites: [{ address: { addressLine1: '99 Wrong Rd' } }] });
+			const result = validateData({ type: 'has', data: source }, sink);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'neighbouringSites');
+			assert.ok(errors.length > 0);
+			assert.ok(errors.some((e) => e.error.includes('expected keys') && e.error.includes('1 High St')));
+		});
+
+		test('reports count mismatch for appealGrounds', () => {
+			const source = createSource({
+				enforcementAppealGroundsDetails: '[{"appealGroundLetter":"a"},{"appealGroundLetter":"b"}]'
+			});
+			const sink = createSink({ appealGrounds: [{ ground: { groundRef: 'a' } }] });
+			const result = validateData({ type: 's78', data: source }, sink, [], []);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'appealGrounds');
+			assert.ok(errors.length > 0);
+			assert.ok(errors.some((e) => e.error.includes('expected 2 items but found 1')));
+		});
+
+		test('reports key mismatch for appealGrounds', () => {
+			const source = createSource({
+				enforcementAppealGroundsDetails: '[{"appealGroundLetter":"a"}]'
+			});
+			const sink = createSink({ appealGrounds: [{ ground: { groundRef: 'z' } }] });
+			const result = validateData({ type: 's78', data: source }, sink, [], []);
+
+			const errors = result.errors.filter((e) => e.sourceField === 'appealGrounds');
+			assert.ok(errors.length > 0);
+			assert.ok(errors.some((e) => e.error.includes('expected keys') && e.error.includes('a')));
+		});
+
+		test('reports count mismatch for lpaNotificationMethods', () => {
+			const source = createSource({ lpaStatement: 'note', notificationMethod: '["site-notice","letter"]' });
+			const lpaQuestionnaire = {
+				lpaQuestionnaireSubmittedDate: null,
+				lpaStatement: 'note',
+				lpaProcedurePreference: null,
+				importantInformation: null,
+				isCorrectAppealType: null,
+				inConservationArea: null,
+				targetDate: null,
+				lpaNotificationMethods: [{ lpaNotificationMethod: { key: 'site-notice' } }],
+				listedBuildingDetails: [],
+				designatedSiteNames: []
+			};
+			const result = validateData({ type: 'has', data: source }, createSink({ lpaQuestionnaire }));
+
+			const errors = result.errors.filter((e) => e.sourceField === 'lpaQuestionnaire');
+			assert.ok(
+				errors.some(
+					(e) => e.error.includes('lpaNotificationMethods') && e.error.includes('expected 2 items but found 1')
+				)
+			);
+		});
+
+		test('reports key mismatch for listedBuildingDetails', () => {
+			const source = createSource({
+				lpaStatement: 'note',
+				affectedListedBuildingNumbers: '["LB-001"]'
+			});
+			const lpaQuestionnaire = {
+				lpaQuestionnaireSubmittedDate: null,
+				lpaStatement: 'note',
+				lpaProcedurePreference: null,
+				importantInformation: null,
+				isCorrectAppealType: null,
+				inConservationArea: null,
+				targetDate: null,
+				lpaNotificationMethods: [],
+				listedBuildingDetails: [{ listEntry: 'LB-999' }],
+				designatedSiteNames: []
+			};
+			const result = validateData({ type: 'has', data: source }, createSink({ lpaQuestionnaire }));
+
+			const errors = result.errors.filter((e) => e.sourceField === 'lpaQuestionnaire');
+			assert.ok(errors.some((e) => e.error.includes('listedBuildingDetails') && e.error.includes('expected keys')));
+		});
+
+		test('no errors when all arrays match', () => {
+			const result = validateData({ type: 'has', data: createSource() }, createSink());
+
+			const arrayFields = ['specialisms', 'childAppeals', 'neighbouringSites', 'appealGrounds'];
+			arrayFields.forEach((field) => {
+				const errors = result.errors.filter((e) => e.sourceField === field);
+				assert.strictEqual(errors.length, 0, `Expected no errors for ${field}`);
+			});
+		});
+	});
+
 	describe('validateAppellantCase errors', () => {
 		test('reports missing appellantCase', () => {
 			const result = validateData({ type: 'has', data: createSource() }, createSink({ appellantCase: null }));

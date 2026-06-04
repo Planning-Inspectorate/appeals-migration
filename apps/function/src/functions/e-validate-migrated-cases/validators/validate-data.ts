@@ -59,12 +59,21 @@ function validateArrayMatch<S, T>(
 	expected: S[],
 	sinkItems: T[],
 	getExpectedKey: (item: S) => string | null | undefined,
-	getSinkKey: (item: T) => string | null | undefined
-): boolean {
-	if (expected.length !== sinkItems.length) return false;
+	getSinkKey: (item: T) => string | null | undefined,
+	label: string
+): ValidationResult {
+	const validationErrors: string[] = [];
+	if (expected.length !== sinkItems.length) {
+		validationErrors.push(`${label}: expected ${expected.length} items but found ${sinkItems.length}`);
+		return { isValid: false, errors: validationErrors };
+	}
 	const expectedKeys = expected.map(getExpectedKey).sort();
 	const sinkKeys = sinkItems.map(getSinkKey).sort();
-	return expectedKeys.every((key, i) => key === sinkKeys[i]);
+	const mismatched = expectedKeys.filter((key, i) => key !== sinkKeys[i]);
+	if (mismatched.length > 0) {
+		validationErrors.push(`${label}: expected keys [${expectedKeys.join(', ')}] got [${sinkKeys.join(', ')}]`);
+	}
+	return { isValid: validationErrors.length === 0, errors: validationErrors };
 }
 
 function validateAppealTimetable(source: AppealHas | AppealS78, sink: SinkCase['appealTimetable']): ValidationResult {
@@ -214,13 +223,17 @@ function validateAppealStatus(source: AppealHas | AppealS78, sinkStatuses: SinkC
 	};
 }
 
-function validateSpecialisms(source: AppealHas | AppealS78, sinkSpecialisms: SinkCase['specialisms']): boolean {
+function validateSpecialisms(
+	source: AppealHas | AppealS78,
+	sinkSpecialisms: SinkCase['specialisms']
+): ValidationResult {
 	const expected = [...new Set(parseJsonArray<string>(source.caseSpecialisms, 'specialisms').filter(Boolean))];
 	return validateArrayMatch(
 		expected,
 		sinkSpecialisms,
 		(name) => name,
-		(s) => s.specialism.name
+		(s) => s.specialism.name,
+		'specialisms'
 	);
 }
 
@@ -404,24 +417,29 @@ function validateAppellantCase(source: AppealHas | AppealS78, sink: SinkCase['ap
 	};
 }
 
-function validateChildAppeals(source: AppealHas | AppealS78, sinkAppeals: SinkCase['childAppeals']): boolean {
+function validateChildAppeals(source: AppealHas | AppealS78, sinkAppeals: SinkCase['childAppeals']): ValidationResult {
 	const refs = parseJsonArray<string>(source.nearbyCaseReferences, 'nearbyCaseReferences');
 	return validateArrayMatch(
 		refs,
 		sinkAppeals,
 		(ref) => ref.trim(),
-		(s) => s.childRef
+		(s) => s.childRef,
+		'childAppeals'
 	);
 }
 
-function validateNeighbouringSites(source: AppealHas | AppealS78, sinkSites: SinkCase['neighbouringSites']): boolean {
+function validateNeighbouringSites(
+	source: AppealHas | AppealS78,
+	sinkSites: SinkCase['neighbouringSites']
+): ValidationResult {
 	type Addr = { neighbouringSiteAddressLine1?: string | null };
 	const addrs = parseJsonArray<Addr>(source.neighbouringSiteAddresses, 'neighbouringSiteAddresses');
 	return validateArrayMatch(
 		addrs,
 		sinkSites,
 		(a) => a.neighbouringSiteAddressLine1 ?? null,
-		(s) => s.address?.addressLine1 ?? null
+		(s) => s.address?.addressLine1 ?? null,
+		'neighbouringSites'
 	);
 }
 
@@ -480,14 +498,17 @@ function validateLpaQuestionnaire(source: AppealHas | AppealS78, sink: SinkCase[
 			`targetDate: expected '${source.targetDate ?? 'null'}' got '${sink.targetDate?.toISOString() ?? 'null'}'`
 		);
 	}
-	if (!validateLpaNotificationMethods(source, sink.lpaNotificationMethods)) {
-		validationErrors.push('lpaNotificationMethods validation failed');
+	const notificationMethodsResult = validateLpaNotificationMethods(source, sink.lpaNotificationMethods);
+	if (!notificationMethodsResult.isValid) {
+		validationErrors.push(...notificationMethodsResult.errors);
 	}
-	if (!validateListedBuildingDetails(source, sink.listedBuildingDetails)) {
-		validationErrors.push('listedBuildingDetails validation failed');
+	const listedBuildingResult = validateListedBuildingDetails(source, sink.listedBuildingDetails);
+	if (!listedBuildingResult.isValid) {
+		validationErrors.push(...listedBuildingResult.errors);
 	}
-	if (!validateDesignatedSiteNames(source, sink.designatedSiteNames)) {
-		validationErrors.push('designatedSiteNames validation failed');
+	const designatedSiteResult = validateDesignatedSiteNames(source, sink.designatedSiteNames);
+	if (!designatedSiteResult.isValid) {
+		validationErrors.push(...designatedSiteResult.errors);
 	}
 
 	return { isValid: validationErrors.length === 0, errors: validationErrors };
@@ -498,13 +519,14 @@ function validateLpaNotificationMethods(
 	sinkMethods: SinkCase['lpaQuestionnaire'] extends null | undefined
 		? never
 		: NonNullable<SinkCase['lpaQuestionnaire']>['lpaNotificationMethods']
-): boolean {
+): ValidationResult {
 	const expected = parseJsonArray<string>(source.notificationMethod, 'notificationMethod');
 	return validateArrayMatch(
 		expected,
 		sinkMethods,
 		(key) => key,
-		(m) => m.lpaNotificationMethod.key
+		(m) => m.lpaNotificationMethod.key,
+		'lpaNotificationMethods'
 	);
 }
 
@@ -513,7 +535,7 @@ function validateListedBuildingDetails(
 	sinkDetails: SinkCase['lpaQuestionnaire'] extends null | undefined
 		? never
 		: NonNullable<SinkCase['lpaQuestionnaire']>['listedBuildingDetails']
-): boolean {
+): ValidationResult {
 	const affected = parseJsonArray<string>(source.affectedListedBuildingNumbers, 'affectedListedBuildingNumbers');
 	const changed = parseJsonArray<string>(
 		(source as AppealS78).changedListedBuildingNumbers,
@@ -523,7 +545,8 @@ function validateListedBuildingDetails(
 		[...affected, ...changed],
 		sinkDetails,
 		(entry) => entry,
-		(d) => d.listEntry
+		(d) => d.listEntry,
+		'listedBuildingDetails'
 	);
 }
 
@@ -532,7 +555,7 @@ function validateDesignatedSiteNames(
 	sinkNames: SinkCase['lpaQuestionnaire'] extends null | undefined
 		? never
 		: NonNullable<SinkCase['lpaQuestionnaire']>['designatedSiteNames']
-): boolean {
+): ValidationResult {
 	const expected = parseJsonArray<string>(
 		source.designatedSitesNames as string | null | undefined,
 		'designatedSitesNames'
@@ -541,7 +564,8 @@ function validateDesignatedSiteNames(
 		expected,
 		sinkNames,
 		(key) => key,
-		(n) => n.designatedSite.key
+		(n) => n.designatedSite.key,
+		'designatedSiteNames'
 	);
 }
 
@@ -592,8 +616,17 @@ function validateRepresentations(
 	return { isValid: validationErrors.length === 0, errors: validationErrors };
 }
 
-function validateAppealGrounds(source: AppealHas | AppealS78, sinkGrounds: SinkCase['appealGrounds']): boolean {
-	if (!('enforcementAppealGroundsDetails' in source)) return sinkGrounds.length === 0;
+function validateAppealGrounds(
+	source: AppealHas | AppealS78,
+	sinkGrounds: SinkCase['appealGrounds']
+): ValidationResult {
+	const validationErrors: string[] = [];
+	if (!('enforcementAppealGroundsDetails' in source)) {
+		if (sinkGrounds.length !== 0) {
+			validationErrors.push(`appealGrounds: expected 0 items but found ${sinkGrounds.length}`);
+		}
+		return { isValid: validationErrors.length === 0, errors: validationErrors };
+	}
 	type GroundDetail = { appealGroundLetter?: string | null };
 	const grounds = parseJsonArray<GroundDetail>(
 		source.enforcementAppealGroundsDetails,
@@ -603,9 +636,16 @@ function validateAppealGrounds(source: AppealHas | AppealS78, sinkGrounds: SinkC
 		.filter((g) => g.appealGroundLetter)
 		.map((g) => g.appealGroundLetter as string)
 		.sort();
-	if (expected.length !== sinkGrounds.length) return false;
+	if (expected.length !== sinkGrounds.length) {
+		validationErrors.push(`appealGrounds: expected ${expected.length} items but found ${sinkGrounds.length}`);
+		return { isValid: false, errors: validationErrors };
+	}
 	const sinkRefs = sinkGrounds.map((g) => g.ground?.groundRef ?? '').sort();
-	return expected.every((ref, i) => ref === sinkRefs[i]);
+	const mismatched = expected.filter((ref, i) => ref !== sinkRefs[i]);
+	if (mismatched.length > 0) {
+		validationErrors.push(`appealGrounds: expected keys [${expected.join(', ')}] got [${sinkRefs.join(', ')}]`);
+	}
+	return { isValid: validationErrors.length === 0, errors: validationErrors };
 }
 
 function validateEventAddress(
@@ -855,17 +895,6 @@ function validateField<T, U>(validator: FieldValidator<T, U>, sourceModel: strin
 	}
 }
 
-function runComplexValidation(
-	validationFn: () => boolean,
-	fieldName: string,
-	sourceModel: string,
-	errors: ValidationError[]
-): void {
-	if (!validationFn()) {
-		errors.push(createValidationError(sourceModel, fieldName, `${fieldName} validation failed`));
-	}
-}
-
 export function validateData(
 	sourceCase: SourceCase,
 	sinkCase: SinkCase,
@@ -977,18 +1006,11 @@ export function validateData(
 
 	dateFieldValidators.forEach((validator) => validateField(validator, sourceModel, errors));
 
-	const complexValidations: Array<{ fn: () => boolean; fieldName: string }> = [
+	const detailedValidations: Array<{ fn: () => ValidationResult; fieldName: string }> = [
 		{ fn: () => validateSpecialisms(source, sinkCase.specialisms), fieldName: 'specialisms' },
 		{ fn: () => validateChildAppeals(source, sinkCase.childAppeals), fieldName: 'childAppeals' },
 		{ fn: () => validateNeighbouringSites(source, sinkCase.neighbouringSites), fieldName: 'neighbouringSites' },
-		{ fn: () => validateAppealGrounds(source, sinkCase.appealGrounds), fieldName: 'appealGrounds' }
-	];
-
-	complexValidations.forEach((validation) =>
-		runComplexValidation(validation.fn, validation.fieldName, sourceModel, errors)
-	);
-
-	const detailedValidations: Array<{ fn: () => ValidationResult; fieldName: string }> = [
+		{ fn: () => validateAppealGrounds(source, sinkCase.appealGrounds), fieldName: 'appealGrounds' },
 		{ fn: () => validateParentAppeals(source, sinkCase.parentAppeals), fieldName: 'parentAppeals' },
 		{ fn: () => validateAppealTimetable(source, sinkCase.appealTimetable), fieldName: 'appealTimetable' },
 		{ fn: () => validateAllocation(source, sinkCase.allocation), fieldName: 'allocation' },
