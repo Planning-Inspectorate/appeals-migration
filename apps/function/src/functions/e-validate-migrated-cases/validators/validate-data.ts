@@ -4,7 +4,7 @@ import type {
 	AppealS78,
 	AppealServiceUser
 } from '@pins/odw-curated-database/src/client/client.ts';
-import { APPEAL_CASE_STATUS } from '@planning-inspectorate/data-model';
+import { APPEAL_CASE_STATUS, type Schemas } from '@planning-inspectorate/data-model';
 import {
 	mapCaseDecisionOutcome,
 	mapCaseProcedure,
@@ -432,13 +432,27 @@ function validateNeighbouringSites(
 	source: AppealHas | AppealS78,
 	sinkSites: SinkCase['neighbouringSites']
 ): ValidationResult {
-	type Addr = { neighbouringSiteAddressLine1?: string | null };
+	type Addr = NonNullable<Schemas.AppealHASCase['neighbouringSiteAddresses']>[number];
 	const addrs = parseJsonArray<Addr>(source.neighbouringSiteAddresses, 'neighbouringSiteAddresses');
 	return validateArrayMatch(
 		addrs,
 		sinkSites,
-		(a) => a.neighbouringSiteAddressLine1 ?? null,
-		(s) => s.address?.addressLine1 ?? null,
+		(a) =>
+			[
+				a.neighbouringSiteAddressLine1 ?? '',
+				a.neighbouringSiteAddressLine2 ?? '',
+				a.neighbouringSiteAddressTown ?? '',
+				a.neighbouringSiteAddressCounty ?? '',
+				a.neighbouringSiteAddressPostcode ?? ''
+			].join('|'),
+		(s) =>
+			[
+				s.address?.addressLine1 ?? '',
+				s.address?.addressLine2 ?? '',
+				s.address?.addressTown ?? '',
+				s.address?.addressCounty ?? '',
+				s.address?.postcode ?? ''
+			].join('|'),
 		'neighbouringSites'
 	);
 }
