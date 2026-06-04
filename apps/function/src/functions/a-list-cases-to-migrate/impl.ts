@@ -52,7 +52,7 @@ export function buildListCasesToMigrate(
 			for (const param of params) {
 				const whereClause = mappers.mapToMigrateParameterToWhere(param);
 
-				const refs = await source.fetchCaseReferences(sourceDatabase, whereClause, whereClause);
+				const refs = await source.fetchCaseReferences(sourceDatabase, whereClause, whereClause, param.limit);
 				refs.forEach((r) => allCases.set(r.caseReference, r));
 			}
 

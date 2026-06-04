@@ -44,6 +44,16 @@
                     errorMessage: errors.status if errors and errors.status
                 }) }}
 
+                {{ govukInput({
+                    id: "limit",
+                    name: "limit",
+                    label: { text: "Limit (max cases to fetch)" },
+                    value: values.limit,
+                    classes: "govuk-input--width-5",
+                    inputmode: "numeric",
+                    errorMessage: errors.limit if errors and errors.limit
+                }) }}
+
                 {% call govukFieldset({
                     legend: {
                         text: "Date received",

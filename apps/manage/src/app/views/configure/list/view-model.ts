@@ -14,6 +14,7 @@ interface ParameterListItem {
 	dateReceived: string;
 	decisionDate: string;
 	startDate: string;
+	limit: string;
 }
 
 export interface ListViewModel {
@@ -45,7 +46,8 @@ function mapItem(p: ToMigrateParameter): ParameterListItem {
 		status: p.status ?? ANY,
 		dateReceived: formatDateRange(p.dateReceivedFrom, p.dateReceivedTo),
 		decisionDate: formatDateRange(p.decisionDateFrom, p.decisionDateTo),
-		startDate: formatDateRange(p.startDateFrom, p.startDateTo)
+		startDate: formatDateRange(p.startDateFrom, p.startDateTo),
+		limit: p.limit != null ? String(p.limit) : 'none'
 	};
 }
 

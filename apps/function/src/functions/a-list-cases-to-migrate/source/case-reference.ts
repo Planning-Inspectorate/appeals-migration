@@ -12,16 +12,24 @@ function isReferenceId(row: { caseReference: string | null; caseId?: number | nu
 export async function fetchCaseReferences(
 	sourceDatabase: SourcePrismaClient,
 	hasWhere: Prisma.AppealHasWhereInput,
-	s78Where: Prisma.AppealS78WhereInput
+	s78Where: Prisma.AppealS78WhereInput,
+	limit?: number | null
 ): Promise<ReferenceId[]> {
+	const commonParameters: Prisma.AppealHasFindManyArgs & Prisma.AppealS78FindManyArgs = {
+		select: { caseReference: true, caseId: true }
+	};
+	const take = limit != null && limit > 0 ? limit : undefined;
+	if (take) {
+		commonParameters.take = take;
+	}
 	const hasRows = await sourceDatabase.appealHas.findMany({
 		where: hasWhere,
-		select: { caseReference: true, caseId: true }
+		...commonParameters
 	});
 
 	const s78Rows = await sourceDatabase.appealS78.findMany({
 		where: s78Where,
-		select: { caseReference: true, caseId: true }
+		...commonParameters
 	});
 	const byRef = new Map<string, ReferenceId>();
 	for (const has of hasRows) {

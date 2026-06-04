@@ -73,6 +73,7 @@ export interface ParameterFormValues {
 	decisionDateTo: string;
 	startDateFrom: string;
 	startDateTo: string;
+	limit: string;
 }
 
 function formatDateForInput(date: Date | null): string {
@@ -100,7 +101,8 @@ export function buildFormViewModelFromRecord(parameter: ToMigrateParameter): Par
 			decisionDateFrom: formatDateForInput(parameter.decisionDateFrom),
 			decisionDateTo: formatDateForInput(parameter.decisionDateTo),
 			startDateFrom: formatDateForInput(parameter.startDateFrom),
-			startDateTo: formatDateForInput(parameter.startDateTo)
+			startDateTo: formatDateForInput(parameter.startDateTo),
+			limit: parameter.limit != null ? String(parameter.limit) : ''
 		}
 	};
 }
@@ -123,7 +125,8 @@ export function buildFormViewModelForAdd(): ParameterFormViewModel {
 			decisionDateFrom: '',
 			decisionDateTo: '',
 			startDateFrom: '',
-			startDateTo: ''
+			startDateTo: '',
+			limit: ''
 		}
 	};
 }
@@ -131,6 +134,12 @@ export function buildFormViewModelForAdd(): ParameterFormViewModel {
 function parseDate(value: string | undefined): Date | null {
 	if (!value) return null;
 	return new Date(`${value}T00:00:00.000Z`);
+}
+
+function parseIntValue(value: string | undefined): number | null {
+	if (!value || value.trim() === '') return null;
+	const parsed = Number(value.trim());
+	return Number.isNaN(parsed) ? null : parsed;
 }
 
 /**
@@ -147,6 +156,7 @@ export function parseFormBody(body: Record<string, string>) {
 		decisionDateFrom: parseDate(body.decisionDateFrom),
 		decisionDateTo: parseDate(body.decisionDateTo),
 		startDateFrom: parseDate(body.startDateFrom),
-		startDateTo: parseDate(body.startDateTo)
+		startDateTo: parseDate(body.startDateTo),
+		limit: parseIntValue(body.limit)
 	};
 }

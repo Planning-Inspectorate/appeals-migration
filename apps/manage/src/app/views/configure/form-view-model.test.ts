@@ -27,7 +27,8 @@ describe('form-view-model', () => {
 				decisionDateFrom: '',
 				decisionDateTo: '',
 				startDateFrom: '',
-				startDateTo: ''
+				startDateTo: '',
+				limit: ''
 			});
 			assert.strictEqual(result.errors, undefined);
 			assert.strictEqual(result.errorSummary, undefined);
@@ -78,7 +79,8 @@ describe('form-view-model', () => {
 				decisionDateFrom: new Date('2025-02-01T00:00:00.000Z'),
 				decisionDateTo: new Date('2025-07-31T00:00:00.000Z'),
 				startDateFrom: new Date('2025-03-01T00:00:00.000Z'),
-				startDateTo: new Date('2025-08-31T00:00:00.000Z')
+				startDateTo: new Date('2025-08-31T00:00:00.000Z'),
+				limit: 100
 			};
 
 			const result = buildFormViewModelFromRecord(record);
@@ -97,7 +99,8 @@ describe('form-view-model', () => {
 				decisionDateFrom: '2025-02-01',
 				decisionDateTo: '2025-07-31',
 				startDateFrom: '2025-03-01',
-				startDateTo: '2025-08-31'
+				startDateTo: '2025-08-31',
+				limit: '100'
 			});
 		});
 
@@ -113,7 +116,8 @@ describe('form-view-model', () => {
 				decisionDateFrom: null,
 				decisionDateTo: null,
 				startDateFrom: null,
-				startDateTo: null
+				startDateTo: null,
+				limit: null
 			};
 
 			const result = buildFormViewModelFromRecord(record);
@@ -128,7 +132,8 @@ describe('form-view-model', () => {
 				decisionDateFrom: '',
 				decisionDateTo: '',
 				startDateFrom: '',
-				startDateTo: ''
+				startDateTo: '',
+				limit: ''
 			});
 		});
 
@@ -144,7 +149,8 @@ describe('form-view-model', () => {
 				decisionDateFrom: null,
 				decisionDateTo: null,
 				startDateFrom: null,
-				startDateTo: null
+				startDateTo: null,
+				limit: null
 			};
 
 			const result = buildFormViewModelFromRecord(record);
@@ -166,7 +172,8 @@ describe('form-view-model', () => {
 				decisionDateFrom: null,
 				decisionDateTo: null,
 				startDateFrom: null,
-				startDateTo: null
+				startDateTo: null,
+				limit: null
 			};
 
 			const result = buildFormViewModelFromRecord(record);
@@ -189,7 +196,8 @@ describe('form-view-model', () => {
 				decisionDateFrom: null,
 				decisionDateTo: null,
 				startDateFrom: null,
-				startDateTo: null
+				startDateTo: null,
+				limit: null
 			};
 
 			const result = buildFormViewModelFromRecord(record);
@@ -213,7 +221,8 @@ describe('form-view-model', () => {
 				decisionDateFrom: '2025-02-01',
 				decisionDateTo: '2025-07-31',
 				startDateFrom: '2025-03-01',
-				startDateTo: '2025-08-31'
+				startDateTo: '2025-08-31',
+				limit: '50'
 			};
 
 			const result = parseFormBody(body);
@@ -228,6 +237,7 @@ describe('form-view-model', () => {
 			assert.deepStrictEqual(result.decisionDateTo, new Date('2025-07-31T00:00:00.000Z'));
 			assert.deepStrictEqual(result.startDateFrom, new Date('2025-03-01T00:00:00.000Z'));
 			assert.deepStrictEqual(result.startDateTo, new Date('2025-08-31T00:00:00.000Z'));
+			assert.strictEqual(result.limit, 50);
 		});
 
 		it('should return null for empty string fields', () => {
@@ -241,7 +251,8 @@ describe('form-view-model', () => {
 				decisionDateFrom: '',
 				decisionDateTo: '',
 				startDateFrom: '',
-				startDateTo: ''
+				startDateTo: '',
+				limit: ''
 			};
 
 			const result = parseFormBody(body);
@@ -256,6 +267,7 @@ describe('form-view-model', () => {
 			assert.strictEqual(result.decisionDateTo, null);
 			assert.strictEqual(result.startDateFrom, null);
 			assert.strictEqual(result.startDateTo, null);
+			assert.strictEqual(result.limit, null);
 		});
 
 		it('should trim whitespace from string fields', () => {

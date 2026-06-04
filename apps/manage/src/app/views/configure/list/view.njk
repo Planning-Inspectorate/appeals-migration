@@ -74,6 +74,7 @@
                     { text: item.dateReceived },
                     { text: item.decisionDate },
                     { text: item.startDate },
+                    { text: item.limit },
                     { html: actionHtml }
                 ]), tableRows) %}
             {% endfor %}
@@ -87,6 +88,7 @@
                     { text: "Date received" },
                     { text: "Decision date" },
                     { text: "Start date" },
+                    { text: "Limit" },
                     { text: "Action" }
                 ],
                 rows: tableRows

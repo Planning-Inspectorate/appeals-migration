@@ -13,7 +13,7 @@ export function addLocalsConfiguration(environment?: string): Handler {
 			{ href: '/auth/signout', text: 'Sign out' }
 		];
 		res.locals.config = {
-			styleFile: 'style-bb056d5c.css',
+			styleFile: 'style-6ca7b965.css',
 			headerTitle: 'Manage appeals migration',
 			headerLinks: links.map((l) => {
 				l.active = req.url === l.href;
