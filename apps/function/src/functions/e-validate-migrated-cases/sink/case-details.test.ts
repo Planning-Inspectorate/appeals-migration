@@ -47,7 +47,8 @@ describe('fetchSinkCaseDetails', () => {
 			inquiry: { include: { address: true } },
 			siteVisit: true,
 			appellant: { include: { address: true } },
-			agent: { include: { address: true } }
+			agent: { include: { address: true } },
+			appellantCase: { include: { appellantCaseValidationOutcome: true } }
 		});
 	});
 
