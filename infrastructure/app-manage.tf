@@ -54,7 +54,8 @@ module "app_manage" {
     LOG_LEVEL = var.apps_config.logging.level
 
     # database connection
-    SQL_CONNECTION_STRING = local.key_vault_refs["sql-app-connection-string"]
+    SQL_CONNECTION_STRING             = local.key_vault_refs["sql-app-connection-string"]
+    ODW_CURATED_SQL_CONNECTION_STRING = local.key_vault_refs["odw-sql-app-connection-string"]
 
     # sessions
     REDIS_CONNECTION_STRING = local.key_vault_refs["redis-connection-string"]

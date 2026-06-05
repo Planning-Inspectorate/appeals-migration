@@ -63,7 +63,7 @@ export function newDatabaseClient(connectionString: string, logger?: Logger) {
 	return prisma.$extends({
 		model: {
 			caseToMigrate: {
-				async createWithDefaults(caseReference: string) {
+				async createWithDefaults(caseReference: string, sourceCaseId?: string) {
 					if (!caseReference) {
 						throw new Error('caseReference is required');
 					}
@@ -72,6 +72,7 @@ export function newDatabaseClient(connectionString: string, logger?: Logger) {
 					return context.create({
 						data: {
 							caseReference,
+							sourceCaseId,
 							DataStep: { create: {} },
 							DocumentListStep: { create: {} },
 							DocumentsStep: { create: {} },

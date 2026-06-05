@@ -18,6 +18,7 @@ export interface Config extends BaseConfig {
 	};
 	environment: string;
 	serviceBus: string;
+	sourceDatabase: string;
 }
 
 export type ENVIRONMENT_NAMES = Readonly<{ PROD: string; DEV: string; TEST: string; TRAINING: string }>;
@@ -60,6 +61,7 @@ export function loadConfig(): Config {
 		LOG_LEVEL,
 		PORT,
 		NODE_ENV,
+		ODW_CURATED_SQL_CONNECTION_STRING,
 		REDIS_CONNECTION_STRING,
 		SESSION_SECRET,
 		SERVICE_BUS_HOSTNAME,
@@ -67,6 +69,7 @@ export function loadConfig(): Config {
 	} = process.env;
 
 	const requiredConfig = {
+		ODW_CURATED_SQL_CONNECTION_STRING,
 		SESSION_SECRET,
 		SERVICE_BUS_HOSTNAME,
 		SQL_CONNECTION_STRING
@@ -136,6 +139,7 @@ export function loadConfig(): Config {
 		// the src directory
 		srcDir: buildConfig.srcDir,
 		serviceBus: SERVICE_BUS_HOSTNAME!,
+		sourceDatabase: ODW_CURATED_SQL_CONNECTION_STRING!,
 		session: {
 			redisPrefix: 'manage:',
 			redis: REDIS_CONNECTION_STRING,

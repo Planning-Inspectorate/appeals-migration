@@ -13,17 +13,26 @@ describe('add-case/controller', () => {
 					createWithDefaults: mock.fn(() => body)
 				}
 			};
+			const mockSourceDb = {
+				appealHas: {
+					findFirst: mock.fn(() => ({ caseId: 42 }))
+				},
+				appealS78: {
+					findFirst: mock.fn(() => null)
+				}
+			};
 			const mockRes = {
 				redirect: mock.fn()
 			};
 			const mockReq = { body, session: {} };
 
-			const { post } = buildAddCase({ db: mockDb, logger: mockLogger() });
+			const { post } = buildAddCase({ db: mockDb, logger: mockLogger(), sourceDb: mockSourceDb });
 			await post(mockReq, mockRes);
 
 			assert.strictEqual(mockDb.caseToMigrate.createWithDefaults.mock.callCount(), 1);
-			const createArg = mockDb.caseToMigrate.createWithDefaults.mock.calls[0].arguments[0];
-			assert.strictEqual(createArg, body.caseReference);
+			const createArgs = mockDb.caseToMigrate.createWithDefaults.mock.calls[0].arguments;
+			assert.strictEqual(createArgs[0], body.caseReference);
+			assert.strictEqual(createArgs[1], '42');
 
 			assert.strictEqual(mockRes.redirect.mock.callCount(), 1);
 			assert.strictEqual(mockRes.redirect.mock.calls[0].arguments[0], '/configure');
@@ -37,18 +46,59 @@ describe('add-case/controller', () => {
 					createWithDefaults: mock.fn(() => body)
 				}
 			};
+			const mockSourceDb = {
+				appealHas: {
+					findFirst: mock.fn(() => ({ caseId: 99 }))
+				},
+				appealS78: {
+					findFirst: mock.fn(() => null)
+				}
+			};
 			const mockRes = {
 				redirect: mock.fn()
 			};
 			const mockReq = { body, session: {} };
 
-			const { post } = buildAddCase({ db: mockDb, logger: mockLogger() });
+			const { post } = buildAddCase({ db: mockDb, logger: mockLogger(), sourceDb: mockSourceDb });
 			await post(mockReq, mockRes);
 
 			assert.strictEqual(mockDb.caseToMigrate.createWithDefaults.mock.callCount(), 1);
-			const createArg = mockDb.caseToMigrate.createWithDefaults.mock.calls[0].arguments[0];
-			assert.strictEqual(createArg, 'REF-001');
+			const createArgs = mockDb.caseToMigrate.createWithDefaults.mock.calls[0].arguments;
+			assert.strictEqual(createArgs[0], 'REF-001');
+			assert.strictEqual(createArgs[1], '99');
 			assert.strictEqual(mockReq.session.addCaseSuccess, 'REF-001');
+		});
+
+		it('should render error when case not found in source', async () => {
+			const body = { caseReference: 'NOT-FOUND' };
+			const mockDb = {
+				caseToMigrate: {
+					createWithDefaults: mock.fn()
+				}
+			};
+			const mockSourceDb = {
+				appealHas: {
+					findFirst: mock.fn(() => null)
+				},
+				appealS78: {
+					findFirst: mock.fn(() => null)
+				}
+			};
+			const mockRes = {
+				redirect: mock.fn(),
+				render: mock.fn()
+			};
+			const mockReq = { body, session: {} };
+
+			const { post } = buildAddCase({ db: mockDb, logger: mockLogger(), sourceDb: mockSourceDb });
+			await post(mockReq, mockRes);
+
+			assert.strictEqual(mockDb.caseToMigrate.createWithDefaults.mock.callCount(), 0);
+			assert.strictEqual(mockRes.render.mock.callCount(), 1);
+			assert.strictEqual(
+				mockRes.render.mock.calls[0].arguments[1].errorMessage,
+				'Case NOT-FOUND not found in source database'
+			);
 		});
 	});
 });

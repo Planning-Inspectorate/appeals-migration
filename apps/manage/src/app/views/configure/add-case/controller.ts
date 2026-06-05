@@ -2,7 +2,7 @@ import type { ManageService } from '#service';
 import type { AsyncRequestHandler } from '@pins/appeals-migration-lib/util/async-handler.ts';
 
 export function buildAddCase(service: ManageService): { get: AsyncRequestHandler; post: AsyncRequestHandler } {
-	const { db, logger } = service;
+	const { db, logger, sourceDatabaseClient } = service;
 
 	const get: AsyncRequestHandler = async (_req, res) => {
 		logger.info('add case form');
@@ -23,11 +23,31 @@ export function buildAddCase(service: ManageService): { get: AsyncRequestHandler
 			return res.redirect('/configure');
 		}
 
-		// TODO: verify the case exists in source
+		// verify the case exists in source and get the caseId
+		const sourceCase =
+			(await sourceDatabaseClient.appealHas.findFirst({
+				where: { caseReference },
+				select: { caseId: true }
+			})) ??
+			(await sourceDatabaseClient.appealS78.findFirst({
+				where: { caseReference },
+				select: { caseId: true }
+			}));
 
-		await db.caseToMigrate.createWithDefaults(caseReference);
+		if (!sourceCase) {
+			logger.warn({ caseReference }, 'case not found in source');
+			return res.render('views/configure/add-case/form.njk', {
+				pageHeading: 'Add a case',
+				backLinkUrl: '/configure',
+				errorMessage: `Case ${caseReference} not found in source database`
+			});
+		}
 
-		logger.info({ caseReference }, 'created case to migrate');
+		const sourceCaseId = sourceCase.caseId?.toString();
+
+		await db.caseToMigrate.createWithDefaults(caseReference, sourceCaseId);
+
+		logger.info({ caseReference, sourceCaseId }, 'created case to migrate');
 
 		// for success banner on configure list page
 		if (req.session) {

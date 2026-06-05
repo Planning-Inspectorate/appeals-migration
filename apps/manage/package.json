@@ -17,6 +17,7 @@
     "@azure/service-bus": "*",
     "@pins/appeals-migration-database": "^0.0.0",
     "@pins/appeals-migration-lib": "^0.0.0",
+    "@pins/odw-curated-database": "^0.0.0",
     "accessible-autocomplete": "*",
     "body-parser": "*",
     "connect-redis": "*",

@@ -1,6 +1,7 @@
 import { DefaultAzureCredential } from '@azure/identity';
 import { ServiceBusClient } from '@azure/service-bus';
 import { BaseService } from '@pins/appeals-migration-lib/app/base-service.ts';
+import { newOdwDatabaseClient, type PrismaClient as SourcePrismaClient } from '@pins/odw-curated-database';
 import type { Config } from './config.ts';
 
 /**
@@ -12,6 +13,7 @@ export class ManageService extends BaseService {
 	 */
 	#config: Config;
 	serviceBusClient: ServiceBusClient;
+	sourceDatabaseClient: SourcePrismaClient;
 
 	constructor(config: Config) {
 		super(config);
@@ -22,6 +24,7 @@ export class ManageService extends BaseService {
 		} else {
 			this.serviceBusClient = new ServiceBusClient(config.serviceBus, new DefaultAzureCredential());
 		}
+		this.sourceDatabaseClient = newOdwDatabaseClient(config.sourceDatabase);
 	}
 
 	get authConfig(): Config['auth'] {
