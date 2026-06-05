@@ -4,6 +4,7 @@ import type { FunctionService } from '../../service.ts';
 import type { MigrationFunction } from '../../types.ts';
 import { fetchEventDetails } from '../b-migrate-data/source/event-details.ts';
 import { fetchServiceUsers } from '../b-migrate-data/source/service-users.ts';
+import { insertAuditEntry } from '../shared/helpers/audit.ts';
 import { fetchSinkCaseDetails } from './sink/case-details.ts';
 import { fetchSinkDocuments } from './sink/documents.ts';
 import { fetchSourceCaseDetails } from './source/case-details.ts';
@@ -119,6 +120,12 @@ export function buildValidateMigratedCases(
 		if (caseToMigrate.sourceCaseId && dataValidationResult.isValid && documentsValidated) {
 			context.log(`Setting migrated view for ${caseReference}`);
 			await service.customViewManager.addMigratedView(caseToMigrate.sourceCaseId);
+			await insertAuditEntry(
+				'Automatic migration validation complete',
+				service.sinkDatabaseClient,
+				itemToMigrate,
+				context
+			);
 		}
 	};
 }

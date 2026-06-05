@@ -6,6 +6,7 @@ import type {
 	AppealServiceUser
 } from '@pins/odw-curated-database/src/client/client.ts';
 import { APPEAL_CASE_STATUS, APPEAL_LINKED_CASE_STATUS, type Schemas } from '@planning-inspectorate/data-model';
+import { newAuditEntry } from '../../shared/helpers/audit.ts';
 import { parseDateOrZero, ZERO_DATE } from '../../shared/helpers/date.ts';
 import {
 	booleanOrUndefined,
@@ -821,7 +822,11 @@ export function mapSourceToSinkAppeal(
 		lpaQuestionnaire: buildLpaQuestionnaire(sourceCase, validationReasonLookups),
 		representations: buildRepresentations(sourceCase),
 		appealGrounds: buildAppealGrounds(sourceCase),
-		folders: buildFolders()
+		folders: buildFolders(),
+
+		auditTrail: {
+			create: newAuditEntry('Case data migrated')
+		}
 	};
 
 	// Helper function to add event if not duplicate

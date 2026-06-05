@@ -5,6 +5,7 @@ import { withRetry } from '@pins/appeals-migration-lib/util/retry.ts';
 import { createService } from '../../init.ts';
 import type { FunctionService } from '../../service.ts';
 import { stepStatus, type ItemToMigrate, type MigrationFunction, type StepIdField } from '../../types.ts';
+import { insertAuditEntry } from './helpers/audit.ts';
 import { getStepId } from './step-id.ts';
 
 async function startCaseDocumentsStepIfWaiting(
@@ -35,7 +36,7 @@ async function startCaseDocumentsStepIfWaiting(
 async function completeCaseDocumentsStepIfFinished(
 	transaction: MigrationTransactionPrismaClient,
 	itemToMigrate: ItemToMigrate
-): Promise<void> {
+): Promise<boolean> {
 	const lockedCasesToMigrate = await transaction.$queryRaw<Array<{ documentsStepId: number }>>`
 		SELECT [documentsStepId]
 		FROM [CaseToMigrate] WITH (UPDLOCK, HOLDLOCK)
@@ -44,7 +45,7 @@ async function completeCaseDocumentsStepIfFinished(
 
 	const caseToMigrate = lockedCasesToMigrate[0];
 	if (!caseToMigrate) {
-		return;
+		return false;
 	}
 
 	const remainingDocumentCount = await transaction.documentToMigrate.count({
@@ -55,7 +56,7 @@ async function completeCaseDocumentsStepIfFinished(
 	});
 
 	if (remainingDocumentCount > 0) {
-		return;
+		return false;
 	}
 
 	const failedDocumentCount = await transaction.documentToMigrate.count({
@@ -71,6 +72,7 @@ async function completeCaseDocumentsStepIfFinished(
 		where: { id: caseToMigrate.documentsStepId },
 		data: { status, completedAt: new Date() }
 	});
+	return failedDocumentCount === 0;
 }
 
 export async function handleMigration(
@@ -110,7 +112,7 @@ export async function handleMigration(
 				errorMessage: error instanceof Error ? error.message : String(error)
 			};
 		});
-
+	let documentsFinished = false;
 	await withRetry(() =>
 		service.databaseClient.$transaction(async (transaction) => {
 			await transaction.migrationStep.update({
@@ -119,10 +121,14 @@ export async function handleMigration(
 			});
 
 			if (isDocumentStep) {
-				await completeCaseDocumentsStepIfFinished(transaction, itemToMigrate);
+				documentsFinished = await completeCaseDocumentsStepIfFinished(transaction, itemToMigrate);
 			}
 		})
 	);
+	if (documentsFinished) {
+		context.log(`${itemToMigrate.caseReference}: documents migration finished, adding audit entry`);
+		await insertAuditEntry('Documents migrated', service.sinkDatabaseClient, itemToMigrate, context);
+	}
 }
 
 /**

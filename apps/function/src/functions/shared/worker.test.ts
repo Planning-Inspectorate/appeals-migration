@@ -27,7 +27,11 @@ const newService = () => {
 	return {
 		databaseClient,
 		sourceDatabaseClient: { $disconnect: mock.fn(async () => {}) },
-		sinkDatabaseClient: { $disconnect: mock.fn(async () => {}) },
+		sinkDatabaseClient: {
+			appeal: { findUnique: mock.fn() },
+			auditTrail: { create: mock.fn() },
+			$disconnect: mock.fn(async () => {})
+		},
 		serviceBusClient: { close: mock.fn(async () => {}) },
 		dispose: mock.fn(async () => {})
 	};
@@ -194,6 +198,7 @@ describe('createWorker', () => {
 		service.databaseClient.documentToMigrate.count.mock.mockImplementation(async () => 0);
 		service.databaseClient.caseToMigrate.findUnique.mock.mockImplementation(async () => ({ documentsStepId: 88 }));
 		service.databaseClient.$queryRaw.mock.mockImplementation(async () => [{ documentsStepId: 88 }]);
+		service.sinkDatabaseClient.appeal.findUnique.mock.mockImplementation(async () => [{ id: 5 }]);
 		const migration = mock.fn(async () => {});
 		const context = newContext();
 		const item = { caseReference: 'CASE-010', migrationStepId: 50 };
@@ -208,6 +213,10 @@ describe('createWorker', () => {
 		const caseStepUpdateCall = getCall(service.databaseClient.migrationStep.update, 2);
 		assert.deepStrictEqual(caseStepUpdateCall.where, { id: 88 });
 		assert.strictEqual(caseStepUpdateCall.data.status, stepStatus.complete);
+
+		// check we call to find the appeal to add an audit entry
+		assert.strictEqual(service.sinkDatabaseClient.appeal.findUnique.mock.callCount(), 1);
+		assert.strictEqual(service.sinkDatabaseClient.auditTrail.create.mock.callCount(), 1);
 	});
 
 	test('does not complete case documents step when documents remain incomplete', async () => {
