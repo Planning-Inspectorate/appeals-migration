@@ -13,7 +13,7 @@ describe('add-case/controller', () => {
 					createWithDefaults: mock.fn(() => body)
 				}
 			};
-			const mockSourceDb = {
+			const mocksourceDatabaseClient = {
 				appealHas: {
 					findFirst: mock.fn(() => ({ caseId: 42 }))
 				},
@@ -26,7 +26,11 @@ describe('add-case/controller', () => {
 			};
 			const mockReq = { body, session: {} };
 
-			const { post } = buildAddCase({ db: mockDb, logger: mockLogger(), sourceDb: mockSourceDb });
+			const { post } = buildAddCase({
+				db: mockDb,
+				logger: mockLogger(),
+				sourceDatabaseClient: mocksourceDatabaseClient
+			});
 			await post(mockReq, mockRes);
 
 			assert.strictEqual(mockDb.caseToMigrate.createWithDefaults.mock.callCount(), 1);
@@ -46,7 +50,7 @@ describe('add-case/controller', () => {
 					createWithDefaults: mock.fn(() => body)
 				}
 			};
-			const mockSourceDb = {
+			const mocksourceDatabaseClient = {
 				appealHas: {
 					findFirst: mock.fn(() => ({ caseId: 99 }))
 				},
@@ -59,7 +63,11 @@ describe('add-case/controller', () => {
 			};
 			const mockReq = { body, session: {} };
 
-			const { post } = buildAddCase({ db: mockDb, logger: mockLogger(), sourceDb: mockSourceDb });
+			const { post } = buildAddCase({
+				db: mockDb,
+				logger: mockLogger(),
+				sourceDatabaseClient: mocksourceDatabaseClient
+			});
 			await post(mockReq, mockRes);
 
 			assert.strictEqual(mockDb.caseToMigrate.createWithDefaults.mock.callCount(), 1);
@@ -76,7 +84,7 @@ describe('add-case/controller', () => {
 					createWithDefaults: mock.fn()
 				}
 			};
-			const mockSourceDb = {
+			const mocksourceDatabaseClient = {
 				appealHas: {
 					findFirst: mock.fn(() => null)
 				},
@@ -90,7 +98,11 @@ describe('add-case/controller', () => {
 			};
 			const mockReq = { body, session: {} };
 
-			const { post } = buildAddCase({ db: mockDb, logger: mockLogger(), sourceDb: mockSourceDb });
+			const { post } = buildAddCase({
+				db: mockDb,
+				logger: mockLogger(),
+				sourceDatabaseClient: mocksourceDatabaseClient
+			});
 			await post(mockReq, mockRes);
 
 			assert.strictEqual(mockDb.caseToMigrate.createWithDefaults.mock.callCount(), 0);
