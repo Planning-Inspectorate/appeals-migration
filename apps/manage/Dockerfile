@@ -20,6 +20,7 @@ ENV GIT_SHA=$GIT_SHA
 
 RUN npm run build --workspace=manage-appeals-migration
 RUN npm run db-generate
+RUN npm run generate --workspace @pins/odw-curated-database
 
 # --------------------------------
 
