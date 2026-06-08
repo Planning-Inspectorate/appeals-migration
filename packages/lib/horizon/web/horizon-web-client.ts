@@ -536,7 +536,10 @@ export class HorizonWebClient {
 	}
 
 	static shouldRetryLoginError(error: unknown): boolean {
-		return error === `Couldn't find NTLM in the message type2 coming from the server`;
+		if (error instanceof Error) {
+			return error.message === `Couldn't find NTLM in the message type2 coming from the server`;
+		}
+		return false;
 	}
 }
 
