@@ -28,7 +28,7 @@ describe('document-to-migrate', () => {
 			{ documentId: 'DOC-2', caseReference: 'CASE-1' }
 		];
 
-		await upsertDocumentsToMigrate(tx as any, documents as any);
+		await upsertDocumentsToMigrate(tx as any, documents as any, 'CASE-1');
 
 		assert.equal(upsert.mock.calls.length, 2);
 

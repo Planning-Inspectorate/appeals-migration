@@ -44,7 +44,7 @@ describe('impl - buildListDocumentsToMigrate', () => {
 
 		assert.deepEqual(source.fetchDocumentsForCase.mock.calls[0].arguments, [{}, 'CASE-1', undefined]);
 		assert.equal(migrationDb.$transaction.mock.calls.length, 1);
-		assert.deepEqual(migration.upsertDocumentsToMigrate.mock.calls[0].arguments, [tx, documents]);
+		assert.deepEqual(migration.upsertDocumentsToMigrate.mock.calls[0].arguments, [tx, documents, 'CASE-1']);
 
 		assert.ok(
 			context.log.mock.calls.some((c) => String(c.arguments[0]).includes('Completed document list for case CASE-1'))
