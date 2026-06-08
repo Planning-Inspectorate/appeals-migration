@@ -1,6 +1,7 @@
 // custom views are used in Horizon to override the toolbar/UI on a case
 
 import type { HorizonWebClient } from '@pins/appeals-migration-lib/horizon/web/horizon-web-client.ts';
+import { CustomViewError } from '@pins/appeals-migration-lib/horizon/web/horizon-web-client.ts';
 
 const dateFormatter = new Intl.DateTimeFormat('en-GB', {
 	timeZone: 'Europe/London',
@@ -28,7 +29,8 @@ export class CustomViewManager {
 			It will be available in Manage appeals once migrated.
 </h1>`;
 		const queueViewName = '03_customview_case_migration_queued.html';
-		await this.#horizon.addCustomView(caseNodeId, queueView, queueViewName);
+
+		await this.addCustomViewUnlessExists(caseNodeId, queueView, queueViewName);
 	}
 
 	async addInProgressView(caseNodeId: string) {
@@ -39,7 +41,7 @@ export class CustomViewManager {
 			It will be available in Manage appeals once migrated.
 </h1>`;
 		const queueViewName = '02_customview_case_migration_in_progress.html';
-		await this.#horizon.addCustomView(caseNodeId, queueView, queueViewName);
+		await this.addCustomViewUnlessExists(caseNodeId, queueView, queueViewName);
 	}
 
 	async addMigratedView(caseNodeId: string) {
@@ -49,6 +51,24 @@ export class CustomViewManager {
 			${date}: This case has been migrated to Manage appeals. It is not editable here.
 </h1>`;
 		const queueViewName = '01_customview_case_migration_migrated.html';
-		await this.#horizon.addCustomView(caseNodeId, queueView, queueViewName);
+		await this.addCustomViewUnlessExists(caseNodeId, queueView, queueViewName);
+	}
+
+	async addCustomViewUnlessExists(caseNodeId: string, queueView: string, queueViewName: string) {
+		try {
+			await this.#horizon.addCustomView(caseNodeId, queueView, queueViewName);
+		} catch (e) {
+			if (CustomViewManager.isAlreadyExistsError(e)) {
+				return; // view already exists so this is counted as success
+			}
+			throw e;
+		}
+	}
+
+	static isAlreadyExistsError(e: unknown): boolean {
+		if (e instanceof CustomViewError) {
+			return e.response.includes('An item with the name') && e.response.includes('already exists');
+		}
+		return false;
 	}
 }

@@ -543,7 +543,7 @@ export class HorizonWebClient {
 	}
 }
 
-class CustomViewError extends Error {
+export class CustomViewError extends Error {
 	response: string;
 
 	constructor(response: string) {
