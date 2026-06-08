@@ -1,6 +1,7 @@
 import { sleep } from './sleep.ts';
 
 const RETRYABLE_PRISMA_CODES = new Set([
+	'ENOTBEGUN', // transaction not begun error
 	'P1001', // Can't reach database server
 	'P1002', // Database server timed out
 	'P1008', // Operations timed out
