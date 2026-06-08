@@ -2,7 +2,7 @@
 import assert from 'node:assert';
 import { after, before, describe, mock, test } from 'node:test';
 import { stepStatus } from '../../types.ts';
-import { buildDispatcher } from './dispatcher.ts';
+import { buildDispatcher, QUEUES } from './dispatcher.ts';
 import { getLondonTime } from './schedule-date.ts';
 
 const createPrismaError = (code) => Object.assign(new Error(`Prisma error ${code}`), { code });
@@ -315,7 +315,12 @@ describe('buildDispatcher', () => {
 			const queues = service.serviceBusAdministrationClient.getQueueRuntimeProperties.mock.calls.map(
 				(call) => call.arguments[0]
 			);
-			assert.deepStrictEqual(queues, ['data-step', 'document-list-step', 'documents-step', 'validation-step']);
+			assert.deepStrictEqual(queues, [
+				'appeals-migration-migrate-data',
+				'appeals-migration-list-documents-to-migrate',
+				'appeals-migration-migrate-documents',
+				'appeals-migration-validate-migrated-cases'
+			]);
 		});
 
 		test('chunks migration step updates for large batches', async () => {
@@ -499,7 +504,7 @@ describe('buildDispatcher', () => {
 			const service = newDrainService();
 			service.databaseClient.caseToMigrate.findMany.mock.mockImplementation(async () => [{ documentsStepId: 400 }]);
 			service.serviceBusClient.createReceiver.mock.mockImplementation((queueName) =>
-				queueName === 'documents-step' ? documentsReceiver : emptyReceiver
+				queueName === QUEUES.DOCUMENT ? documentsReceiver : emptyReceiver
 			);
 			const context = newContext();
 

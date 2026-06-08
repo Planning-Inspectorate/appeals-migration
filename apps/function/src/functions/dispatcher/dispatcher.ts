@@ -15,6 +15,13 @@ type DispatchConfig = {
 	stepIdField: StepIdField;
 };
 
+export const QUEUES = {
+	DATA: 'appeals-migration-migrate-data',
+	DOCUMENT_LIST: 'appeals-migration-list-documents-to-migrate',
+	DOCUMENT: 'appeals-migration-migrate-documents',
+	VALIDATION: 'appeals-migration-validate-migrated-cases'
+};
+
 async function getDispatchCount(
 	service: FunctionService,
 	queueName: string,
@@ -124,7 +131,7 @@ async function drain(config: DispatchConfig, service: FunctionService, context: 
 				})
 			);
 
-			if (config.queueName === 'documents-step') {
+			if (config.queueName === QUEUES.DOCUMENT) {
 				const caseReferences = [...new Set(messages.map((message) => (message.body as ItemToMigrate).caseReference))];
 				const cases = await withRetry(() =>
 					databaseClient.caseToMigrate.findMany({
@@ -179,13 +186,13 @@ export function buildDispatcher(service: FunctionService): TimerHandler {
 	const configs: DispatchConfig[] = [
 		{
 			queueItemType: 'case',
-			queueName: 'data-step',
+			queueName: QUEUES.DATA,
 			where: { DataStep: { status: stepStatus.waiting } },
 			stepIdField: 'dataStepId'
 		},
 		{
 			queueItemType: 'case',
-			queueName: 'document-list-step',
+			queueName: QUEUES.DOCUMENT_LIST,
 			where: {
 				DataStep: { status: stepStatus.complete },
 				DocumentListStep: { status: stepStatus.waiting }
@@ -194,7 +201,7 @@ export function buildDispatcher(service: FunctionService): TimerHandler {
 		},
 		{
 			queueItemType: 'document',
-			queueName: 'documents-step',
+			queueName: QUEUES.DOCUMENT,
 			where: {
 				MigrationStep: { status: stepStatus.waiting },
 				CaseToMigrate: {
@@ -207,7 +214,7 @@ export function buildDispatcher(service: FunctionService): TimerHandler {
 		},
 		{
 			queueItemType: 'case',
-			queueName: 'validation-step',
+			queueName: QUEUES.VALIDATION,
 			where: {
 				DataStep: { status: stepStatus.complete },
 				DocumentListStep: { status: stepStatus.complete },
