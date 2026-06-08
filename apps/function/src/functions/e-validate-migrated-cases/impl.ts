@@ -68,7 +68,7 @@ export function buildValidateMigratedCases(
 		const [sourceCase, sinkCase, sourceDocuments, sinkDocuments, sourceEvents, sourceServiceUsers] = await Promise.all([
 			source.fetchSourceCaseDetails(sourceDatabase, caseReference),
 			sink.fetchSinkCaseDetails(sinkDatabase, caseReference),
-			source.fetchSourceDocuments(sourceDatabase, caseReference),
+			source.fetchSourceDocuments(sourceDatabase, caseReference, caseToMigrate.sourceCaseId),
 			sink.fetchSinkDocuments(sinkDatabase, caseReference),
 			source.fetchSourceEvents(sourceDatabase, caseReference),
 			source.fetchSourceServiceUsers(sourceDatabase, caseReference)
