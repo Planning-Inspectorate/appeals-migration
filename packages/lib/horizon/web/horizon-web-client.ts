@@ -4,6 +4,7 @@ import type http from 'node:http';
 import https from 'node:https';
 import type { LookupFunction } from 'node:net';
 import type { Readable } from 'node:stream';
+import { withRetry } from '../../util/retry.ts';
 const ntlm = httpntlm.ntlm;
 
 type httpsGetImpl = typeof https.get;
@@ -263,39 +264,46 @@ export class HorizonWebClient {
 	 * @private
 	 */
 	async #loginFlow(url: string) {
-		// start the NTLM login flow
-		// see https://stackoverflow.com/a/13960538
-		// see https://techcommunity.microsoft.com/blog/iis-support-blog/windows-authentication-http-request-flow-in-iis/324645
-		// STEP 1:
-		// first make a request with the type1 auth header
-		const type1Res = await this.#ntlmType1Request(url);
+		await withRetry(
+			async () => {
+				// start the NTLM login flow
+				// see https://stackoverflow.com/a/13960538
+				// see https://techcommunity.microsoft.com/blog/iis-support-blog/windows-authentication-http-request-flow-in-iis/324645
+				// STEP 1:
+				// first make a request with the type1 auth header
+				const type1Res = await this.#ntlmType1Request(url);
 
-		const wwwAuthenticate = type1Res.headers['www-authenticate'];
-		if (!wwwAuthenticate) {
-			throw new Error('www-authenticate header not found in type-1 message response');
-		}
-		// STEP 2:
-		// www-authenticate header includes the NTLM type-2 message
-		// extract this and create the type-3 message to complete authorization
-		const type3Res = await this.#ntlmType3Request(url, wwwAuthenticate);
-		// the next steps appear to be Horizon/OpenText specific
-		// type3 response includes a redirect (to ?func=LL.Login)
-		if (type3Res.statusCode !== 302 || !type3Res.headers['location']) {
-			throw new Error('login redirect expected after type-3 message, got HTTP code ' + type3Res.statusCode);
-		}
-		// STEP 3:
-		// make a request to the login endpoint
-		const loginRes = await this.#get(type3Res.headers['location'], { headers: { Connection: 'keep-alive' } }, true);
-		if (loginRes.statusCode !== 302 || !loginRes.headers['location']) {
-			throw new Error('redirect expected after login message, got HTTP code ' + loginRes.statusCode);
-		}
-		if (!loginRes.headers['set-cookie']) {
-			throw new Error('cookies expected after login request');
-		}
-		// STEP 4:
-		// login response includes cookies
-		// save these to authorise subsequent requests
-		this.#updateCookies(loginRes);
+				const wwwAuthenticate = type1Res.headers['www-authenticate'];
+				if (!wwwAuthenticate) {
+					throw new Error('www-authenticate header not found in type-1 message response');
+				}
+				// STEP 2:
+				// www-authenticate header includes the NTLM type-2 message
+				// extract this and create the type-3 message to complete authorization
+				const type3Res = await this.#ntlmType3Request(url, wwwAuthenticate);
+				// the next steps appear to be Horizon/OpenText specific
+				// type3 response includes a redirect (to ?func=LL.Login)
+				if (type3Res.statusCode !== 302 || !type3Res.headers['location']) {
+					throw new Error('login redirect expected after type-3 message, got HTTP code ' + type3Res.statusCode);
+				}
+				// STEP 3:
+				// make a request to the login endpoint
+				const loginRes = await this.#get(type3Res.headers['location'], { headers: { Connection: 'keep-alive' } }, true);
+				if (loginRes.statusCode !== 302 || !loginRes.headers['location']) {
+					throw new Error('redirect expected after login message, got HTTP code ' + loginRes.statusCode);
+				}
+				if (!loginRes.headers['set-cookie']) {
+					throw new Error('cookies expected after login request');
+				}
+				// STEP 4:
+				// login response includes cookies
+				// save these to authorise subsequent requests
+				this.#updateCookies(loginRes);
+			},
+			{
+				isRetryableError: HorizonWebClient.shouldRetryLoginError
+			}
+		);
 	}
 
 	/**
@@ -525,6 +533,10 @@ export class HorizonWebClient {
 			const array = opts.all ? [{ address: ip, family: 4 }] : ip;
 			callback(null, array, 4);
 		};
+	}
+
+	static shouldRetryLoginError(error: unknown): boolean {
+		return error === `Couldn't find NTLM in the message type2 coming from the server`;
 	}
 }
 

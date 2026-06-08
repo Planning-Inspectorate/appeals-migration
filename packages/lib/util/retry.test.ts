@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it, mock } from 'node:test';
-import { isRetryableError, withRetry } from './retry.ts';
+import { isRetryablePrismaError, withRetry } from './retry.ts';
 
 const createPrismaError = (code: string) => Object.assign(new Error(`Prisma error ${code}`), { code });
 const createPrismaInitError = () =>
@@ -13,27 +13,27 @@ describe('retry', () => {
 
 		retryableCodes.forEach((code) => {
 			it(`returns true for ${code}`, () => {
-				assert.strictEqual(isRetryableError(createPrismaError(code)), true);
+				assert.strictEqual(isRetryablePrismaError(createPrismaError(code)), true);
 			});
 		});
 
 		it('returns true for PrismaClientInitializationError', () => {
-			assert.strictEqual(isRetryableError(createPrismaInitError()), true);
+			assert.strictEqual(isRetryablePrismaError(createPrismaInitError()), true);
 		});
 
 		nonRetryableCodes.forEach((code) => {
 			it(`returns false for ${code}`, () => {
-				assert.strictEqual(isRetryableError(createPrismaError(code)), false);
+				assert.strictEqual(isRetryablePrismaError(createPrismaError(code)), false);
 			});
 		});
 
 		it('returns false for generic Error', () => {
-			assert.strictEqual(isRetryableError(new Error('generic')), false);
+			assert.strictEqual(isRetryablePrismaError(new Error('generic')), false);
 		});
 
 		it('returns false for null/undefined', () => {
-			assert.strictEqual(isRetryableError(null), false);
-			assert.strictEqual(isRetryableError(undefined), false);
+			assert.strictEqual(isRetryablePrismaError(null), false);
+			assert.strictEqual(isRetryablePrismaError(undefined), false);
 		});
 	});
 

@@ -13,12 +13,14 @@ export interface RetryOptions {
 	maxAttempts?: number;
 	baseDelayMs?: number;
 	maxDelayMs?: number;
+	isRetryableError?: (error: unknown) => boolean;
 }
 
 const DEFAULT_OPTIONS: Required<RetryOptions> = {
 	maxAttempts: 3,
 	baseDelayMs: 100,
-	maxDelayMs: 2000
+	maxDelayMs: 2000,
+	isRetryableError: isRetryablePrismaError
 };
 
 /**
@@ -28,7 +30,7 @@ const DEFAULT_OPTIONS: Required<RetryOptions> = {
  * @throws The last error if all retries are exhausted or if the error is not retryable
  */
 export async function withRetry<T>(operation: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
-	const { maxAttempts, baseDelayMs, maxDelayMs } = { ...DEFAULT_OPTIONS, ...options };
+	const { maxAttempts, baseDelayMs, maxDelayMs, isRetryableError } = { ...DEFAULT_OPTIONS, ...options };
 
 	let lastError: Error | undefined;
 
@@ -43,14 +45,15 @@ export async function withRetry<T>(operation: () => Promise<T>, options: RetryOp
 			}
 
 			const delay = Math.min(baseDelayMs * Math.pow(2, attempt - 1), maxDelayMs);
-			await sleep(delay);
+			const jitter = delay * 0.25 * Math.random(); // 0-25% randomization
+			await sleep(delay + jitter);
 		}
 	}
 
 	throw lastError;
 }
 
-export function isRetryableError(error: unknown): boolean {
+export function isRetryablePrismaError(error: unknown): boolean {
 	if (error && typeof error === 'object') {
 		if ('code' in error && typeof error.code === 'string') {
 			return RETRYABLE_PRISMA_CODES.has(error.code);
