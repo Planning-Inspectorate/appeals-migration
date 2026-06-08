@@ -32,10 +32,10 @@
   "dependencies": {
     "@azure/functions": "^4.16.0",
     "@azure/identity": "^4.13.1",
-    "@azure/msal-node": "^5.2.2",
+    "@azure/msal-node": "^5.2.3",
     "@azure/service-bus": "^7.9.5",
-    "@azure/storage-blob": "^12.31.0",
-    "@planning-inspectorate/data-model": "^2.39.0",
+    "@azure/storage-blob": "^12.32.0",
+    "@planning-inspectorate/data-model": "^2.42.0",
     "@prisma/adapter-mssql": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "accessible-autocomplete": "^3.0.1",
@@ -62,7 +62,7 @@
     "@types/express": "^5.0.6",
     "@types/express-session": "^1.19.0",
     "@types/lodash.chunk": "^4.2.9",
-    "@types/node": "^25.9.1",
+    "@types/node": "^25.9.2",
     "@types/nunjucks": "^3.2.6",
     "eslint": "^10.4.1",
     "eslint-config-prettier": "^10.1.8",
@@ -74,7 +74,7 @@
     "prettier-plugin-prisma": "^5.0.0",
     "prisma": "^7.8.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.60.1"
+    "typescript-eslint": "^8.61.0"
   },
   "lint-staged": {
     "*.{js,ts}": [
