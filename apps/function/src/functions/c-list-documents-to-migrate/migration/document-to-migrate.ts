@@ -3,7 +3,8 @@ import type { DocumentInfo } from '../source/document.ts';
 
 export async function upsertDocumentsToMigrate(
 	migrationDatabase: MigrationPrismaClient,
-	documents: DocumentInfo[]
+	documents: DocumentInfo[],
+	caseReference: string
 ): Promise<void> {
 	if (documents.length === 0) return;
 
@@ -13,7 +14,7 @@ export async function upsertDocumentsToMigrate(
 			update: {},
 			create: {
 				documentId: doc.documentId,
-				CaseToMigrate: { connect: { caseReference: doc.caseReference } },
+				CaseToMigrate: { connect: { caseReference } },
 				MigrationStep: { create: {} }
 			}
 		});

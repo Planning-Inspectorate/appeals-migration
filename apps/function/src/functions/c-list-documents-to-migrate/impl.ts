@@ -40,7 +40,7 @@ export function buildListDocumentsToMigrate(
 
 		await withRetry(() =>
 			migrationDatabase.$transaction(async (tx) => {
-				await migration.upsertDocumentsToMigrate(tx as MigrationPrismaClient, documents);
+				await migration.upsertDocumentsToMigrate(tx as MigrationPrismaClient, documents, caseReference);
 			}, service.transactionOptions)
 		);
 
