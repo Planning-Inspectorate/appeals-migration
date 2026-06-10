@@ -15,7 +15,7 @@ import * as authSession from './session.service.ts';
  */
 export function buildStartMsalAuthentication(
 	authService: AuthService
-): RequestHandler<any, any, any, { redirect_to: string }> {
+): RequestHandler<any, any, any, { redirect_to?: string }> {
 	return async (request, response) => {
 		// A nonce is generated to identify the OIDC as originating from our
 		// application, and for this OIDC attempt only. The nonce is later returned as
@@ -24,6 +24,12 @@ export function buildStartMsalAuthentication(
 		// session. Note that this is not susceptible to a downgrade attack like PKCE
 		// because the verification is enforced locally and not in the auth server.
 		const nonce = randomUUID();
+		const redirect_to = request.query.redirect_to;
+		// reject invalid redirects requests, especially to other domains
+		if (redirect_to && !isValidRedirectUri(redirect_to)) {
+			response.sendStatus(400);
+			return;
+		}
 		// The url from which the OpenID Connect flow was triggered by the
 		// application. Ultimately, we will forward the user to this route at the
 		// end of the authentication journey.
@@ -40,6 +46,26 @@ export function buildStartMsalAuthentication(
 		// against MSAL using their PINS account.
 		response.redirect(await authService.getAuthCodeUrl({ nonce }, request.session.id));
 	};
+}
+
+/**
+ * Verify that a given URI is valid for the auth redirect
+ * This should only allow relative paths.
+ */
+function isValidRedirectUri(uri: string): boolean {
+	// Only allow relative paths starting with /
+	if (!uri.startsWith('/')) {
+		return false;
+	}
+	// Prevent open redirect attacks by blocking protocol-relative URLs
+	if (uri.startsWith('//')) {
+		return false;
+	}
+	// prevent any path traversal
+	if (uri.includes('..')) {
+		return false;
+	}
+	return true;
 }
 
 /**

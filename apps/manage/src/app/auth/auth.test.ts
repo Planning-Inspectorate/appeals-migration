@@ -176,5 +176,21 @@ describe('auth', () => {
 			assert.equal(res.status, 302);
 			assert.match(res.headers.get('location'), /\/auth\/signin/);
 		});
+
+		describe('invalid redirect attempts', () => {
+			const redirectAttempts = ['//example.com', 'https://somewhereelse.com', '/a/url/../../etc'];
+			for (const redirectAttempt of redirectAttempts) {
+				it(`should return 404 for invalid redirect parameter ${redirectAttempt}`, async (ctx) => {
+					const { server } = await setupApp(ctx);
+					const res = await server.get(`/auth/signin?redirect_to=${redirectAttempts}`, { redirect: 'manual' });
+					assert.strictEqual(res.status, 400);
+				});
+			}
+			it('should allow relative redirects', async (ctx) => {
+				const { server } = await setupApp(ctx);
+				const res = await server.get(`/auth/signin?redirect_to=`, { redirect: 'manual' });
+				assert.strictEqual(res.status, 302);
+			});
+		});
 	});
 });
