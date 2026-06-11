@@ -87,6 +87,11 @@ export function buildCompleteMsalAuthentication(
 	return async (request, response) => {
 		if (request.query.code) {
 			const { nonce, postSigninRedirectUri } = authSession.getAuthenticationData(request.session);
+			// double check redirect URI is safe after loading from session
+			if (!isValidRedirectUri(postSigninRedirectUri)) {
+				response.redirect('/unauthenticated');
+				return;
+			}
 
 			const authenticationResult = await authService.acquireTokenByCode({
 				code: request.query.code,
