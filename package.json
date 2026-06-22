@@ -30,12 +30,12 @@
     "test-coverage": "node --test --experimental-test-coverage"
   },
   "dependencies": {
-    "@azure/functions": "^4.16.0",
+    "@azure/functions": "^4.16.1",
     "@azure/identity": "^4.13.1",
-    "@azure/msal-node": "^5.2.4",
+    "@azure/msal-node": "^5.2.5",
     "@azure/service-bus": "^7.9.5",
     "@azure/storage-blob": "^12.32.0",
-    "@planning-inspectorate/data-model": "^2.43.0",
+    "@planning-inspectorate/data-model": "^2.44.0",
     "@prisma/adapter-mssql": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "accessible-autocomplete": "^3.0.1",
@@ -62,19 +62,19 @@
     "@types/express": "^5.0.6",
     "@types/express-session": "^1.19.0",
     "@types/lodash.chunk": "^4.2.9",
-    "@types/node": "^25.9.3",
+    "@types/node": "^26.0.0",
     "@types/nunjucks": "^3.2.6",
     "eslint": "^10.5.0",
     "eslint-config-prettier": "^10.1.8",
-    "globals": "^17.6.0",
+    "globals": "^17.7.0",
     "husky": "^9.1.7",
-    "lint-staged": "^17.0.7",
+    "lint-staged": "^17.0.8",
     "prettier": "^3.8.4",
     "prettier-plugin-organize-imports": "^4.3.0",
     "prettier-plugin-prisma": "^5.0.0",
     "prisma": "^7.8.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.61.1"
+    "typescript-eslint": "^8.62.0"
   },
   "lint-staged": {
     "*.{js,ts}": [
