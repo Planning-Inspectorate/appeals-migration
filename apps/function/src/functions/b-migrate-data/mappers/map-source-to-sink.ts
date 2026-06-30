@@ -487,9 +487,7 @@ type ValidationReasonConfig = {
 	fieldName: string;
 	reasonField: 'appellantCaseIncompleteReason' | 'appellantCaseInvalidReason' | 'lpaQuestionnaireIncompleteReason';
 	textField:
-		| 'appellantCaseIncompleteReasonText'
-		| 'appellantCaseInvalidReasonText'
-		| 'lpaQuestionnaireIncompleteReasonText';
+		'appellantCaseIncompleteReasonText' | 'appellantCaseInvalidReasonText' | 'lpaQuestionnaireIncompleteReasonText';
 };
 
 /**
