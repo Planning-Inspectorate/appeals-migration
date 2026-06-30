@@ -24,16 +24,16 @@ export function buildStartMsalAuthentication(
 		// session. Note that this is not susceptible to a downgrade attack like PKCE
 		// because the verification is enforced locally and not in the auth server.
 		const nonce = randomUUID();
-		const redirect_to = request.query.redirect_to;
+		const redirectTo = request.query.redirect_to;
 		// reject invalid redirects requests, especially to other domains
-		if (redirect_to && !isValidRedirectUri(redirect_to)) {
+		if (Array.isArray(redirectTo) || (redirectTo && !isValidRedirectUri(redirectTo))) {
 			response.sendStatus(400);
 			return;
 		}
 		// The url from which the OpenID Connect flow was triggered by the
 		// application. Ultimately, we will forward the user to this route at the
 		// end of the authentication journey.
-		const postSigninRedirectUri = request.query.redirect_to || '/';
+		const postSigninRedirectUri = redirectTo || '/';
 
 		// Set the data that will exist throughout the OpenID Connect flow lifecycle.
 		// This will be consumed in phase 2 to verify the inbound redirect from the
@@ -53,16 +53,20 @@ export function buildStartMsalAuthentication(
  * This should only allow relative paths.
  */
 function isValidRedirectUri(uri: string): boolean {
+	if (typeof uri !== 'string') {
+		return false;
+	}
 	// Only allow relative paths starting with /
 	if (!uri.startsWith('/')) {
 		return false;
 	}
-	// Prevent open redirect attacks by blocking protocol-relative URLs
-	if (uri.startsWith('//')) {
+	// Only allow same-origin absolute-path references (RFC 3986); block protocol-relative URLs and backslashes
+	if (uri.startsWith('//') || uri.includes('\\')) {
 		return false;
 	}
+	const pathParts = uri.split('/');
 	// prevent any path traversal
-	if (uri.includes('..')) {
+	if (pathParts.some((part) => part === '..' || part === '.')) {
 		return false;
 	}
 	return true;
